@@ -562,7 +562,7 @@ function resetRace(){
 function setMenu(){
   state="menu";$("menu").classList.remove("hidden");$("raceOverlay").classList.add("hidden");
   $("countdown").classList.add("hidden");$("hud").classList.add("hidden");$("controlsHint").classList.remove("hidden");
-  $("pauseBtn").style.visibility="hidden";
+  $("pauseBtn").style.visibility="hidden";$("nextBtn").classList.add("hidden");
   keys.clear();touch.clear();updateBest();refreshGarage();redrawCareer();
 }
 function beginRace(){
@@ -796,6 +796,7 @@ function endRace(destroyed=false){
   $("dialogDetail").textContent=detail;
   $("resultStats").innerHTML='<div class="result-grid"><div><span>POSITION</span><b>'+rank+' / 5</b></div><div><span>TEMPS</span><b>'+formatTime(elapsed)+'</b></div><div><span>GAIN</span><b>+'+prize+' CR</b></div></div>';
   $("resumeBtn").classList.add("hidden");$("againBtn").classList.remove("hidden");
+  $("nextBtn").classList.toggle("hidden",!(qualified&&(raceIndex<3||(trackId===0&&isBoss()))));
   $("raceOverlay").classList.remove("hidden");
   if(!destroyed){
     const key="loubkarting_best_v3_"+trackId+"_"+raceIndex;
@@ -820,7 +821,7 @@ function pause(){
     $("dialogTitle").textContent="PAUSE";
     $("dialogDetail").textContent="Prêt à reprendre la bataille ?";
     $("resultStats").innerHTML="";
-    $("resumeBtn").classList.remove("hidden");$("againBtn").classList.add("hidden");
+    $("resumeBtn").classList.remove("hidden");$("againBtn").classList.add("hidden");$("nextBtn").classList.add("hidden");
     $("raceOverlay").classList.remove("hidden");$("countdown").classList.add("hidden");
     keys.clear();touch.clear();
   }else if(state==="paused"){
@@ -868,6 +869,16 @@ document.querySelectorAll("[data-weapon]").forEach(btn=>btn.addEventListener("cl
 $("difficulty").addEventListener("change",e=>difficulty=e.target.value);
 $("startBtn").addEventListener("click",beginRace);
 $("againBtn").addEventListener("click",beginRace);
+$("nextBtn").addEventListener("click",()=>{
+  if(state!=="finish")return;
+  if(raceIndex<3&&raceUnlocked(trackId,raceIndex+1)){
+    rebuildTrack(trackId,raceIndex+1);
+  }else if(trackId===0&&raceIndex===3&&zoneUnlocked(1)){
+    rebuildTrack(1,0);
+  }else return;
+  progress.zone=trackId;progress.track=trackId;progress.race=raceIndex;saveProgress();
+  redrawCareer();beginRace();
+});
 $("resumeBtn").addEventListener("click",pause);
 $("menuBtn").addEventListener("click",()=>{resetRace();setMenu();});
 $("pauseBtn").addEventListener("click",pause);
