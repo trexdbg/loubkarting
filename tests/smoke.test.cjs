@@ -99,6 +99,16 @@ test("all four mountain events grant progress and beach unlocks at boss victory"
   assert.match(h.el("trackName").textContent,/LITTORAL/);
 });
 
+test("qualified finish can launch the next course immediately",()=>{
+  const h=harness();
+  h.start();h.winInstant();
+  assert.ok(h.el("nextBtn").events.click);
+  h.el("nextBtn").events.click();
+  assert.equal(h.win.__test.race(),1);
+  h.advance(230);
+  assert.equal(h.win.__test.state(),"race");
+});
+
 test("race naturally ends after three laps and saves best time",()=>{
   const h=harness();h.start();h.playFullRace();
   assert.ok(Number(h.saved.loubkarting_best_v3_0_0)>0);
