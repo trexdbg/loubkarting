@@ -8,7 +8,7 @@ const source=fs.readFileSync(path.join(__dirname,"..","game.js"),"utf8");
 const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
 const noop=()=>{};
 const debugSource=source.replace("resetRace();setMenu();requestAnimationFrame(frame);",
-"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,mines:()=>mines,shoot,finish:endRace};\nresetRace();setMenu();requestAnimationFrame(frame);");
+"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,mines:()=>mines,pickups:()=>pickups,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace};\nresetRace();setMenu();requestAnimationFrame(frame);");
 assert.notEqual(debugSource,source,"Debug instrumentation anchor should exist.");
 
 function harness(initial={}){
@@ -26,6 +26,7 @@ function harness(initial={}){
     "[data-race]":group("race",[0,1,2,3]),
     "[data-weapon]":group("weapon",["dart","pulse","mine"]),
     "[data-upgrade]":group("upgrade",["engine","armor","nitro"]),
+    "[data-transport]":group("transport",["trailer","boat","plane"]),
     "[data-control]":group("control",["gas","brake","left","right","fire","nitro"])
   };
   const doc={
@@ -80,39 +81,77 @@ test("mountain opens first; beach and planned worlds stay locked",()=>{
   assert.equal(h.win.__test.progress().ownedCars.join(","),"0");
 });
 
-test("all four mountain events grant progress and beach unlocks at boss victory",()=>{
-  const h=harness(),lengths=[];
+test("three opponents include a permanent, dominant regional boss",()=>{
+  const h=harness(),a=h.win.__test.ais();
+  assert.equal(a.length,3);
+  assert.equal(a[2].name,"LE BOUQUETIN");
+  assert.equal(a[2].isBoss,true);
+  assert.ok(a[2].cruise>a[1].cruise);
+  assert.ok(a[2].hp>a[1].hp);
+});
+test("remorque, droits d'inscription et bateau conditionnent la progression",()=>{
+  const h=harness({loubkarting_progress_v2:JSON.stringify({credits:6000,cleared:[],transports:[],paidEntries:[]})});
+  const lengths=[];
   for(let round=0;round<4;round++){
-    if(round)h.groups["[data-race]"][round].events.click();
-    assert.equal(h.win.__test.race(),round);
+    if(round===1){
+      assert.equal(h.groups["[data-race]"][1].disabled,true);
+      h.groups["[data-transport]"][0].events.click();
+      assert.equal(h.win.__test.progress().transports.includes("trailer"),true);
+    }
+    if(round){
+      h.groups["[data-race]"][round].events.click();
+      assert.equal(h.win.__test.race(),round);
+      assert.equal(h.el("startBtn").disabled,true);
+      h.el("unlockRaceBtn").events.click();
+      assert.equal(h.win.__test.raceUnlocked(0,round),true);
+    }
     lengths.push(Math.round(h.win.__test.length()));
+    assert.equal(h.win.__test.ais().length,3);
+    assert.equal(h.win.__test.ais()[2].name,"LE BOUQUETIN");
     h.start();h.winInstant();
     assert.ok(h.win.__test.progress().cleared.includes("0:"+round));
     h.el("menuBtn").events.click();
   }
-  assert.ok(new Set(lengths).size>=3,"Track variants must change geometry");
+  assert.ok(new Set(lengths).size>=3);
+  assert.equal(h.groups["[data-zone]"][1].disabled,true,"Boat required after the boss");
+  h.groups["[data-transport]"][1].events.click();
   assert.equal(h.groups["[data-zone]"][1].disabled,false);
   h.groups["[data-zone]"][1].events.click();
   assert.equal(h.win.__test.track(),1);
-  assert.equal(h.win.__test.race(),0);
-  assert.equal(h.groups["[data-race]"][1].disabled,true);
-  assert.match(h.el("trackName").textContent,/LITTORAL/);
+  assert.equal(h.win.__test.ais()[2].name,"SIRÈNE DU CAP");
 });
 
-test("qualified finish can launch the next course immediately",()=>{
-  const h=harness();
-  h.start();h.winInstant();
-  assert.ok(h.el("nextBtn").events.click);
+test("qualified finish sends player to logistics instead of bypassing a toll",()=>{
+  const h=harness();h.start();h.winInstant();
   h.el("nextBtn").events.click();
   assert.equal(h.win.__test.race(),1);
-  h.advance(230);
-  assert.equal(h.win.__test.state(),"race");
+  assert.equal(h.win.__test.state(),"menu");
+  assert.equal(h.el("startBtn").disabled,true);
+  h.groups["[data-transport]"][0].events.click();
+  assert.equal(h.el("startBtn").disabled,true);
+  h.el("unlockRaceBtn").events.click();
+  assert.equal(h.el("startBtn").disabled,false);
+});
+test("gold bars and destroying an opponent award credits on finishing",()=>{
+  const h=harness();h.start();
+  const gold=h.win.__test.pickups().find(p=>p.kind==="gold");
+  const p=h.win.__test.player();p.x=gold.x;p.y=gold.y;
+  h.win.__test.updatePickups(.016);
+  assert.match(h.el("eventToast").textContent,/LINGOT/);
+  const opponent=h.win.__test.ais()[0];
+  h.win.__test.damageOpponent(opponent,500,1);
+  h.win.__test.damageOpponent(opponent,500,1);
+  assert.equal(opponent.destroyed,true);
+  h.winInstant();
+  assert.match(h.el("resultStats").innerHTML,/DESTRUCTIONS/);
+  assert.match(h.el("resultStats").innerHTML,/LINGOTS/);
+  assert.equal(h.win.__test.progress().credits,730+gold.value+240);
 });
 
 test("race naturally ends after three laps and saves best time",()=>{
   const h=harness();h.start();h.playFullRace();
   assert.ok(Number(h.saved.loubkarting_best_v3_0_0)>0);
-  assert.match(h.el("resultStats").innerHTML,/GAIN/);
+  assert.match(h.el("resultStats").innerHTML,/TOTAL GAGNÉ/);
 });
 
 test("credits buy actual vehicles and improvements and survive reload",()=>{
@@ -151,6 +190,15 @@ test("ion dart, EMP and mine consume the correct ammunition",()=>{
   assert.equal(h.win.__test.mines().length,1);
 });
 
+test("old successful races retain their access after economy migration",()=>{
+  const h=harness({loubkarting_progress_v2:JSON.stringify({
+    zone:1,race:0,cleared:["0:0","0:1","0:2","0:3","1:0"],credits:10
+  })});
+  assert.equal(h.win.__test.track(),1);
+  assert.ok(h.win.__test.progress().transports.includes("trailer"));
+  assert.ok(h.win.__test.progress().transports.includes("boat"));
+  assert.ok(h.win.__test.progress().paidEntries.includes("0:1"));
+});
 test("invalid save is repaired without crashing",()=>{
   const bad=harness({loubkarting_progress_v2:JSON.stringify({
     credits:-900,engine:777,armor:-2,nitro:"oops",zone:6,race:3,
