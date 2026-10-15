@@ -464,6 +464,23 @@ function drawPickups(t){
   for(const p of pickups){
     if(p.cooldown>0)continue;
     const s=screen(p.x,p.y,13+Math.sin(t*3+p.phase)*4),r=12*zoom;
+    if(p.kind==="gold"){
+      ctx.save();ctx.translate(s.x,s.y);ctx.rotate(Math.sin(t*1.5+p.phase)*.09);
+      const w=21*zoom,h=12*zoom;
+      ctx.shadowColor="#fbe26e";ctx.shadowBlur=15*zoom;
+      ctx.fillStyle="#9b5919";
+      ctx.beginPath();ctx.moveTo(-w,0);ctx.lineTo(0,h*.47);ctx.lineTo(w,0);ctx.lineTo(w,-h*.5);
+      ctx.lineTo(-w,-h*.5);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#ffe078";
+      ctx.beginPath();ctx.moveTo(-w,-h*.5);ctx.lineTo(-w*.62,-h*1.48);ctx.lineTo(w*.65,-h*1.48);
+      ctx.lineTo(w,-h*.5);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#cf952b";
+      ctx.beginPath();ctx.moveTo(w,-h*.5);ctx.lineTo(w*.65,-h*1.48);ctx.lineTo(w*.65,-h*.7);
+      ctx.lineTo(w,h*.1);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#92611d";ctx.shadowBlur=0;ctx.font="900 "+Math.round(11*zoom)+"px Arial";
+      ctx.textAlign="center";ctx.fillText("CR",0,-h*.65);
+      ctx.restore();continue;
+    }
     ctx.save();ctx.translate(s.x,s.y);ctx.rotate(t*1.7+p.phase);
     const color=p.kind==="repair"?"#7eefa3":p.kind==="ammo"?"#ffa96b":"#64d9ff";
     ctx.shadowColor=color;ctx.shadowBlur=15*zoom;
@@ -872,20 +889,30 @@ function endRace(destroyed=false){
   state="finish";sound.effect(destroyed?"hit":"finish");
   const rank=position(),boss=isBoss(),victory=!destroyed&&rank===1,qualified=!destroyed&&(boss?victory:rank<=3);
   const wasCleared=progress.cleared.includes(raceKey(trackId,raceIndex));
-  const prize=(destroyed?75:[450,360,290,230,180][rank-1])+(qualified&&!wasCleared?boss?850:280:0);
+  const placement=destroyed?75:[450,360,290,230][rank-1];
+  const firstTimeBonus=qualified&&!wasCleared?(boss?850:280):0;
+  const knockoutBonus=raceKOs*KO_REWARD,prize=placement+firstTimeBonus+knockoutBonus+raceGold;
   progress.credits+=prize;
   if(qualified&&!wasCleared)progress.cleared.push(raceKey(trackId,raceIndex));
   saveProgress();
   $("dialogEyebrow").textContent=destroyed?"TON BOLIDE EST HORS COURSE":boss?"DUEL CONTRE LE BOSS":"ÉPREUVE TERMINÉE";
   $("dialogTitle").textContent=destroyed?"ÉLIMINÉ !":victory?"VICTOIRE !":"ARRIVÉE !";
-  let detail=destroyed?"Le véhicule est hors course. Tu peux réparer au prochain départ.":qualified?
-    boss?"BOSS VAINCU · "+activeZone().boss+" !": "Podium validé ! L'épreuve suivante est débloquée.":
-    boss?"Il faut finir premier pour battre le boss.":"Termine sur le podium pour progresser.";
-  if(qualified&&boss&&trackId===0)detail+=" Le LITTORAL est désormais accessible.";
+  let detail=destroyed?"Tu conserves les lingots et tes primes de destruction.":qualified?
+    boss?"BOSS VAINCU · "+activeZone().boss+" !": "Résultat validé ! Prépare le transport et les droits de la prochaine course.":
+    boss?"Termine premier pour décrocher le titre régional.":"Termine dans les trois premiers pour progresser.";
+  if(qualified&&boss&&trackId===0)detail+=" Achète le BATEAU pour rejoindre la côte.";
   $("dialogDetail").textContent=detail;
-  $("resultStats").innerHTML='<div class="result-grid"><div><span>POSITION</span><b>'+rank+' / 5</b></div><div><span>TEMPS</span><b>'+formatTime(elapsed)+'</b></div><div><span>GAIN</span><b>+'+prize+' CR</b></div></div>';
+  $("resultStats").innerHTML='<div class="result-grid">'+
+    '<div><span>CLASSEMENT</span><b>'+rank+' / 4</b></div>'+
+    '<div><span>COURSE</span><b>'+placement+' CR</b></div>'+
+    '<div><span>LINGOTS</span><b>+'+raceGold+' CR</b></div>'+
+    '<div><span>DESTRUCTIONS</span><b>'+raceKOs+' × '+KO_REWARD+'</b></div>'+
+    '<div><span>1re QUALIF.</span><b>+'+firstTimeBonus+'</b></div>'+
+    '<div><span>TOTAL GAGNÉ</span><b>+'+prize+' CR</b></div></div>';
   $("resumeBtn").classList.add("hidden");$("againBtn").classList.remove("hidden");
-  $("nextBtn").classList.toggle("hidden",!(qualified&&(raceIndex<3||(trackId===0&&isBoss()))));
+  const hasNext=qualified&&(raceIndex<3||(trackId===0&&boss));
+  $("nextBtn").classList.toggle("hidden",!hasNext);
+  $("nextBtn").innerHTML='ÉPREUVE SUIVANTE / LOGISTIQUE <span>↗</span>';
   $("raceOverlay").classList.remove("hidden");
   if(!destroyed){
     const key="loubkarting_best_v3_"+trackId+"_"+raceIndex;
@@ -936,6 +963,8 @@ document.querySelectorAll("[data-control]").forEach(btn=>{
   btn.addEventListener("pointerup",up);btn.addEventListener("pointercancel",up);btn.addEventListener("lostpointercapture",up);
 });
 document.querySelectorAll("[data-car]").forEach(btn=>btn.addEventListener("click",()=>buyOrSelectCar(Number(btn.dataset.car))));
+document.querySelectorAll("[data-transport]").forEach(btn=>btn.addEventListener("click",()=>buyTransport(btn.dataset.transport)));
+$("unlockRaceBtn").addEventListener("click",buyRaceEntry);
 document.querySelectorAll("[data-upgrade]").forEach(btn=>btn.addEventListener("click",()=>buyUpgrade(btn.dataset.upgrade)));
 document.querySelectorAll("[data-zone]").forEach(btn=>btn.addEventListener("click",()=>{
   const z=Number(btn.dataset.zone);
@@ -946,7 +975,7 @@ document.querySelectorAll("[data-zone]").forEach(btn=>btn.addEventListener("clic
 }));
 document.querySelectorAll("[data-race]").forEach(btn=>btn.addEventListener("click",()=>{
   const r=Number(btn.dataset.race);
-  if(!raceUnlocked(trackId,r))return;
+  if(!raceAccessible(trackId,r))return;
   rebuildTrack(trackId,r);progress.race=r;saveProgress();
   resetRace();updateBest();redrawCareer();
 }));
@@ -960,13 +989,19 @@ $("startBtn").addEventListener("click",beginRace);
 $("againBtn").addEventListener("click",beginRace);
 $("nextBtn").addEventListener("click",()=>{
   if(state!=="finish")return;
-  if(raceIndex<3&&raceUnlocked(trackId,raceIndex+1)){
+  if(raceIndex<3&&progress.cleared.includes(raceKey(trackId,raceIndex))){
     rebuildTrack(trackId,raceIndex+1);
-  }else if(trackId===0&&raceIndex===3&&zoneUnlocked(1)){
+  }else if(trackId===0&&raceIndex===3&&progress.cleared.includes(raceKey(0,3))){
     rebuildTrack(1,0);
   }else return;
   progress.zone=trackId;progress.track=trackId;progress.race=raceIndex;saveProgress();
-  redrawCareer();beginRace();
+  redrawCareer();
+  if(raceUnlocked(trackId,raceIndex))beginRace();
+  else{
+    resetRace();setMenu();
+    $("careerMessage").textContent=trackId===1?"ACHÈTE UN BATEAU POUR REJOINDRE LA CÔTE.":
+      !hasTransport("trailer")?"ACHÈTE UNE REMORQUE POUR TRANSPORTER TON BOLIDE.":"PAIE TON INSCRIPTION AVANT LE DÉPART.";
+  }
 });
 $("resumeBtn").addEventListener("click",pause);
 $("menuBtn").addEventListener("click",()=>{resetRace();setMenu();});
