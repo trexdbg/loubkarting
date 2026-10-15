@@ -24,11 +24,12 @@
     <section id="hud" class="hud hidden" aria-live="off">
       <div class="hud-track-name" id="trackName">ALPES // COURSE 01</div>
       <div class="hud-top">
-        <div class="hud-card placing"><span class="hud-label">POSITION</span><span class="big-numeric"><b id="position">1</b><em> / 5</em></span></div>
+        <div class="hud-card placing"><span class="hud-label">POSITION</span><span class="big-numeric"><b id="position">1</b><em> / 4</em></span></div>
         <div class="hud-card"><span class="hud-label">TOUR</span><span class="big-numeric"><b id="lap">1</b><em> / 3</em></span></div>
         <div class="hud-card"><span class="hud-label">TEMPS</span><span class="big-numeric time" id="timer">00:00.0</span></div>
         <div class="hud-card ammo"><span class="hud-label"><span id="hudWeapon">DARD IONIQUE</span></span><span class="big-numeric"><span class="ammo-symbol">➤</span><b id="ammo">5</b></span></div>
       </div>
+      <div class="race-earnings"><span>LINGOTS <strong id="raceGold">0</strong> CR</span><span>DESTRUCTIONS <strong id="raceKOs">0</strong> / 3</span></div>
       <div class="hud-bottom">
         <div class="vehicle-vitals"><span>BLINDAGE <b id="hpLabel">100%</b></span><div class="meter"><div id="hpFill"></div></div><span class="nitro-title">NITRO <b id="nitroLabel">100%</b></span><div class="meter blue"><div id="nitroFill"></div></div></div>
         <div class="speedboard"><span>VITESSE</span><strong id="speed">0</strong><small>KM/H</small></div>
@@ -41,7 +42,7 @@
       <div class="menu-panel">
         <div class="eyebrow"><span class="live-dot"></span> CAREER MODE <span class="separation">/</span> EARTH TOUR</div>
         <h1>THE WORLD<br><span>IS YOUR TRACK.</span></h1>
-        <p class="intro">Cinq régions sur Terre, quatre courses par région et un boss à défier. Gagne ta place dans le championnat mondial en monoplace.</p>
+        <p class="intro">Cinq régions, quatre courses par région. Trois rivaux dont le boss permanent. Récupère des lingots, élimine tes adversaires et finance ton voyage vers le championnat mondial.</p>
         <div class="panel-line"></div>
 
         <section class="world-section">
@@ -63,6 +64,18 @@
             <button class="race-card boss-race" data-race="3"><b>★</b><span><strong id="raceName3">ASCENSION ROYALE</strong><small id="raceStatus3">BOSS · LE BOUQUETIN</small></span></button>
           </div>
           <div class="career-message" id="careerMessage" aria-live="polite"></div>
+          <section class="logistics" aria-label="Transport et droits d'inscription">
+            <div class="section-head"><span class="option-label">LOGISTIQUE / PAYER POUR PROGRESSER</span><span class="career-progress" id="transportStatus">0 / 3 TRANSPORTS</span></div>
+            <div class="transport-grid">
+              <button class="transport-card" data-transport="trailer"><span class="transport-icon">▰</span><span><strong>REMORQUE</strong><small>REJOINDRE LES AUTRES CIRCUITS ALPINS</small></span><b id="trailerCost">320 CR</b></button>
+              <button class="transport-card" data-transport="boat"><span class="transport-icon">⛵</span><span><strong>BATEAU</strong><small>TRAVERSER VERS LE LITTORAL</small></span><b id="boatCost">1 600 CR</b></button>
+              <button class="transport-card" data-transport="plane"><span class="transport-icon">✈</span><span><strong>AVION</strong><small>VOYAGES INTERCONTINENTAUX · À VENIR</small></span><b id="planeCost">5 000 CR</b></button>
+            </div>
+            <div class="race-fee">
+              <div><span class="option-label">DROIT D'INSCRIPTION</span><strong id="entryStatus">GRATUIT · PREMIÈRE COURSE</strong></div>
+              <button id="unlockRaceBtn" class="fee-btn hidden">ACHETER L'ACCÈS</button>
+            </div>
+          </section>
         </section>
         <div class="section-head car-heading"><span class="option-label">GARAGE / 5 CATÉGORIES DE BOLIDES</span><span id="ownedCount" class="career-progress">1 / 5</span></div>
         <div class="car-select" role="group" aria-label="Choix et achat du véhicule">
@@ -111,7 +124,7 @@
 
     <div id="countdown" class="countdown hidden" aria-live="polite">3</div>
 
-    <footer id="controlsHint" class="controls-hint"><span>↑ ACCÉLÉRER</span><span>↓ FREINER</span><span>← → DIRIGER</span><span>ESPACE TIR</span><span>SHIFT NITRO</span><span>P PAUSE</span></footer>
+    <footer id="controlsHint" class="controls-hint"><span>↑ ACCÉLÉRER</span><span>↓ FREINER</span><span>← → DIRIGER</span><span>ESPACE ARME</span><span>LINGOTS & PRIMES DESTRUCTION</span><span>SHIFT NITRO</span><span>P PAUSE</span></footer>
 
     <section id="touchControls" class="touch-controls" aria-label="Commandes tactiles">
       <div class="touch-left"><button class="touch-btn steer" data-control="left" aria-label="Tourner à gauche">◀</button><button class="touch-btn steer" data-control="right" aria-label="Tourner à droite">▶</button></div>
