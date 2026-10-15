@@ -22,12 +22,12 @@
     </header>
 
     <section id="hud" class="hud hidden" aria-live="off">
-      <div class="hud-track-name" id="trackName">NEON CANYON // CIRCUIT 01</div>
+      <div class="hud-track-name" id="trackName">ALPES // COURSE 01</div>
       <div class="hud-top">
         <div class="hud-card placing"><span class="hud-label">POSITION</span><span class="big-numeric"><b id="position">1</b><em> / 5</em></span></div>
         <div class="hud-card"><span class="hud-label">TOUR</span><span class="big-numeric"><b id="lap">1</b><em> / 3</em></span></div>
         <div class="hud-card"><span class="hud-label">TEMPS</span><span class="big-numeric time" id="timer">00:00.0</span></div>
-        <div class="hud-card ammo"><span class="hud-label">MISSILES</span><span class="big-numeric"><span class="ammo-symbol">➤</span><b id="ammo">5</b></span></div>
+        <div class="hud-card ammo"><span class="hud-label"><span id="hudWeapon">DARD IONIQUE</span></span><span class="big-numeric"><span class="ammo-symbol">➤</span><b id="ammo">5</b></span></div>
       </div>
       <div class="hud-bottom">
         <div class="vehicle-vitals"><span>BLINDAGE <b id="hpLabel">100%</b></span><div class="meter"><div id="hpFill"></div></div><span class="nitro-title">NITRO <b id="nitroLabel">100%</b></span><div class="meter blue"><div id="nitroFill"></div></div></div>
@@ -39,21 +39,44 @@
 
     <section id="menu" class="overlay shown">
       <div class="menu-panel">
-        <div class="eyebrow"><span class="live-dot"></span> SAISON 01 <span class="separation">/</span> SOLO CHAMPIONSHIP</div>
-        <h1>NO RULES.<br><span>JUST RACING.</span></h1>
-        <p class="intro">Virages serrés. Missiles. Nitro. Cinq pilotes, une seule place sur le podium.</p>
+        <div class="eyebrow"><span class="live-dot"></span> CAREER MODE <span class="separation">/</span> EARTH TOUR</div>
+        <h1>THE WORLD<br><span>IS YOUR TRACK.</span></h1>
+        <p class="intro">Cinq régions sur Terre, quatre courses par région et un boss à défier. Gagne ta place dans le championnat mondial en monoplace.</p>
         <div class="panel-line"></div>
-        <div class="option-label">CHOISIS TON BOLIDE</div>
-        <div class="car-select" role="group" aria-label="Choix du véhicule">
-          <button class="car-card active" data-car="0"><span class="car-emblem red">◆</span><strong>VIPER GT</strong><small>ÉQUILIBRÉE</small></button>
-          <button class="car-card" data-car="1"><span class="car-emblem cyan">◆</span><strong>PHANTOM</strong><small>AGILE</small></button>
-          <button class="car-card" data-car="2"><span class="car-emblem yellow">◆</span><strong>BRUISER</strong><small>ROBUSTE</small></button>
-        </div>
 
-        <div class="option-label track-label">CHOISIS TON CIRCUIT</div>
-        <div class="track-select" role="group" aria-label="Choix du circuit">
-          <button class="track-card active" data-track="0"><span class="track-num">01</span><span><strong>NEON CANYON</strong><small>Roches &amp; virages rapides</small></span><span class="track-glyph">◆</span></button>
-          <button class="track-card" data-track="1"><span class="track-num">02</span><span><strong>COASTLINE RUSH</strong><small>Côte &amp; épingles</small></span><span class="track-glyph">≈</span></button>
+        <section class="world-section">
+          <div class="section-head"><span class="option-label">CARTE DU MONDE / CHAMPIONNAT</span><span id="careerProgress" class="career-progress">0 / 8 COURSES</span></div>
+          <div class="zone-select" role="group" aria-label="Région du championnat">
+            <button class="zone-card active" data-zone="0"><span class="zone-emoji">⛰</span><span><strong>01 · ALPES</strong><small>EUROPE · MONTAGNE</small></span><em id="zoneStatus0">DISPONIBLE</em></button>
+            <button class="zone-card" data-zone="1"><span class="zone-emoji">◈</span><span><strong>02 · LITTORAL</strong><small>OCÉANIE · PLAGE</small></span><em id="zoneStatus1">À DÉBLOQUER</em></button>
+            <button class="zone-card" data-zone="2"><span class="zone-emoji">❄</span><span><strong>03 · GRAND NORD</strong><small>AMÉRIQUE · NEIGE</small></span><em>À VENIR</em></button>
+            <button class="zone-card" data-zone="3"><span class="zone-emoji">✷</span><span><strong>04 · SAHARA</strong><small>AFRIQUE · DÉSERT</small></span><em>À VENIR</em></button>
+            <button class="zone-card" data-zone="4"><span class="zone-emoji">♣</span><span><strong>05 · AMAZONIE</strong><small>AMÉRIQUE DU SUD · FORÊT</small></span><em>À VENIR</em></button>
+            <button class="zone-card world-final" data-zone="5"><span class="zone-emoji">🏁</span><span><strong>06 · WORLD GRAND PRIX</strong><small>10 GP · MONOPLACE OBLIGATOIRE</small></span><em>À VENIR</em></button>
+          </div>
+          <div class="section-head race-heading"><span class="option-label">LES 4 ÉPREUVES DE LA ZONE</span><span class="race-subtitle" id="zoneSubtitle">ALPES · EUROPE</span></div>
+          <div class="race-select" role="group" aria-label="Épreuve de la zone">
+            <button class="race-card active" data-race="0"><b>01</b><span><strong id="raceName0">COL DES BRUMES</strong><small id="raceStatus0">OUVERT</small></span></button>
+            <button class="race-card" data-race="1"><b>02</b><span><strong id="raceName1">ÉPINGLE DES CIMES</strong><small id="raceStatus1">VERROUILLÉ</small></span></button>
+            <button class="race-card" data-race="2"><b>03</b><span><strong id="raceName2">CRÊTE DU TONNERRE</strong><small id="raceStatus2">VERROUILLÉ</small></span></button>
+            <button class="race-card boss-race" data-race="3"><b>★</b><span><strong id="raceName3">ASCENSION ROYALE</strong><small id="raceStatus3">BOSS · LE BOUQUETIN</small></span></button>
+          </div>
+          <div class="career-message" id="careerMessage" aria-live="polite"></div>
+        </section>
+        <div class="section-head car-heading"><span class="option-label">GARAGE / 5 CATÉGORIES DE BOLIDES</span><span id="ownedCount" class="career-progress">1 / 5</span></div>
+        <div class="car-select" role="group" aria-label="Choix et achat du véhicule">
+          <button class="car-card active" data-car="0"><span class="car-preview hatch"><i></i></span><strong>CITADINE 91</strong><small>FRANÇAISE · URBAINE</small><em id="carCost0">POSSÉDÉE</em></button>
+          <button class="car-card" data-car="1"><span class="car-preview rs"><i></i></span><strong>RS ÉCLIPSE</strong><small>HOT HATCH · SPORT</small><em id="carCost1">900 CR</em></button>
+          <button class="car-card" data-car="2"><span class="car-preview rally"><i></i></span><strong>KAZE AWD</strong><small>JAPON · RALLYE</small><em id="carCost2">2 600 CR</em></button>
+          <button class="car-card" data-car="3"><span class="car-preview gt"><i></i></span><strong>VORTEX V12</strong><small>SUPERCAR · GT</small><em id="carCost3">6 500 CR</em></button>
+          <button class="car-card" data-car="4"><span class="car-preview formula"><i></i></span><strong>APEX FORMULA</strong><small>MONOPLACE · FINALE</small><em id="carCost4">13 000 CR</em></button>
+        </div>
+        <p class="selection-note" id="carDetails">CITADINE 91 · légère, modeste, mais capable de tout.</p>
+        <div class="section-head weapon-heading"><span class="option-label">MODULE OFFENSIF · CHOISIS TON ARME</span></div>
+        <div class="weapon-select" role="group" aria-label="Choix de l'arme">
+          <button class="weapon-card active" data-weapon="dart"><span>➤</span><strong>DARD IONIQUE</strong><small>Guidage / 1 mun.</small></button>
+          <button class="weapon-card" data-weapon="pulse"><span>◎</span><strong>ONDE EMP</strong><small>Zone / 2 mun.</small></button>
+          <button class="weapon-card" data-weapon="mine"><span>⬢</span><strong>PIÈGE MAGNÉTIQUE</strong><small>Mine / 1 mun.</small></button>
         </div>
         <section class="garage" aria-label="Garage et améliorations">
           <div class="garage-head"><div><div class="option-label">GARAGE / AMÉLIORATIONS</div><small>Les courses rapportent des crédits</small></div><strong><span id="credits">0</span> <em>CR</em></strong></div>
@@ -65,7 +88,7 @@
           <div class="garage-feedback" id="garageFeedback" aria-live="polite"></div>
         </section>
         <div class="option-row"><label for="difficulty">NIVEAU</label><select id="difficulty"><option value="easy">ROOKIE</option><option selected value="normal">RACER</option><option value="hard">LEGEND</option></select></div>
-        <button id="startBtn" class="start-btn">DÉMARRER LA COURSE <span>↗</span></button>
+        <button id="startBtn" class="start-btn">LANCER L’ÉPREUVE <span>↗</span></button>
         <p class="bestline">MEILLEUR TEMPS <strong id="bestTime">--:--.-</strong></p>
         <p class="disclaimer">Jeu indépendant de course-combat arcade. Visuels, musique et code originaux, sans ressources Blizzard.</p>
       </div>
