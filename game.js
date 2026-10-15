@@ -10,10 +10,30 @@ const mod = (n,m) => ((n % m)+m)%m;
 const lerp = (a,b,t) => a+(b-a)*t;
 const hypot = Math.hypot;
 const specs = [
-  {name:"VIPER GT", color:"#ed6555", dark:"#8f2830", accent:"#ffdb87", speed:373, accel:320, steering:2.48, armor:1},
-  {name:"PHANTOM", color:"#59dbdd", dark:"#207b9c", accent:"#d9f9ff", speed:395, accel:305, steering:2.75, armor:0.85},
-  {name:"BRUISER", color:"#f4c95a", dark:"#97612d", accent:"#fff1b3", speed:346, accel:285, steering:2.28, armor:1.27}
+  {name:"CITADINE 91",bodyType:"city",price:0,summary:"Citadine française agile : une vraie petite battante.",color:"#d8d9c6",dark:"#777e8c",accent:"#fff1a7",speed:335,accel:286,steering:2.74,armor:1.12},
+  {name:"RS ÉCLIPSE",bodyType:"rs",price:900,summary:"Compacte sportive, vivacité et répondant.",color:"#e85b55",dark:"#87262c",accent:"#f5cfaa",speed:378,accel:322,steering:2.69,armor:1.03},
+  {name:"KAZE AWD",bodyType:"rally",price:2600,summary:"Berline de rallye japonaise, quatre roues motrices.",color:"#55c6d4",dark:"#286280",accent:"#e9ffff",speed:401,accel:341,steering:2.62,armor:1.13},
+  {name:"VORTEX V12",bodyType:"gt",price:6500,summary:"Supercar à moteur central, puissance brutale.",color:"#f6b450",dark:"#975027",accent:"#fef3c6",speed:442,accel:368,steering:2.35,armor:.93},
+  {name:"APEX FORMULA",bodyType:"formula",price:13000,summary:"Monoplace radicale. Nécessaire pour la finale mondiale.",color:"#ebdcc0",dark:"#32557c",accent:"#4fe9e4",speed:485,accel:405,steering:2.89,armor:.76}
 ];
+const ZONES = [
+  {name:"ALPES",region:"EUROPE / MONTAGNE",status:"ready",boss:"LE BOUQUETIN",bossColor:"#d9b067",races:["COL DES BRUMES","ÉPINGLE DES CIMES","CRÊTE DU TONNERRE","ASCENSION ROYALE"]},
+  {name:"LITTORAL",region:"OCÉANIE / PLAGE",status:"ready",boss:"SIRÈNE DU CAP",bossColor:"#79e5d8",races:["BAIE D'AZUR","CORNICHE DES EMBRUNS","CAP SOLAIRE","COURONNE DES MARÉES"]},
+  {name:"GRAND NORD",region:"AMÉRIQUE DU NORD / NEIGE",status:"planned",boss:"LE BLIZZARD",races:["SENTIER BLANC","LAC GELÉ","COL DU NORD","TEMPÊTE ROYALE"]},
+  {name:"SAHARA",region:"AFRIQUE / DÉSERT",status:"planned",boss:"LE SCORPION",races:["DUNES ROUGES","OASIS MIRAGE","GORGE DES SABLES","SOLEIL NOIR"]},
+  {name:"AMAZONIE",region:"AMÉRIQUE DU SUD / FORÊT",status:"planned",boss:"LE JAGUAR",races:["ROUTE CANOPÉE","FLEUVE VERT","PISTE TROPICALE","ROI DE LA JUNGLE"]}
+];
+const WORLD_GP = [
+  "RIVIERA GP","ARDENNES GP","LOMBARDIA GP","SUZUKA SPIRIT",
+  "SILVER COAST GP","BRAZIL HEIGHTS","EIFEL RING",
+  "LONE STAR GP","DESERT TWILIGHT","GRAND FINAL"
+];
+const WEAPONS = {
+  dart:{name:"DARD IONIQUE",cost:1,cooldown:.42},
+  pulse:{name:"ONDE EMP",cost:2,cooldown:2.5},
+  mine:{name:"PIÈGE MAGNÉTIQUE",cost:1,cooldown:1.1}
+};
+let selectedWeapon="dart";
 const rivals = [
   {name:"REX",color:"#bc8bff",dark:"#664699",accent:"#eee1ff"},
   {name:"NOVA",color:"#73a9ff",dark:"#34558f",accent:"#e7f1ff"},
@@ -24,7 +44,7 @@ const trackDefs=[
 {name:"NEON CANYON",sky:["#12263a","#132b32","#0c1925"],edge:"#318f9a",anchors:[[-840,-430],[-510,-725],[-25,-800],[520,-702],[846,-413],[916,-55],[750,214],[483,168],[251,345],[285,640],[-33,814],[-485,746],[-770,445],[-922,-20]]},
 {name:"COASTLINE RUSH",sky:["#15374a","#194d56","#102a3b"],edge:"#d2a460",anchors:[[-800,-580],[-340,-800],[235,-775],[825,-480],[922,-95],[585,140],[675,510],[365,830],[-155,770],[-430,500],[-360,160],[-735,260],[-960,-45],[-935,-360]]}
 ];
-let trackId=0;
+let trackId=0,raceIndex=0;
 let anchors = [
   [-840,-430],[-510,-725],[-25,-800],[520,-702],[846,-413],
   [916,-55],[750,214],[483,168],[251,345],[285,640],
@@ -88,13 +108,78 @@ const upgrades={engine:{label:"MOTEUR",base:200},armor:{label:"BLINDAGE",base:20
 function loadProgress(){
   let raw={};try{raw=JSON.parse(localStorage.getItem(SAVE_KEY)||"{}")||{};}catch(e){}
   const lvl=k=>clamp(Math.floor(Number(raw[k])||0),0,3),credit=Number(raw.credits);
+  const cleared=Array.isArray(raw.cleared)?raw.cleared.filter(x=>typeof x==="string"&&/^[0-4]:[0-3]$/.test(x)).slice(0,20):[];
+  const owned=Array.isArray(raw.ownedCars)?raw.ownedCars.filter(x=>Number.isInteger(x)&&x>=0&&x<specs.length):[0];
+  if(!owned.includes(0))owned.unshift(0);
+  const zone=clamp(Math.floor(Number(raw.zone ?? raw.track)||0),0,ZONES.length-1);
+  const race=clamp(Math.floor(Number(raw.race)||0),0,3);
+  const car=clamp(Math.floor(Number(raw.selectedCar)||0),0,specs.length-1);
+  const weapon=typeof raw.weapon==="string"&&WEAPONS[raw.weapon]?raw.weapon:"dart";
   return {credits:Number.isFinite(credit)?clamp(Math.floor(credit),0,100000000):0,
-    engine:lvl("engine"),armor:lvl("armor"),nitro:lvl("nitro"),
-    track:clamp(Math.floor(Number(raw.track)||0),0,trackDefs.length-1)};
+    engine:lvl("engine"),armor:lvl("armor"),nitro:lvl("nitro"),track:zone,zone,race,
+    ownedCars:[...new Set(owned)],selectedCar:owned.includes(car)?car:0,weapon,cleared:[...new Set(cleared)]};
 }
-let progress=loadProgress();
 function saveProgress(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(progress));}catch(e){}}
 function costOf(k){return upgrades[k].base*(1+progress[k]);}
+
+function raceKey(z,r){return z+":"+r;}
+function zoneUnlocked(z){return z===0||(z===1&&progress.cleared.includes(raceKey(0,3)));}
+function raceUnlocked(z,r){
+  if(!ZONES[z]||ZONES[z].status!=="ready"||!zoneUnlocked(z))return false;
+  return r===0||progress.cleared.includes(raceKey(z,r-1));
+}
+function isBoss(){return raceIndex===3;}
+function activeZone(){return ZONES[trackId];}
+function redrawCareer(){
+  const zone=activeZone();
+  $("zoneSubtitle").textContent=zone.name+" · "+zone.region;
+  $("careerProgress").textContent=progress.cleared.length+" / 20 ZONES";
+  $("zoneStatus0").textContent=progress.cleared.includes(raceKey(0,3))?"BOSS VAINCU":"OUVERT";
+  $("zoneStatus1").textContent=zoneUnlocked(1)?"OUVERT":"BOSS ALPES REQUIS";
+  document.querySelectorAll("[data-zone]").forEach(btn=>{
+    const z=Number(btn.dataset.zone),available=z<ZONES.length&&ZONES[z].status==="ready"&&zoneUnlocked(z);
+    btn.disabled=!available;
+    btn.classList.toggle("active",z===trackId);
+    btn.classList.toggle("locked",!available);
+    btn.classList.toggle("soon",z>=2);
+  });
+  document.querySelectorAll("[data-race]").forEach(btn=>{
+    const r=Number(btn.dataset.race),available=raceUnlocked(trackId,r),finished=progress.cleared.includes(raceKey(trackId,r));
+    $("raceName"+r).textContent=zone.races[r];
+    $("raceStatus"+r).textContent=finished?"TERMINÉ ✓":r===3?"BOSS · "+zone.boss:available?"OUVERT":"VERROUILLÉ";
+    btn.disabled=!available;btn.classList.toggle("active",r===raceIndex);btn.classList.toggle("locked",!available);
+  });
+  $("ownedCount").textContent=progress.ownedCars.length+" / 5";
+  document.querySelectorAll("[data-car]").forEach(btn=>{
+    const c=Number(btn.dataset.car),owned=progress.ownedCars.includes(c);
+    btn.classList.toggle("active",c===selected);
+    btn.classList.toggle("locked",!owned);
+    btn.classList.toggle("affordable",!owned&&progress.credits>=specs[c].price);
+    $("carCost"+c).textContent=owned?(c===selected?"SÉLECTIONNÉE":"POSSÉDÉE"):specs[c].price.toLocaleString("fr-FR")+" CR";
+  });
+  $("carDetails").textContent=specs[selected].name+" · "+specs[selected].summary;
+  document.querySelectorAll("[data-weapon]").forEach(btn=>btn.classList.toggle("active",btn.dataset.weapon===selectedWeapon));
+  $("hudWeapon").textContent=WEAPONS[selectedWeapon].name;
+  const available=raceUnlocked(trackId,raceIndex);
+  $("startBtn").disabled=!available||!progress.ownedCars.includes(selected);
+  $("careerMessage").textContent=available?(raceIndex===3?"DUEL BOSS · "+zone.boss+" · VICTOIRE REQUISE":"PODIUM (TOP 3) POUR DÉBLOQUER LA COURSE SUIVANTE"):
+    "ÉPREUVE VERROUILLÉE";
+}
+function buyOrSelectCar(index){
+  if(!Number.isInteger(index)||index<0||index>=specs.length)return;
+  const spec=specs[index];
+  if(!progress.ownedCars.includes(index)){
+    if(progress.credits<spec.price){
+      $("garageFeedback").textContent="Il manque "+(spec.price-progress.credits).toLocaleString("fr-FR")+" CR pour "+spec.name+".";
+      return;
+    }
+    progress.credits-=spec.price;progress.ownedCars.push(index);
+    $("garageFeedback").textContent=spec.name+" achetée !";
+  }else{$("garageFeedback").textContent=spec.name+" sélectionnée.";}
+  selected=index;progress.selectedCar=index;saveProgress();refreshGarage();redrawCareer();
+  if(state==="menu")player=makeCar(300,0,specs[selected],"YOU",true);
+}
+
 function refreshGarage(){
   $("credits").textContent=progress.credits.toLocaleString("fr-FR");
   for(const key of Object.keys(upgrades)){
@@ -107,13 +192,19 @@ function refreshGarage(){
 function buyUpgrade(k){
   if(!upgrades[k]||progress[k]>=3||progress.credits<costOf(k))return;
   const price=costOf(k);
-  progress.credits-=price;progress[k]++;saveProgress();refreshGarage();
+  progress.credits-=price;progress[k]++;saveProgress();refreshGarage();redrawCareer();
   $("garageFeedback").textContent=upgrades[k].label+" amélioré au niveau "+progress[k]+" !";
   if(sound.enabled)sound.effect("pickup");
 }
-function rebuildTrack(id){
+function rebuildTrack(id,round=0){
   trackId=clamp(Math.floor(Number(id)||0),0,trackDefs.length-1);
-  anchors=trackDefs[trackId].anchors;
+  raceIndex=clamp(Math.floor(Number(round)||0),0,3);
+  const base=trackDefs[trackId].anchors;
+  anchors=base.map(([x,y],i)=>{
+    if(raceIndex===0)return [x,y];
+    const a=(i*1.71+raceIndex*.85);
+    return [x+Math.sin(a)*raceIndex*27,y+Math.cos(a*1.19)*raceIndex*24];
+  });
   points=[];lengths=[];cumulative=[0];scenery=[];pickups=[];
   for(let i=0;i<anchors.length;i++)for(let j=0;j<16;j++){
     const t=j/16,n=anchors.length;
@@ -138,10 +229,11 @@ function rebuildTrack(id){
     pickups.push({x:p.x+p.nx*lane,y:p.y+p.ny*lane,kind:i%3===0?"repair":i%3===1?"ammo":"nitro",cooldown:0,phase:i*.57});
   }
 }
-rebuildTrack(progress.track);
+rebuildTrack(zoneUnlocked(progress.zone)?progress.zone:0,progress.race);
 let W=1280,H=720,dpr=1,zoom=.86;
 let cam={x:0,y:0},cameraIso={x:0,y:0};
-let state="menu",countdown=0,elapsed=0,selected=0,difficulty="normal";
+let state="menu",countdown=0,elapsed=0,selected=progress.selectedCar,difficulty="normal";
+selectedWeapon=progress.weapon;
 let player,ais=[],rockets=[],particles=[],keys=new Set(),touch=new Set(),lastTime=0,hudTicker=0,toastTimeout=0;
 let lastLap=1,shockCooldown=0,finishOrder=null;
 
@@ -364,15 +456,17 @@ function makeCar(s,lane,style,name,isPlayer=false){
 }
 function resetRace(){
   rockets=[];particles=[];elapsed=0;countdown=3.4;lastLap=1;shockCooldown=0;finishOrder=null;hudTicker=0;
-  $("trackName").textContent=trackDefs[trackId].name+" // CIRCUIT "+String(trackId+1).padStart(2,"0");
+  $("trackName").textContent=activeZone().name+" // "+activeZone().races[raceIndex]+" "+(isBoss()?"★ BOSS":"");
   pickups.forEach(p=>p.cooldown=0);
   player=makeCar(300,5,specs[selected],specs[selected].name,true);
   const lanes=[-35,40,-20,46],starts=[490,445,400,355];
   const multipliers={easy:.80,normal:1,hard:1.12};
-  const rates=[265,274,254,280],difficultyRate=multipliers[difficulty]||1;
+  const rates=[265,274,254,280],difficultyRate=(multipliers[difficulty]||1)*(1+raceIndex*.02);
   ais=rivals.map((r,i)=>{
-    const a=makeCar(starts[i],lanes[i],r,r.name);
-    a.cruise=rates[i]*difficultyRate;a.phase=i*1.8;a.attackTimer=3+rnd()*4;a.speed=a.cruise;
+    const boss=isBoss()&&i===3;
+    const style=boss?{...r,color:activeZone().bossColor,dark:"#462d36",accent:"#fff3cf",bodyType:"gt"}:r;
+    const a=makeCar(starts[i],lanes[i],style,boss?activeZone().boss:r.name);
+    a.cruise=(rates[i]+(boss?44:0))*difficultyRate;a.phase=i*1.8;a.attackTimer=(boss?1.7:3)+rnd()*3;a.speed=a.cruise;
     return a;
   });
   cam.x=player.x;cam.y=player.y;
@@ -382,9 +476,10 @@ function setMenu(){
   state="menu";$("menu").classList.remove("hidden");$("raceOverlay").classList.add("hidden");
   $("countdown").classList.add("hidden");$("hud").classList.add("hidden");$("controlsHint").classList.remove("hidden");
   $("pauseBtn").style.visibility="hidden";
-  keys.clear();touch.clear();updateBest();refreshGarage();
+  keys.clear();touch.clear();updateBest();refreshGarage();redrawCareer();
 }
 function beginRace(){
+  if(!raceUnlocked(trackId,raceIndex)||!progress.ownedCars.includes(selected))return;
   resetRace();state="countdown";$("menu").classList.add("hidden");$("raceOverlay").classList.add("hidden");
   $("hud").classList.remove("hidden");$("pauseBtn").style.visibility="visible";
   $("countdown").classList.remove("hidden");$("controlsHint").classList.remove("hidden");
