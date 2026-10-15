@@ -1,4 +1,4 @@
-# 🏁 LOUBKARTING — Earth Tour (v0.3)
+# 🏁 LOUBKARTING — Earth Tour (v0.4)
 
 Un jeu **solo de course-combat isométrique sur Terre**, avec garage, armes et carrière. Jeu indépendant en HTML/CSS/Canvas JavaScript, hébergeable sur **GitHub Pages**.
 
@@ -18,10 +18,26 @@ Un jeu **solo de course-combat isométrique sur Terre**, avec garage, armes et c
   4. Vortex V12 — supercar GT, **6 500 CR**.
   5. Apex Formula — monoplace, **13 000 CR**.
 - **Trois armes au choix** : Dard ionique (guidé), Onde EMP (de zone), Piège magnétique (mine).
-- 4 concurrents IA, missiles, collisions, réparation, nitro, blindage, difficulté, classements et meilleurs temps par épreuve.
-- Crédits gagnés en course et **trois améliorations** (moteur, blindage, nitro) jusqu'au niveau 3.
-- **Carrière** : podium pour passer à la course suivante, victoire obligatoire sur le boss pour déverrouiller la zone Plage. Après un résultat qualificatif, le bouton « Épreuve suivante » permet de continuer immédiatement.
+- **Trois adversaires IA, dont le boss régional présent aux quatre départs** (plus rapide, agressif et résistant). Missiles, collisions, destruction réelle des rivaux, réparation, nitro, blindage, difficulté, classement sur quatre voitures et records par épreuve.
+- **Des lingots originaux à ramasser sur la piste (40 ou 65 CR)**, une **prime de 240 CR par voiture adverse détruite**, un gain de classement et un bonus de première qualification. Trois améliorations (moteur, blindage, nitro) jusqu’au niveau 3.
+- **Carrière à péages** : qualification sur le podium, puis **transport et inscription à payer** avant la course suivante. La remorque est nécessaire dès la 2e course des Alpes ; le bateau est nécessaire pour rejoindre le Littoral après avoir battu le boss. Le bouton « Épreuve suivante » conduit au garage/logistique tant que le trajet ou l’inscription n’est pas payé.
 - Sauvegardes locales du garage, des armes sélectionnées, des crédits et de la progression. Aucun compte requis.
+
+## Économie, transport et inscription
+
+| Équipement / dépense | Prix | Effet |
+|---|---:|---|
+| Remorque | 320 CR | Permet de rejoindre les courses 2, 3 et 4 des Alpes |
+| Inscription Alpes 2 / 3 / 4 | 120 / 240 / 360 CR | Paiement **une seule fois** par épreuve |
+| Bateau | 1 600 CR | Débloque le Littoral une fois le boss des Alpes vaincu |
+| Inscription Littoral 2 / 3 / 4 | 200 / 340 / 480 CR | Paiement **une seule fois** par épreuve |
+| Avion | 5 000 CR envisagés | **Non disponible**, prévu pour les futures régions |
+
+La première course de chaque région est gratuite une fois le voyage payé. Les transports et droits sont sauvegardés. Les anciennes carrières sont migrées pour ne pas faire payer à nouveau les épreuves déjà obtenues.
+
+**Récompenses d'une course :** 450 / 360 / 290 / 230 CR (de la première à la quatrième place), ou 75 CR en cas d'élimination du joueur ; puis **+40 ou +65 CR par lingot collecté**, **+240 CR par rival détruit**, et +280 CR lors du premier podium sur une épreuve ordinaire / +850 CR lors de la première victoire en finale de région.
+
+Les véhicules détruits quittent la piste pour cette course. Le boss possède davantage de blindage et tire plus souvent, mais peut aussi être éliminé.
 
 ## Prévu, mais pas encore jouable
 
