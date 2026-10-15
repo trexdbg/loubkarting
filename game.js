@@ -234,7 +234,7 @@ let W=1280,H=720,dpr=1,zoom=.86;
 let cam={x:0,y:0},cameraIso={x:0,y:0};
 let state="menu",countdown=0,elapsed=0,selected=progress.selectedCar,difficulty="normal";
 selectedWeapon=progress.weapon;
-let player,ais=[],rockets=[],particles=[],keys=new Set(),touch=new Set(),lastTime=0,hudTicker=0,toastTimeout=0;
+let player,ais=[],rockets=[],mines=[],particles=[],keys=new Set(),touch=new Set(),lastTime=0,hudTicker=0,toastTimeout=0;
 let lastLap=1,shockCooldown=0,finishOrder=null;
 
 function resize(){
@@ -389,7 +389,33 @@ function carPolygon(car,coords,color){
   const pts=coords.map(p=>bodyPoint(car,p[0],p[1],p[2]||0));
   ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();ctx.fillStyle=color;ctx.fill();
 }
+
+function drawFormulaCar(car,t){
+  ctx.save();
+  const ground=screen(car.x+5,car.y+7);
+  ctx.fillStyle="#010712a9";ctx.beginPath();ctx.ellipse(ground.x,ground.y,37*zoom,14*zoom,0,0,TAU);ctx.fill();
+  if(car.boosting&&Math.abs(car.speed)>80){
+    const p=bodyPoint(car,-42,0,7),q=bodyPoint(car,-72,0,7);
+    ctx.strokeStyle="#8af7ff";ctx.lineWidth=5*zoom;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
+  }
+  for(const f of [-24,24])for(const r of [-1,1])
+    carPolygon(car,[[f-10,r*20,5],[f+10,r*20,5],[f+10,r*30,5],[f-10,r*30,5]],"#060d16");
+  carPolygon(car,[[-37,-17,7],[-29,-17,7],[-29,17,7],[-37,17,7]],car.style.accent);
+  carPolygon(car,[[-35,-8,11],[-4,-10,12],[12,-7,13],[38,-4,9],[38,4,9],[12,7,13],[-4,10,12],[-35,8,11]],car.style.color);
+  carPolygon(car,[[-2,-9,17],[11,-8,17],[20,0,19],[11,8,17],[-2,9,17]],car.style.dark);
+  carPolygon(car,[[-8,-5,21],[4,-6,21],[10,0,23],[4,6,21],[-8,5,21]],"#0b1e2d");
+  carPolygon(car,[[27,-21,7],[34,-21,7],[34,21,7],[27,21,7]],car.style.accent);
+  carPolygon(car,[[-42,-21,19],[-35,-21,19],[-35,21,19],[-42,21,19]],car.style.dark);
+  if(car.hitFlash>0)carPolygon(car,[[-28,-14,22],[29,-14,22],[41,0,22],[29,14,22]],"#ffffffa0");
+  const label=bodyPoint(car,0,0,46);
+  ctx.fillStyle=car.isPlayer?"#fff5b0":"#dde6fa";
+  ctx.font="800 "+Math.max(9,Math.round(11*zoom))+"px Inter,Arial";
+  ctx.textAlign="center";ctx.fillText(car.isPlayer?"YOU":car.name,label.x,label.y);
+  ctx.restore();
+}
+
 function drawCar(car,t){
+  if(car.style.bodyType==="formula"){drawFormulaCar(car,t);return;}
   const c=car.style,scale=zoom;
   const shadow=screen(car.x+9,car.y+12);
   ctx.save();ctx.fillStyle="#02060dc0";ctx.beginPath();ctx.ellipse(shadow.x,shadow.y,34*scale,13*scale,0,0,TAU);ctx.fill();
@@ -407,6 +433,21 @@ function drawCar(car,t){
   carPolygon(car,[[-13,-13,18],[-9,-13,24],[-9,13,24],[-13,13,18]],"#bbf1ef");
   carPolygon(car,[[9,-10,23],[16,-8,18],[16,8,18],[9,10,23]],"#8fd0dd");
   carPolygon(car,[[-31,-18,17],[-26,-18,17],[-26,18,17],[-31,18,17]],c.accent);
+  if(c.bodyType==="city"){
+    carPolygon(car,[[-18,-14,23],[2,-14,23],[2,14,23],[-18,14,23]],"#c9d1cd");
+    carPolygon(car,[[23,-18,15],[29,-12,15],[29,12,15],[23,18,15]],"#eef0d4");
+  }else if(c.bodyType==="rs"){
+    carPolygon(car,[[-30,-20,23],[-26,-20,23],[-26,20,23],[-30,20,23]],"#0f1926");
+    carPolygon(car,[[-20,-3,24],[27,-3,18],[27,3,18],[-20,3,24]],c.accent);
+  }else if(c.bodyType==="rally"){
+    carPolygon(car,[[-34,-24,26],[-26,-24,26],[-26,24,26],[-34,24,26]],"#122231");
+    carPolygon(car,[[15,-14,18],[28,-14,18],[28,-10,18],[15,-10,18]],c.accent);
+    carPolygon(car,[[15,10,18],[28,10,18],[28,14,18],[15,14,18]],c.accent);
+  }else if(c.bodyType==="gt"){
+    carPolygon(car,[[-38,-22,17],[-29,-22,19],[-29,22,19],[-38,22,17]],"#14202e");
+    carPolygon(car,[[18,-10,17],[36,-7,16],[42,0,14],[36,7,16],[18,10,17]],c.dark);
+    carPolygon(car,[[0,-3,26],[24,-3,17],[24,3,17],[0,3,26]],c.accent);
+  }
   carPolygon(car,[[23,-15,16],[30,-10,16],[30,-5,16],[23,-9,16]],"#fff3c6");
   carPolygon(car,[[23,9,16],[30,5,16],[30,10,16],[23,15,16]],"#fff3c6");
   if(car.hitFlash>0)carPolygon(car,[[-30,-21,19],[24,-21,19],[32,0,19],[24,21,19],[-30,21,19]],"#ffffffaa");
@@ -415,6 +456,24 @@ function drawCar(car,t){
   ctx.shadowColor="#030712";ctx.shadowBlur=5;ctx.fillStyle=car.isPlayer?"#fff3a5":"#e0e5f4";
   ctx.fillText(car.isPlayer?"YOU":car.name,name.x,name.y-2);
   ctx.restore();
+}
+function drawMines(t){
+  for(const m of mines){
+    const p=screen(m.x,m.y,5),pulse=1+Math.sin(t*6)*.15;
+    ctx.save();ctx.translate(p.x,p.y);ctx.rotate(t*.7+m.phase);
+    ctx.shadowColor="#9ce7f3";ctx.shadowBlur=13;
+    ctx.fillStyle="#162d40";ctx.strokeStyle="#6cf0d9";ctx.lineWidth=2;
+    ctx.beginPath();
+    for(let i=0;i<6;i++){const a=i*TAU/6,r=12*zoom*pulse;i?ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r):ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r);}
+    ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle="#e5e4b0";ctx.beginPath();ctx.arc(0,0,3.3*zoom,0,TAU);ctx.fill();
+    ctx.restore();
+  }
+}
+function drawPulse(x,y,r){
+  const p=screen(x,y,3);
+  ctx.save();ctx.strokeStyle="#74f3f5a0";ctx.lineWidth=4*zoom;
+  ctx.beginPath();ctx.ellipse(p.x,p.y,r*zoom,r*.51*zoom,0,0,TAU);ctx.stroke();ctx.restore();
 }
 function drawRockets(){
   for(const r of rockets){
@@ -439,7 +498,7 @@ function draw(t){
   drawBackdrop(t);drawTrack(t);drawPickups(t);
   const toRender=[player,...ais].filter(Boolean).sort((a,b)=>iso(a.x,a.y).y-iso(b.x,b.y).y);
   for(const car of toRender)drawCar(car,t);
-  drawRockets();drawParticles();
+  drawMines(t);drawRockets();drawParticles();
 }
 function spawnFX(x,y,color,count=12){
   for(let i=0;i<count;i++){
@@ -455,7 +514,7 @@ function makeCar(s,lane,style,name,isPlayer=false){
     lane,style:enhanced,name,isPlayer,hp:100,maxNitro:isPlayer?100+progress.nitro*20:100,nitro:isPlayer?100+progress.nitro*20:100,ammo:5,fireCooldown:0,hitFlash:0,stun:0,boosting:false,finished:false};
 }
 function resetRace(){
-  rockets=[];particles=[];elapsed=0;countdown=3.4;lastLap=1;shockCooldown=0;finishOrder=null;hudTicker=0;
+  rockets=[];mines=[];particles=[];elapsed=0;countdown=3.4;lastLap=1;shockCooldown=0;finishOrder=null;hudTicker=0;
   $("trackName").textContent=activeZone().name+" // "+activeZone().races[raceIndex]+" "+(isBoss()?"★ BOSS":"");
   pickups.forEach(p=>p.cooldown=0);
   player=makeCar(300,5,specs[selected],specs[selected].name,true);
@@ -569,9 +628,28 @@ function targetFor(owner){
 }
 function shoot(owner){
   if(owner.fireCooldown>0)return;
-  if(owner.isPlayer&&owner.ammo<=0){owner.fireCooldown=.35;setToast("PLUS DE MISSILES !");return;}
-  owner.fireCooldown=owner.isPlayer?.42:1.3;
-  if(owner.isPlayer){owner.ammo--;sound.effect("fire");}
+  const weapon=owner.isPlayer?WEAPONS[selectedWeapon]:WEAPONS.dart;
+  if(owner.isPlayer&&owner.ammo<weapon.cost){
+    owner.fireCooldown=.4;setToast("MUNITIONS INSUFFISANTES");return;
+  }
+  owner.fireCooldown=owner.isPlayer?weapon.cooldown:1.3;
+  if(owner.isPlayer){owner.ammo-=weapon.cost;sound.effect("fire");}
+  if(owner.isPlayer&&selectedWeapon==="pulse"){
+    let hits=0;
+    for(const ai of ais)if(!ai.finished&&hypot(owner.x-ai.x,owner.y-ai.y)<215){
+      ai.stun=Math.max(ai.stun,2.65);ai.hitFlash=.34;spawnFX(ai.x,ai.y,"#8fefff",13);hits++;
+    }
+    spawnFX(owner.x,owner.y,"#9af0f5",30);
+    setToast(hits?"ONDE EMP · "+hits+" PILOTE(S) TOUCHÉ(S)":"ONDE EMP · ZONE DÉGAGÉE");
+    return;
+  }
+  if(owner.isPlayer&&selectedWeapon==="mine"){
+    const x=owner.x-Math.cos(owner.angle)*55,y=owner.y-Math.sin(owner.angle)*55;
+    mines.push({x,y,ttl:16,phase:rnd()*TAU});
+    if(mines.length>8)mines.shift();
+    setToast("PIÈGE MAGNÉTIQUE POSÉ");
+    return;
+  }
   const t=targetFor(owner),angle=t?Math.atan2(t.y-owner.y,t.x-owner.x):owner.angle;
   rockets.push({x:owner.x+Math.cos(angle)*38,y:owner.y+Math.sin(angle)*38,angle,ttl:1.35,isPlayer:owner.isPlayer,owner,target:t});
 }
@@ -601,6 +679,19 @@ function updateRockets(dt){
     if(hit||r.ttl<=0)rockets.splice(i,1);
   }
 }
+function updateMines(dt){
+  for(let i=mines.length-1;i>=0;i--){
+    const mine=mines[i];mine.ttl-=dt;
+    let hit=false;
+    for(const ai of ais)if(!ai.finished&&hypot(ai.x-mine.x,ai.y-mine.y)<48){
+      ai.stun=Math.max(ai.stun,3);ai.hitFlash=.42;
+      spawnFX(mine.x,mine.y,"#78f0ed",26);
+      setToast("PIÈGE ACTIVÉ !");hit=true;break;
+    }
+    if(hit||mine.ttl<=0)mines.splice(i,1);
+  }
+}
+
 function updatePickups(dt){
   for(const p of pickups){
     if(p.cooldown>0){p.cooldown=Math.max(0,p.cooldown-dt);continue;}
@@ -627,7 +718,7 @@ function update(dt){
   }else if(state==="race"){
     elapsed+=dt;shockCooldown=Math.max(0,shockCooldown-dt);
     updatePlayer(dt);
-    if(state==="race"){updateAI(dt);updateRockets(dt);updatePickups(dt);}
+    if(state==="race"){updateAI(dt);updateRockets(dt);updateMines(dt);updatePickups(dt);}
     if(toastTimeout>0){toastTimeout-=dt;if(toastTimeout<=0)$("eventToast").classList.remove("visible");}
     hudTicker-=dt;if(hudTicker<=0){hudTicker=.09;setHud();drawMinimap();}
   }
@@ -662,24 +753,35 @@ function drawMinimap(){
 function endRace(destroyed=false){
   if(state!=="race")return;
   state="finish";sound.effect(destroyed?"hit":"finish");
-  const rank=position(),title=destroyed?"ÉLIMINÉ !":rank===1?"VICTOIRE !":"ARRIVÉE !";
-  const prize=destroyed?75:[450,360,290,230,180][rank-1];
-  progress.credits+=prize;saveProgress();
-  $("dialogEyebrow").textContent=destroyed?"TON BOLIDE EST HORS COURSE":"COURSE TERMINÉE";
-  $("dialogTitle").textContent=title;
-  $("dialogDetail").textContent=destroyed?"Retente ta chance et améliore ton bolide au garage.":"Retourne au garage pour améliorer ton bolide.";
+  const rank=position(),boss=isBoss(),victory=!destroyed&&rank===1,qualified=!destroyed&&(boss?victory:rank<=3);
+  const wasCleared=progress.cleared.includes(raceKey(trackId,raceIndex));
+  const prize=(destroyed?75:[450,360,290,230,180][rank-1])+(qualified&&!wasCleared?boss?850:280:0);
+  progress.credits+=prize;
+  if(qualified&&!wasCleared)progress.cleared.push(raceKey(trackId,raceIndex));
+  saveProgress();
+  $("dialogEyebrow").textContent=destroyed?"TON BOLIDE EST HORS COURSE":boss?"DUEL CONTRE LE BOSS":"ÉPREUVE TERMINÉE";
+  $("dialogTitle").textContent=destroyed?"ÉLIMINÉ !":victory?"VICTOIRE !":"ARRIVÉE !";
+  let detail=destroyed?"Le véhicule est hors course. Tu peux réparer au prochain départ.":qualified?
+    boss?"BOSS VAINCU · "+activeZone().boss+" !": "Podium validé ! L'épreuve suivante est débloquée.":
+    boss?"Il faut finir premier pour battre le boss.":"Termine sur le podium pour progresser.";
+  if(qualified&&boss&&trackId===0)detail+=" Le LITTORAL est désormais accessible.";
+  $("dialogDetail").textContent=detail;
   $("resultStats").innerHTML='<div class="result-grid"><div><span>POSITION</span><b>'+rank+' / 5</b></div><div><span>TEMPS</span><b>'+formatTime(elapsed)+'</b></div><div><span>GAIN</span><b>+'+prize+' CR</b></div></div>';
   $("resumeBtn").classList.add("hidden");$("againBtn").classList.remove("hidden");
   $("raceOverlay").classList.remove("hidden");
   if(!destroyed){
-    const key="loubkarting_best_v2_"+trackId;
+    const key="loubkarting_best_v3_"+trackId+"_"+raceIndex;
     try{const old=Number(localStorage.getItem(key)||0);if(!old||elapsed<old)localStorage.setItem(key,String(elapsed));}catch(e){}
   }
 }
 function updateBest(){
-  let best=0;try{
-    best=Number(localStorage.getItem("loubkarting_best_v2_"+trackId)||0);
-    if(!best&&trackId===0)best=Number(localStorage.getItem("loubkarting_best_v1")||0);
+  let best=0;
+  try{
+    best=Number(localStorage.getItem("loubkarting_best_v3_"+trackId+"_"+raceIndex)||0);
+    if(!best&&raceIndex===0){
+      best=Number(localStorage.getItem("loubkarting_best_v2_"+trackId)||0);
+      if(!best&&trackId===0)best=Number(localStorage.getItem("loubkarting_best_v1")||0);
+    }
   }catch(e){}
   $("bestTime").textContent=best>0?formatTime(best):"--:--.-";
 }
@@ -715,21 +817,25 @@ document.querySelectorAll("[data-control]").forEach(btn=>{
   const up=e=>{e.preventDefault();touch.delete(c);btn.classList.remove("pressed");};
   btn.addEventListener("pointerup",up);btn.addEventListener("pointercancel",up);btn.addEventListener("lostpointercapture",up);
 });
-document.querySelectorAll("[data-car]").forEach(btn=>btn.addEventListener("click",()=>{
-  selected=Number(btn.dataset.car);
-  document.querySelectorAll("[data-car]").forEach(b=>b.classList.toggle("active",b===btn));
-  if(state==="menu"){player=makeCar(300,0,specs[selected],"YOU",true);}
-}));
-
-document.querySelectorAll("[data-track]").forEach(btn=>btn.addEventListener("click",()=>{
-  const id=Number(btn.dataset.track);
-  if(!Number.isInteger(id)||id<0||id>=trackDefs.length)return;
-  rebuildTrack(id);progress.track=id;saveProgress();
-  document.querySelectorAll("[data-track]").forEach(b=>b.classList.toggle("active",b===btn));
+document.querySelectorAll("[data-car]").forEach(btn=>btn.addEventListener("click",()=>buyOrSelectCar(Number(btn.dataset.car))));
+document.querySelectorAll("[data-zone]").forEach(btn=>btn.addEventListener("click",()=>{
+  const z=Number(btn.dataset.zone);
+  if(z>=ZONES.length||!zoneUnlocked(z)||ZONES[z].status!=="ready")return;
+  rebuildTrack(z,0);progress.zone=z;progress.track=z;progress.race=0;saveProgress();
   $("garageFeedback").textContent="";
-  resetRace();updateBest();
+  resetRace();updateBest();redrawCareer();
 }));
-document.querySelectorAll("[data-upgrade]").forEach(btn=>btn.addEventListener("click",()=>buyUpgrade(btn.dataset.upgrade)));
+document.querySelectorAll("[data-race]").forEach(btn=>btn.addEventListener("click",()=>{
+  const r=Number(btn.dataset.race);
+  if(!raceUnlocked(trackId,r))return;
+  rebuildTrack(trackId,r);progress.race=r;saveProgress();
+  resetRace();updateBest();redrawCareer();
+}));
+document.querySelectorAll("[data-weapon]").forEach(btn=>btn.addEventListener("click",()=>{
+  if(!WEAPONS[btn.dataset.weapon])return;
+  selectedWeapon=btn.dataset.weapon;progress.weapon=selectedWeapon;
+  saveProgress();redrawCareer();
+}));
 $("difficulty").addEventListener("change",e=>difficulty=e.target.value);
 $("startBtn").addEventListener("click",beginRace);
 $("againBtn").addEventListener("click",beginRace);
@@ -786,6 +892,6 @@ function frame(now){
   const dt=Math.min(.036,Math.max(0,(now-lastTime)/1000||0));lastTime=now;
   update(dt);draw(now/1000);requestAnimationFrame(frame);
 }
-document.querySelectorAll("[data-track]").forEach(btn=>btn.classList.toggle("active",Number(btn.dataset.track)===trackId));
+document.querySelectorAll("[data-car]").forEach(btn=>btn.classList.toggle("active",Number(btn.dataset.car)===selected));
 resetRace();setMenu();requestAnimationFrame(frame);
 })();
