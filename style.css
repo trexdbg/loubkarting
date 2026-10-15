@@ -69,3 +69,101 @@
   .hud-track-name{top:111px;right:10px;font-size:8px;max-width:170px;text-align:right;letter-spacing:1px}
 }
 @media(max-height:700px){.menu-panel{padding-top:54px}.menu-panel h1{font-size:60px}.menu-panel .intro{font-size:12px}}
+
+
+/* EARTH TOUR — career mode v0.3 */
+#menu{align-items:flex-start;overflow-y:auto;overscroll-behavior-y:contain;touch-action:pan-y}
+#menu *{touch-action:pan-y}
+.menu-panel{width:min(900px,95vw);padding:75px 28px 40px max(28px,4vw);flex:none}
+.menu-panel h1{font-size:clamp(60px,7vw,108px);margin:12px 0 18px}
+.menu-panel .intro{max-width:660px;font-size:13px}
+.section-head{max-width:830px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}
+.section-head .option-label{margin-bottom:0}
+.career-progress,.race-subtitle{color:#f0d45d;font-size:10px;font-weight:900;letter-spacing:1.25px;white-space:nowrap}
+.world-section{max-width:830px}
+.zone-select{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.zone-card{display:flex;align-items:center;gap:9px;text-align:left;min-width:0;min-height:64px;padding:9px;border:1px solid #51637c;background:linear-gradient(145deg,#18283bbf,#111929f2);color:#e7f1fa;border-radius:5px}
+.zone-card .zone-emoji{display:flex;align-items:center;justify-content:center;width:33px;flex:none;height:34px;color:#f6d45b;font-size:25px;font-weight:800}
+.zone-card span:nth-child(2){min-width:0}
+.zone-card strong{display:block;font:800 17px 'Barlow Condensed',Impact,sans-serif;letter-spacing:.3px}
+.zone-card small{display:block;font-size:8px;color:#a9b8c9;letter-spacing:1.3px;margin-top:3px}
+.zone-card em{margin-left:auto;text-align:right;font-size:8px;max-width:72px;font-weight:900;color:#a9c0c2;font-style:normal}
+.zone-card.active{border-color:#f6df61;background:linear-gradient(135deg,#494327b5,#203245d9)}
+.zone-card.locked{opacity:.62}
+.zone-card.soon{opacity:.50}
+.zone-card.world-final{border-color:#8d7ad176;background:#24233caa}
+.zone-card.world-final .zone-emoji{color:#c6a1fd}
+.zone-card.world-final strong{color:#e9d8ff}
+.zone-card:disabled,.race-card:disabled{cursor:not-allowed}
+.race-heading{margin-top:17px}
+.race-select{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px}
+.race-card{display:flex;align-items:center;gap:8px;background:#101d2dd9;border:1px solid #5768828a;color:#ecf5fb;border-radius:3px;padding:9px;min-height:56px;text-align:left;min-width:0}
+.race-card>b{font:900 24px 'Barlow Condensed',Impact,sans-serif;color:#e5d46a}
+.race-card span{min-width:0}
+.race-card strong{display:block;font:800 14px 'Barlow Condensed',Impact,sans-serif;letter-spacing:.35px}
+.race-card small{display:block;color:#9eaab9;font-size:8px;margin-top:4px;letter-spacing:.55px;font-weight:800}
+.race-card.active{border-color:#f7d85a;background:#343925b3}
+.race-card.locked{opacity:.44}
+.race-card.boss-race>b{color:#ea987c}
+.race-card.boss-race.active{border-color:#ee8f67}
+.career-message{min-height:19px;margin-top:8px;font-size:11px;color:#f3cf66;font-weight:600;line-height:1.5}
+.car-heading{margin-top:10px}
+.car-select{max-width:830px;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px}
+.car-card{position:relative;min-width:0;min-height:106px;padding:9px 7px 8px;overflow:hidden}
+.car-card.active{padding:8px 6px 7px}
+.car-card strong{font-size:19px}
+.car-card small{font-size:8px}
+.car-card em{display:block;font-style:normal;margin-top:8px;font-size:10px;font-weight:900;color:#f9d85c}
+.car-card.locked{background:#0c1a29bb}
+.car-card.affordable{border-color:#59c8baaa}
+.car-preview{position:relative;display:block;height:33px;margin-bottom:7px}
+.car-preview:before{content:"";position:absolute;left:18%;right:17%;top:9px;height:18px;background:#e4dfc6;border-radius:7px 10px 5px 5px;transform:skew(-12deg);box-shadow:0 5px 0 #56657b}
+.car-preview:after{content:"";position:absolute;left:31%;right:27%;top:3px;height:15px;background:#7390a2;clip-path:polygon(22% 0%,78% 0%,100% 100%,0% 100%)}
+.car-preview i{position:absolute;left:19%;right:17%;height:6px;bottom:3px;border-left:11px solid #0a101b;border-right:11px solid #0a101b}
+.car-preview.rs:before{background:#e15b54;left:12%;right:13%;border-radius:10px 8px 5px 5px}
+.car-preview.rs:after{background:#273846}
+.car-preview.rally:before{background:#4bc6d2;left:10%;right:11%;border-radius:5px}
+.car-preview.rally:after{background:#dae9e6}
+.car-preview.gt:before{background:#f7b557;left:8%;right:8%;height:13px;top:15px;border-radius:12px 9px 4px 4px}
+.car-preview.gt:after{background:#223145;left:28%;right:25%;top:8px}
+.car-preview.formula:before{background:#eee0ad;left:20%;right:20%;height:10px;top:16px;border-radius:30%}
+.car-preview.formula:after{background:#3183a3;left:44%;right:41%;top:0;height:25px;clip-path:polygon(35% 0,65% 0,100% 100%,0 100%)}
+.car-preview.formula i{left:0;right:0;border-left:16px solid #151920;border-right:16px solid #151920;bottom:6px;height:11px}
+.selection-note{font-size:11px;font-weight:600;color:#acc5d3;margin:8px 0 14px}
+.weapon-heading{margin:8px 0}
+.weapon-select{max-width:830px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.weapon-card{padding:9px 12px;color:#dbeaf1;border:1px solid #455e79;background:#101e30;border-radius:3px;text-align:left;display:grid;grid-template-columns:28px 1fr;align-items:center;gap:0 5px}
+.weapon-card>span{grid-row:span 2;color:#65e5df;font-size:25px}
+.weapon-card strong{font:800 16px 'Barlow Condensed',sans-serif}
+.weapon-card small{color:#acb9ca;font-size:9px;margin-top:3px}
+.weapon-card.active{border-color:#f5d660;background:#363a2c}
+.garage{max-width:830px;margin-top:15px}
+.upgrade-grid{max-width:600px}
+.option-row,.start-btn,.bestline{max-width:830px}
+.menu-side{position:fixed;right:0;top:15%;z-index:-1}
+.topbar{pointer-events:none}
+@media(max-width:840px){
+  #menu{align-items:flex-start}
+  .menu-panel{width:100%;padding:66px 12px 30px}
+  .menu-panel h1{font-size:clamp(54px,10vw,75px)}
+  .zone-select{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .zone-card{min-height:55px}
+  .zone-card strong{font-size:14px}
+  .zone-card em{font-size:7px}
+  .race-select{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .race-card{min-height:50px}
+  .car-select{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .car-card strong{font-size:17px}
+  .car-card{min-height:90px}
+  .weapon-card{padding:6px;grid-template-columns:20px 1fr}
+  .weapon-card>span{font-size:19px}
+  .weapon-card strong{font-size:13px}
+  .weapon-card small{font-size:8px}
+  .hud-card.ammo .hud-label{font-size:7px;letter-spacing:0}
+}
+@media(max-width:380px){
+  .zone-card{gap:3px;padding:6px}
+  .zone-card .zone-emoji{width:22px;font-size:17px}
+  .zone-card em{max-width:51px}
+  .car-select{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
