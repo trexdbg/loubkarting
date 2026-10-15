@@ -1,55 +1,68 @@
-# 🏁 LOUBKARTING — Neon Circuit
+# 🏁 LOUBKARTING — World Tour
 
-Un jeu de **course arcade isométrique solo** entièrement jouable dans le navigateur, dans l'esprit des jeux de course-combat des années 1990. Univers, graphismes et code originaux.
+**Jeu solo de course-combat isométrique**, jouable sur ordinateur et mobile, sans installation ni serveur.
 
-## Jouer
+🎮 **Adresse prévue : https://trexdbg.github.io/loubkarting/**
 
-Le site est prévu pour être hébergé gratuitement sur GitHub Pages :
+> Si le site retourne une erreur 404, activer GitHub Pages une seule fois dans **Settings → Pages → Build and deployment → Deploy from a branch → main → / (root) → Save**. Le dépôt doit rester public pour une publication gratuite classique.
 
-**https://trexdbg.github.io/loubkarting/**
+## Version 0.2 — World Tour
 
-> Si l'URL renvoie 404, il faut activer GitHub Pages une seule fois : **Settings → Pages → Build and deployment → Deploy from a branch → main → / (root) → Save**. La première mise en ligne peut prendre quelques instants.
+### Les courses
+- **2 circuits** : **Neon Canyon** (rochers, néons et grandes courbes) et **Coastline Rush** (côte, virages et épingles).
+- Choix de la voiture : **Viper GT**, **Phantom**, **Bruiser**, avec des statistiques différentes.
+- 4 adversaires IA, 3 difficultés, 3 tours, chronomètre, classement et mini-carte.
+- Missiles guidés, dégâts de collisions, blindage, nitro, réparations et caisses de munitions.
+- Effets sonores et musique rétro synthétique originale, activables depuis l'interface.
+- Course et garage fonctionnent sur **GitHub Pages** en pur HTML/CSS/JavaScript.
 
-En local, ouvrez `index.html` dans votre navigateur. Aucun build ni serveur nécessaire.
-
-## Fonctionnalités de la version 0.1
-
-- Circuit fermé avec **vue isométrique** et caméra qui suit le joueur
-- Trois voitures jouables : Viper GT, Phantom, Bruiser
-- Quatre adversaires pilotés par une IA de suivi de trajectoire
-- Course de trois tours, classement, chronomètre et meilleurs temps
-- Collisions, blindage, missiles guidés, dégâts et ralentissements
-- Nitro rechargeable, bonus de réparation, munitions et nitro à récupérer
-- Trois difficultés et mini-carte
-- Commandes clavier et **boutons tactiles** sur téléphone
-- Musique synthétique originale activable et effets audio générés (Web Audio)
-- Sauvegarde locale du meilleur temps (`localStorage`)
+### Garage & progression
+- Les courses rapportent des **crédits (CR)** : 450 CR en 1re position, 360 en 2e, 290 en 3e, 230 en 4e, 180 en 5e, 75 en cas de destruction.
+- Acheter jusqu'à **3 niveaux** d'amélioration pour le **moteur**, le **blindage** et la **nitro**. Les niveaux coûtent successivement **200 CR**, **400 CR** puis **600 CR**.
+- Le moteur augmente vitesse maximale et accélération ; le blindage réduit les dégâts ; la nitro augmente la capacité, la recharge et l'autonomie.
+- Sauvegarde automatique des crédits, des améliorations et du circuit sélectionné dans le navigateur (`localStorage`).
+- **Meilleur temps séparé pour chaque circuit**. L'ancien meilleur temps du prototype v0.1 est conservé pour Neon Canyon.
 
 ## Commandes
 
 | Action | Clavier | Tactile |
 |---|---|---|
 | Accélérer | ↑ / Z / W | GAZ |
-| Freiner / reculer | ↓ / S | FREIN |
-| Tourner | ← → / Q D / A D | ◀ ▶ |
+| Freiner / marche arrière | ↓ / S | FREIN |
+| Tourner | ← / → ou Q / D | ◀ / ▶ |
 | Tirer | Espace / J | TIR |
 | Nitro | Maj / K | NITRO |
 | Pause | P / Échap | Ⅱ |
-| Relancer | R | REJOUER |
+| Nouvelle course | R | REJOUER |
 
-## Technologie
+*Astuce : sur mobile, le mode paysage est conseillé.*
 
-`index.html` (interface), `style.css` (responsive), `game.js` (Canvas 2D, physique, IA, rendu et son).
+## Structure technique
 
-- Aucun framework et aucune dépendance JavaScript
-- Dessin procédural des voitures et des décors sur Canvas
-- Exécution 100 % côté client : **GitHub Pages suffit**
-- Configuration GitHub Pages : branche `main`, dossier `/ (root)`
+- `index.html` : écrans, HUD, garage et interface.
+- `style.css` : rendu néon, styles et adaptation mobile.
+- `game.js` : tracés fermés avec splines, projection isométrique Canvas 2D, physique, IA, collisions, combat et sauvegarde.
+- `.nojekyll` : publication de fichiers statiques sur GitHub Pages.
 
-## Suite envisagée
+Aucun framework, aucune dépendance JavaScript, aucun compte requis. Le rendu utilise des dessins originaux générés directement par Canvas.
 
-Circuits multiples, garage et améliorations, davantage d'armes, nouveaux décors, championnats, adversaires IA plus avancés, vrais sprites 2.5D originaux, bande-son rock originale, puis multijoueur (qui nécessitera une infrastructure serveur).
+## Développement
+
+```bash
+git clone https://github.com/trexdbg/loubkarting.git
+cd loubkarting
+```
+
+Ouvrir `index.html` dans un navigateur récent. Les fonctionnalités de sauvegarde nécessitent un contexte autorisant `localStorage` ; pour un test reproductible, utiliser un petit serveur local HTTP si besoin.
+
+### Feuille de route
+
+- **0.3 :** dérapages, mines, meilleurs retours de collisions et nouveaux décors.
+- **0.4 :** championnat et déblocages, davantage d'adversaires et circuits.
+- **0.5 :** graphismes 2.5D plus travaillés, bande-son rock originale, manette.
+- **1.0 :** campagne solo équilibrée et optimisée mobile.
+- **Ultérieurement :** multijoueur, qui nécessitera une infrastructure serveur dédiée.
 
 ## Propriété intellectuelle
 
-Projet indépendant. N'utilise ni nom, ni ressources graphiques, ni musiques, ni personnages de *Rock N' Roll Racing* ou de Blizzard. Les mécaniques de course-combat en vue isométrique sont une inspiration de genre, pas une reproduction d'éléments protégés.
+Jeu indépendant inspiré du **genre** des courses arcade isométriques des années 1990. Aucun nom de personnage, sprite, texture, piste audio, marque ou autre ressource propriétaire de *Rock N' Roll Racing* / Blizzard n'est utilisé.
