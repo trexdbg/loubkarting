@@ -36,9 +36,7 @@ const WEAPONS = {
 let selectedWeapon="dart";
 const rivals = [
   {name:"REX",color:"#bc8bff",dark:"#664699",accent:"#eee1ff"},
-  {name:"NOVA",color:"#73a9ff",dark:"#34558f",accent:"#e7f1ff"},
-  {name:"K.O.",color:"#f6945b",dark:"#965026",accent:"#fff1cd"},
-  {name:"BYTE",color:"#8fe8a6",dark:"#3e9b64",accent:"#edffe9"}
+  {name:"NOVA",color:"#73a9ff",dark:"#34558f",accent:"#e7f1ff"}
 ];
 const trackDefs=[
 {name:"NEON CANYON",sky:["#12263a","#132b32","#0c1925"],edge:"#318f9a",anchors:[[-840,-430],[-510,-725],[-25,-800],[520,-702],[846,-413],[916,-55],[750,214],[483,168],[251,345],[285,640],[-33,814],[-485,746],[-770,445],[-922,-20]]},
@@ -117,6 +115,9 @@ for(let i=0;i<14;i++){
 
 const SAVE_KEY="loubkarting_progress_v2";
 const upgrades={engine:{label:"MOTEUR",base:200},armor:{label:"BLINDAGE",base:200},nitro:{label:"NITRO",base:200}};
+const TRANSPORTS={trailer:{label:"REMORQUE",price:320},boat:{label:"BATEAU",price:1600},plane:{label:"AVION",price:5000}};
+const ENTRY_FEES=[[0,120,240,360],[0,200,340,480]];
+const KO_REWARD=240;
 function loadProgress(){
   let raw={};try{raw=JSON.parse(localStorage.getItem(SAVE_KEY)||"{}")||{};}catch(e){}
   const lvl=k=>clamp(Math.floor(Number(raw[k])||0),0,3),credit=Number(raw.credits);
@@ -127,28 +128,64 @@ function loadProgress(){
   const race=clamp(Math.floor(Number(raw.race)||0),0,3);
   const car=clamp(Math.floor(Number(raw.selectedCar)||0),0,specs.length-1);
   const weapon=typeof raw.weapon==="string"&&WEAPONS[raw.weapon]?raw.weapon:"dart";
+  // Migration: unlocked races and routes from v0.3 stay accessible for returning players.
+  const oldSaves=!Array.isArray(raw.transports)&&!Array.isArray(raw.paidEntries);
+  const transports=Array.isArray(raw.transports)?raw.transports.filter(k=>Object.hasOwn(TRANSPORTS,k)):[];
+  if(oldSaves&&cleared.some(k=>k.startsWith("0:")&&k!=="0:0")&&!transports.includes("trailer"))transports.push("trailer");
+  if(oldSaves&&(cleared.some(k=>k.startsWith("1:"))||(zone===1&&cleared.includes("0:3")))&&!transports.includes("boat"))transports.push("boat");
+  const paidEntries=Array.isArray(raw.paidEntries)?raw.paidEntries.filter(x=>typeof x==="string"&&/^[01]:[1-3]$/.test(x)):[];
+  if(oldSaves)for(const k of cleared)if(/^[01]:[1-3]$/.test(k)&&!paidEntries.includes(k))paidEntries.push(k);
   return {credits:Number.isFinite(credit)?clamp(Math.floor(credit),0,100000000):0,
     engine:lvl("engine"),armor:lvl("armor"),nitro:lvl("nitro"),track:zone,zone,race,
-    ownedCars:[...new Set(owned)],selectedCar:owned.includes(car)?car:0,weapon,cleared:[...new Set(cleared)]};
+    ownedCars:[...new Set(owned)],selectedCar:owned.includes(car)?car:0,weapon,
+    cleared:[...new Set(cleared)],transports:[...new Set(transports)],paidEntries:[...new Set(paidEntries)]};
 }
 let progress=loadProgress();
 function saveProgress(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(progress));}catch(e){}}
 function costOf(k){return upgrades[k].base*(1+progress[k]);}
 
 function raceKey(z,r){return z+":"+r;}
-function zoneUnlocked(z){return z===0||(z===1&&progress.cleared.includes(raceKey(0,3)));}
-function raceUnlocked(z,r){
-  if(!ZONES[z]||ZONES[z].status!=="ready"||!zoneUnlocked(z))return false;
-  return r===0||progress.cleared.includes(raceKey(z,r-1));
+function hasTransport(k){return progress.transports.includes(k);}
+function zoneUnlocked(z){return z===0||(z===1&&progress.cleared.includes(raceKey(0,3))&&hasTransport("boat"));}
+function raceQualified(z,r){
+  return !!ZONES[z]&&ZONES[z].status==="ready"&&zoneUnlocked(z)&&
+    (r===0||progress.cleared.includes(raceKey(z,r-1)));
 }
+function travelAllowed(z,r){return (z!==0||r===0||hasTransport("trailer"))&&(z!==1||hasTransport("boat"));}
+function raceAccessible(z,r){return raceQualified(z,r)&&travelAllowed(z,r);}
+function entryFee(z,r){return (ENTRY_FEES[z]&&ENTRY_FEES[z][r])||0;}
+function entryPaid(z,r){return entryFee(z,r)===0||progress.paidEntries.includes(raceKey(z,r));}
+function raceUnlocked(z,r){return raceAccessible(z,r)&&entryPaid(z,r);}
 function isBoss(){return raceIndex===3;}
 function activeZone(){return ZONES[trackId];}
+function buyTransport(key){
+  if(!TRANSPORTS[key]||hasTransport(key))return;
+  if(key==="boat"&&(!hasTransport("trailer")||!progress.cleared.includes(raceKey(0,3)))){
+    $("garageFeedback").textContent="BATS LE BOUQUETIN AVANT DE PRENDRE LE BATEAU.";return;
+  }
+  if(key==="plane"){ $("garageFeedback").textContent="L'AVION SERA DISPONIBLE LORS DE L'OUVERTURE DU GRAND NORD.";return; }
+  const t=TRANSPORTS[key];
+  if(progress.credits<t.price){$("garageFeedback").textContent="CRÉDITS INSUFFISANTS POUR "+t.label;return;}
+  progress.credits-=t.price;progress.transports.push(key);
+  saveProgress();refreshGarage();redrawCareer();
+  $("garageFeedback").textContent=t.label+" ACHETÉ"+(key==="trailer"?"E":"")+" !";
+  if(sound.enabled)sound.effect("pickup");
+}
+function buyRaceEntry(){
+  if(!raceAccessible(trackId,raceIndex)||entryPaid(trackId,raceIndex))return;
+  const fee=entryFee(trackId,raceIndex);
+  if(progress.credits<fee){$("careerMessage").textContent="GAGNE ENCORE "+(fee-progress.credits)+" CR POUR T'INSCRIRE.";return;}
+  progress.credits-=fee;progress.paidEntries.push(raceKey(trackId,raceIndex));
+  saveProgress();refreshGarage();redrawCareer();
+  $("careerMessage").textContent="INSCRIPTION PAYÉE · BONNE COURSE !";
+}
 function redrawCareer(){
   const zone=activeZone();
   $("zoneSubtitle").textContent=zone.name+" · "+zone.region;
   $("careerProgress").textContent=progress.cleared.length+" / 20 ÉPREUVES";
   $("zoneStatus0").textContent=progress.cleared.includes(raceKey(0,3))?"BOSS VAINCU":"OUVERT";
-  $("zoneStatus1").textContent=zoneUnlocked(1)?"OUVERT":"BOSS ALPES REQUIS";
+  $("zoneStatus1").textContent=zoneUnlocked(1)?"OUVERT":
+    progress.cleared.includes(raceKey(0,3))?"BATEAU REQUIS":"BOSS ALPES REQUIS";
   document.querySelectorAll("[data-zone]").forEach(btn=>{
     const z=Number(btn.dataset.zone),available=z<ZONES.length&&ZONES[z].status==="ready"&&zoneUnlocked(z);
     btn.disabled=!available;
@@ -157,9 +194,14 @@ function redrawCareer(){
     btn.classList.toggle("soon",z>=2);
   });
   document.querySelectorAll("[data-race]").forEach(btn=>{
-    const r=Number(btn.dataset.race),available=raceUnlocked(trackId,r),finished=progress.cleared.includes(raceKey(trackId,r));
+    const r=Number(btn.dataset.race),qualified=raceQualified(trackId,r);
+    const travel=travelAllowed(trackId,r),available=qualified&&travel;
+    const finished=progress.cleared.includes(raceKey(trackId,r));
     $("raceName"+r).textContent=zone.races[r];
-    $("raceStatus"+r).textContent=finished?"TERMINÉ ✓":r===3?"BOSS · "+zone.boss:available?"OUVERT":"VERROUILLÉ";
+    const fee=entryFee(trackId,r);
+    $("raceStatus"+r).textContent=finished?"TERMINÉ ✓":
+      !qualified?"VERROUILLÉ":!travel?"REMORQUE REQUISE":
+      !entryPaid(trackId,r)?fee+" CR · INSCRIPTION":"OUVERT · "+(r===3?"FINALE":"BOSS PRÉSENT");
     btn.disabled=!available;btn.classList.toggle("active",r===raceIndex);btn.classList.toggle("locked",!available);
   });
   $("ownedCount").textContent=progress.ownedCars.length+" / 5";
@@ -173,10 +215,26 @@ function redrawCareer(){
   $("carDetails").textContent=specs[selected].name+" · "+specs[selected].summary;
   document.querySelectorAll("[data-weapon]").forEach(btn=>btn.classList.toggle("active",btn.dataset.weapon===selectedWeapon));
   $("hudWeapon").textContent=WEAPONS[selectedWeapon].name;
-  const available=raceUnlocked(trackId,raceIndex);
-  $("startBtn").disabled=!available||!progress.ownedCars.includes(selected);
-  $("careerMessage").textContent=available?(raceIndex===3?"DUEL BOSS · "+zone.boss+" · VICTOIRE REQUISE":"PODIUM (TOP 3) POUR DÉBLOQUER LA COURSE SUIVANTE"):
-    "ÉPREUVE VERROUILLÉE";
+  $("transportStatus").textContent=progress.transports.length+" / 3 TRANSPORTS";
+  document.querySelectorAll("[data-transport]").forEach(btn=>{
+    const key=btn.dataset.transport,t=TRANSPORTS[key],owned=hasTransport(key);
+    const ready=key==="trailer"||(key==="boat"&&hasTransport("trailer")&&progress.cleared.includes(raceKey(0,3)));
+    btn.disabled=owned||key==="plane"||!ready||progress.credits<t.price;
+    btn.classList.toggle("transport-owned",owned);
+    $(key+"Cost").textContent=owned?"ACQUIS ✓":key==="plane"?"BIENTÔT":t.price.toLocaleString("fr-FR")+" CR";
+  });
+  const accessible=raceAccessible(trackId,raceIndex),fee=entryFee(trackId,raceIndex);
+  const paid=entryPaid(trackId,raceIndex);
+  $("entryStatus").textContent=!accessible?"TRANSPORT OU RÉSULTAT REQUIS":
+    fee===0?"ACCÈS GRATUIT":paid?"INSCRIPTION VALIDÉE ✓":fee+" CR À PAYER";
+  $("unlockRaceBtn").classList.toggle("hidden",!accessible||paid);
+  $("unlockRaceBtn").disabled=progress.credits<fee;
+  $("unlockRaceBtn").textContent="PAYER "+fee+" CR";
+  $("startBtn").disabled=!raceUnlocked(trackId,raceIndex)||!progress.ownedCars.includes(selected);
+  $("careerMessage").textContent=!accessible?"REMPLIS LES CONDITIONS OU ACHÈTE UN TRANSPORT":
+    !paid?"ACHÈTE TON INSCRIPTION POUR PRENDRE LE DÉPART":
+    raceIndex===3?"FINALE · TERMINE 1ER DEVANT "+zone.boss:
+    "BOSS : "+zone.boss+" · PODIUM POUR DÉBLOQUER LA SUITE";
 }
 function buyOrSelectCar(index){
   if(!Number.isInteger(index)||index<0||index>=specs.length)return;
@@ -239,7 +297,7 @@ function rebuildTrack(id,round=0){
   }
 }
 rebuildTrack(zoneUnlocked(progress.zone)?progress.zone:0,progress.race);
-if(!raceUnlocked(trackId,raceIndex))rebuildTrack(trackId,0);
+if(!raceAccessible(trackId,raceIndex))rebuildTrack(trackId,0);
 progress.zone=trackId;progress.track=trackId;progress.race=raceIndex;
 let W=1280,H=720,dpr=1,zoom=.86;
 let cam={x:0,y:0},cameraIso={x:0,y:0};
