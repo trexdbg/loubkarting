@@ -1,5 +1,5 @@
 # LOUBKARTING — Game Design Document / Earth Tour
-**Version du concept : 0.3** · Jeu solo isométrique pour le navigateur · GitHub Pages
+**Version du concept : 0.4** · Jeu solo isométrique pour le navigateur · GitHub Pages
 
 ## Direction
 
@@ -11,12 +11,12 @@ Un jeu de **course-combat sur Terre**. Le joueur commence au volant d'une petite
 
 ## Organisation de la Terre
 
-Cinq grandes régions, quatre courses chacune. La 4e est une confrontation contre le pilote dominant de la zone. Puis une saison mondiale de dix Grands Prix en monoplace : **30 courses au total**.
+Cinq grandes régions, quatre courses chacune. **Le boss est le leader permanent de sa région et participe aux quatre épreuves face au joueur et à deux autres pilotes IA.** La 4e course est la finale officielle pour le titre de la zone, pas sa première apparition. Puis une saison mondiale de dix Grands Prix en monoplace : **30 courses au total**.
 
 | Région | Continent | Biome | Courses | Boss | État |
 |---|---|---|---:|---|---|
 | 01 · Alpes | Europe | Montagne, cols, lacets | 4 | Le Bouquetin | **Jouable** |
-| 02 · Littoral | Océanie | Plage, corniche et mer | 4 | Sirène du Cap | **Jouable après le boss des Alpes** |
+| 02 · Littoral | Océanie | Plage, corniche et mer | 4 | Sirène du Cap | **Jouable après le boss des Alpes et achat du bateau** |
 | 03 · Grand Nord | Amérique du Nord | Neige, verglas, pins | 4 | Le Blizzard | Planifié |
 | 04 · Sahara | Afrique | Dunes, canyons, oasis | 4 | Le Scorpion | Planifié |
 | 05 · Amazonie | Amérique du Sud | Forêt, boue, pluie, ponts | 4 | Le Jaguar | Planifié |
@@ -54,16 +54,44 @@ La dernière compétition n'est **pas un sixième continent** : c'est le champio
 
 Les **layouts seront créés de zéro** et non recopiés de circuits sous licence. Aucun droit sur les marques, tracés officiels, musiques ou livrées officielles de F1 n'est sous-entendu.
 
-## Progression de carrière
+## Carrière, logistique et argent
 
-- L'épreuve 01 des Alpes est accessible immédiatement.
-- **Top 3** sur une course standard : épreuve suivante débloquée.
-- **1re place sur une finale de zone** : boss vaincu, région suivante débloquée si celle-ci est développée.
-- Le World Grand Prix sera accessible après avoir conquis les cinq régions **et posséder la monoplace**. Il reste non implémenté.
-- Une course peut être rejouée pour gagner des crédits supplémentaires.
-- Première qualification : bonus de **280 CR** pour une course standard, **850 CR** pour un boss.
-- Gains de base : 450 / 360 / 290 / 230 / 180 CR selon le classement ; 75 CR en cas d'élimination.
-- Progression sauvegardée localement dans le navigateur. Pas de compte utilisateur, pas de synchronisation entre appareils à ce stade.
+La progression est à la fois **sportive** et **financière** :
+
+- Le joueur commence gratuitement à la première course des Alpes avec sa Citadine 91.
+- Il affronte **trois adversaires**, dont **Le Bouquetin dans chacune des courses alpines**. Sur la côte, **Sirène du Cap** est toujours présent. Le boss est le plus rapide, le mieux protégé et le plus agressif. Sa dernière course doit être remportée en première position.
+- Une **place sur le podium** (top 3 sur quatre concurrents) valide les courses ordinaires. Une **victoire** (1re place) valide la finale régionale.
+- En plus de la qualification sportive, le joueur doit posséder le **transport adapté** et payer un **droit d'inscription unique** pour chaque nouvelle épreuve. Une course déjà accessible peut être rejouée sans repayer le droit.
+- Le joueur peut refaire des courses pour gagner de l'argent et acheter une meilleure voiture. La boucle économique doit rester jouable sans argent réel ni connexion à un serveur.
+
+### Transport & déplacements
+
+| Achat | Prix prototype | Déblocage |
+|---|---:|---|
+| **Remorque** | 320 CR | Accès aux courses alpines 2–4 après qualification |
+| **Bateau** | 1 600 CR | Accès à la zone Littoral, après la victoire sur Le Bouquetin |
+| **Avion** | 5 000 CR prévu | Futures destinations intercontinentales, actuellement non disponible |
+
+Droits d'inscription (paiement une seule fois) : **Alpes** : 0 / 120 / 240 / 360 CR ; **Littoral** : 0 / 200 / 340 / 480 CR. Les transports sont des jalons de carrière et non des véhicules pilotables en course.
+
+### Récompenses et récupération de lingots
+
+| Source | Récompense |
+|---|---:|
+| Classement : 1er / 2e / 3e / 4e | 450 / 360 / 290 / 230 CR |
+| Joueur éliminé | 75 CR |
+| Premier podium dans une nouvelle épreuve normale | +280 CR |
+| Première victoire contre le boss régional dans la finale | +850 CR |
+| Lingot d'or ramassé sur le circuit | +40 ou +65 CR |
+| **Voiture adverse détruite** | **+240 CR** |
+
+Les lingots ont une représentation originale en perspective isométrique dorée avec l'inscription **CR**. Ils peuvent être ramassés pendant le pilotage et leur valeur s'affiche en direct. Il ne s'agit pas de sprites extraits de *Rock N' Roll Racing*. Le bilan détaillé de course additionne classement, bonus de première qualification, lingots ramassés et voitures détruites ; le total est ajouté au portefeuille à l'arrivée, même en cas d'élimination du joueur.
+
+Les voitures rivales ont des points de blindage : les dards ioniques, impulsions EMP et mines magnétiques infligent des dégâts. Une voiture détruite quitte le classement actif pour l'épreuve en cours. Le boss a une jauge de résistance supérieure et subit moins de dégâts ; il reste néanmoins destructible.
+
+Pour des raisons de jouabilité, le jeu sauvegarde les crédits, transports et inscriptions achetés, voitures, améliorations et qualifications dans le navigateur. Les anciennes sauvegardes v0.3 sont migrées pour préserver les parcours déjà validés.
+
+**Prévu ultérieurement** : paiement de trajets internationaux plus complexes, écran visuel de convoyage, récompenses variables par zone, contrats de sponsors, primes de boss spéciales et équilibrage fin de l'économie.
 
 ## Garage — cinq classes d'automobiles
 
@@ -86,9 +114,9 @@ Les noms et silhouettes sont créés pour ce jeu ; pas de logos Renault, Peugeot
 Les armes sont des modules sélectionnés **au garage avant le départ**. Chacun consomme des munitions récupérables sur le circuit. Une touche, trois styles :
 1. **Dard ionique** — projectile guidé. Une munition. Convient aux attaques ciblées.
 2. **Onde EMP** — impulsion qui ralentit temporairement les adversaires dans un rayon proche. Deux munitions et plus de temps de recharge. Convient au peloton.
-3. **Piège magnétique** — pose d'une mine derrière la voiture ; l'adversaire qui passe dessus est ralenti. Une munition. Convient à la défense.
+3. **Piège magnétique** — pose d’une mine derrière la voiture ; l’adversaire qui passe dessus est ralenti et endommagé. Une munition. Convient à la défense.
 
-Les adversaires IA disposent, dans cette version, d'un projectile guidé simplifié. Les attaques, effets, collisions et équilibrages seront approfondis par biome et par boss.
+Les adversaires IA disposent, dans cette version, d’un projectile guidé simplifié. Le boss régional tire plus souvent et résiste mieux que ses deux concurrents. Les attaques, effets, collisions et équilibrages seront approfondis par biome et par boss.
 
 ## Principes de conduite et de combat à conserver
 
@@ -101,17 +129,17 @@ Les adversaires IA disposent, dans cette version, d'un projectile guidé simplif
 
 ## État d'implémentation
 
-### Disponible dans v0.3
+### Disponible dans v0.4
 - Deux régions réellement jouables, huit épreuves à tracés distincts, deux boss.
 - Cinq voitures (achat, sélection, visuels différenciés), trois modules offensifs.
-- Courses 3 tours, quatre IA, collisions, nitro, dégâts, classement.
-- Crédits, achats et débloquages sauvegardés.
+- Courses 3 tours, trois IA dont un boss permanent, collisions, nitro, dégâts et élimination des véhicules.
+- Lingots collectables, primes de destruction, revenus détaillés, remorque et bateau achetables, droits d’inscription par course, crédits et déblocages sauvegardés.
 - Interface et commandes ordinateur + mobile, son facultatif.
 - Tests automatiques de progression et de sauvegarde.
 
 ### Étapes suivantes
-1. **V0.4** : meilleur ressenti des trajectoires (adhérence, dérapage, freinage), comportement spécifique par véhicule, boss plus intelligents.
-2. **V0.5** : neige (adhérence faible), désert (sable ralentissant), forêt (pluie et boue), quatre vrais circuits par zone, pilotes et boss inédits.
+1. **V0.5** : meilleur ressenti des trajectoires (adhérence, dérapage, freinage), comportement spécifique par véhicule, boss plus intelligents.
+2. **V0.6** : neige (adhérence faible), désert (sable ralentissant), forêt (pluie et boue), quatre vrais circuits par zone, pilotes et boss inédits.
 3. **V0.6** : environnement graphique original nettement plus riche, sons moteurs et rock composé spécifiquement pour le jeu.
 4. **V0.7** : dix GP mondiaux, accès réservé à Apex Formula, championnat et trophées.
 5. **V1.0** : équilibrage, accessibilité, gamepad, performances mobiles et campagne complète.
