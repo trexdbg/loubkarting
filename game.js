@@ -838,6 +838,7 @@ document.querySelectorAll("[data-control]").forEach(btn=>{
   btn.addEventListener("pointerup",up);btn.addEventListener("pointercancel",up);btn.addEventListener("lostpointercapture",up);
 });
 document.querySelectorAll("[data-car]").forEach(btn=>btn.addEventListener("click",()=>buyOrSelectCar(Number(btn.dataset.car))));
+document.querySelectorAll("[data-upgrade]").forEach(btn=>btn.addEventListener("click",()=>buyUpgrade(btn.dataset.upgrade)));
 document.querySelectorAll("[data-zone]").forEach(btn=>btn.addEventListener("click",()=>{
   const z=Number(btn.dataset.zone);
   if(z>=ZONES.length||!zoneUnlocked(z)||ZONES[z].status!=="ready")return;
