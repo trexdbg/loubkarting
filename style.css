@@ -175,3 +175,37 @@ html,body,#gameShell{touch-action:pan-y}
 .world-calendar strong{color:#cfbbf3}
 .start-btn:disabled{filter:grayscale(1);opacity:.5;cursor:not-allowed;transform:none}
 .car-card:not(:disabled):hover,.race-card:not(:disabled):hover,.zone-card:not(:disabled):hover,.weapon-card:hover{border-color:#d8b95e}
+
+
+/* PAID TRANSPORT / BOUNTY ECONOMY — v0.4 */
+.logistics{max-width:830px;padding:12px;margin:11px 0 16px;background:linear-gradient(130deg,#111f30dd,#101625e9);border:1px solid #5770828c;border-left:3px solid #e5be5a;border-radius:4px}
+.transport-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.transport-card{display:flex;align-items:center;text-align:left;gap:7px;min-width:0;min-height:71px;padding:9px;background:#1b2b3d;border:1px solid #56647f;color:#e5edf7;border-radius:3px;transition:border-color .18s}
+.transport-card:not(:disabled):hover{border-color:#f8d65b;background:#2a3c50}
+.transport-card:disabled:not(.transport-owned){opacity:.53;cursor:not-allowed}
+.transport-card.transport-owned{border-color:#3f977d;background:#15372f;opacity:1}
+.transport-icon{display:grid;place-items:center;flex:none;width:26px;height:30px;color:#ffde64;font-size:22px}
+.transport-card>span:nth-child(2){min-width:0;flex:1}
+.transport-card strong{display:block;font:900 17px 'Barlow Condensed',Impact,sans-serif;letter-spacing:.5px}
+.transport-card small{display:block;font-size:8px;color:#9cabbd;line-height:1.4;margin-top:4px;font-weight:700}
+.transport-card>b{display:block;font:800 13px 'Barlow Condensed',Impact,sans-serif;color:#f7d85c;text-align:right;white-space:nowrap}
+.transport-card.transport-owned>b{color:#8ee4b1}
+.race-fee{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:11px;padding-top:10px;border-top:1px solid #63768a60}
+.race-fee .option-label{font-size:9px;margin:0 0 5px}
+.race-fee strong{display:block;color:#f1d66c;font-size:12px;font-weight:900;letter-spacing:.5px}
+.fee-btn{border-radius:3px;border:1px solid #f7d76f;background:#efe077;color:#1d1f24;padding:10px 14px;font-weight:900;font-size:12px;letter-spacing:.5px;white-space:nowrap}
+.fee-btn:disabled{opacity:.5;cursor:not-allowed}
+.race-earnings{position:absolute;top:169px;left:max(20px,3.5vw);display:flex;gap:15px;padding:6px 11px;background:#101a2bde;border:1px solid #6273896b;border-left:3px solid #f5d264;font-size:10px;letter-spacing:.8px;font-weight:800;color:#b7c3d2}
+.race-earnings strong{color:#f6dc68;font-size:13px}
+.result-grid div{min-width:110px}
+@media(max-width:820px){
+  .transport-grid{grid-template-columns:repeat(1,minmax(0,1fr))}
+  .transport-card{min-height:48px}
+  .transport-card small{font-size:9px}
+  .transport-card>span:nth-child(2){flex:1}
+  .race-earnings{top:118px;left:10px;padding:5px 7px;gap:8px;font-size:8px}
+  .race-earnings strong{font-size:11px}
+  .race-fee strong{font-size:10px}
+  .fee-btn{padding:9px;font-size:11px}
+}
+@media(min-width:821px) and (max-width:1100px){.transport-card{flex-wrap:wrap}.transport-card>b{margin-left:auto}}
