@@ -8,7 +8,7 @@ const source=fs.readFileSync(path.join(__dirname,"..","game.js"),"utf8");
 const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
 const noop=()=>{};
 const debugSource=source.replace("resetRace();setMenu();requestAnimationFrame(frame);",
-"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,mines:()=>mines,pickups:()=>pickups,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace};\nresetRace();setMenu();requestAnimationFrame(frame);");
+"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,mines:()=>mines,pickups:()=>pickups,goldEarned:()=>raceGold,knockouts:()=>raceKOs,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace};\nresetRace();setMenu();requestAnimationFrame(frame);");
 assert.notEqual(debugSource,source,"Debug instrumentation anchor should exist.");
 
 function harness(initial={}){
@@ -145,7 +145,9 @@ test("gold bars and destroying an opponent award credits on finishing",()=>{
   h.winInstant();
   assert.match(h.el("resultStats").innerHTML,/DESTRUCTIONS/);
   assert.match(h.el("resultStats").innerHTML,/LINGOTS/);
-  assert.equal(h.win.__test.progress().credits,730+gold.value+240);
+  assert.ok(h.win.__test.goldEarned()>=gold.value);
+  assert.equal(h.win.__test.knockouts(),1);
+  assert.equal(h.win.__test.progress().credits,730+h.win.__test.goldEarned()+240);
 });
 
 test("race naturally ends after three laps and saves best time",()=>{
