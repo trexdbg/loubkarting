@@ -295,6 +295,10 @@ function rebuildTrack(id,round=0){
     const p=trackAt(235+i*TRACK_LENGTH/14),lane=(i%3-1)*47;
     pickups.push({x:p.x+p.nx*lane,y:p.y+p.ny*lane,kind:i%3===0?"repair":i%3===1?"ammo":"nitro",cooldown:0,phase:i*.57});
   }
+  for(let i=0;i<22;i++){
+    const p=trackAt(420+(i+.38)*TRACK_LENGTH/22),lane=((i*7)%5-2)*29;
+    pickups.push({x:p.x+p.nx*lane,y:p.y+p.ny*lane,kind:"gold",value:i%5===0?65:40,cooldown:0,phase:i*.8});
+  }
 }
 rebuildTrack(zoneUnlocked(progress.zone)?progress.zone:0,progress.race);
 if(!raceAccessible(trackId,raceIndex))rebuildTrack(trackId,0);
@@ -304,6 +308,7 @@ let cam={x:0,y:0},cameraIso={x:0,y:0};
 let state="menu",countdown=0,elapsed=0,selected=progress.selectedCar,difficulty="normal";
 selectedWeapon=progress.weapon;
 let player,ais=[],rockets=[],mines=[],particles=[],keys=new Set(),touch=new Set(),lastTime=0,hudTicker=0,toastTimeout=0;
+let raceGold=0,raceKOs=0;
 let lastLap=1,shockCooldown=0,finishOrder=null;
 
 function resize(){
@@ -582,7 +587,7 @@ function drawParticles(){
 function draw(t){
   cameraIso=iso(cam.x,cam.y);
   drawBackdrop(t);drawTrack(t);drawPickups(t);
-  const toRender=[player,...ais].filter(Boolean).sort((a,b)=>iso(a.x,a.y).y-iso(b.x,b.y).y);
+  const toRender=[player,...ais].filter(c=>c&&!c.destroyed).sort((a,b)=>iso(a.x,a.y).y-iso(b.x,b.y).y);
   for(const car of toRender)drawCar(car,t);
   drawMines(t);drawRockets();drawParticles();
 }
@@ -600,18 +605,24 @@ function makeCar(s,lane,style,name,isPlayer=false){
     lane,style:enhanced,name,isPlayer,hp:100,maxNitro:isPlayer?100+progress.nitro*20:100,nitro:isPlayer?100+progress.nitro*20:100,ammo:5,fireCooldown:0,hitFlash:0,stun:0,boosting:false,finished:false};
 }
 function resetRace(){
+  raceGold=0;raceKOs=0;
   rockets=[];mines=[];particles=[];elapsed=0;countdown=3.4;lastLap=1;shockCooldown=0;finishOrder=null;hudTicker=0;
   $("trackName").textContent=activeZone().name+" // "+activeZone().races[raceIndex]+" "+(isBoss()?"★ BOSS":"");
   pickups.forEach(p=>p.cooldown=0);
   player=makeCar(300,5,specs[selected],specs[selected].name,true);
-  const lanes=[-35,40,-20,46],starts=[490,445,400,355];
+  const lanes=[-34,35,0],starts=[500,430,365];
   const multipliers={easy:.80,normal:1,hard:1.12};
-  const rates=[265,274,254,280],difficultyRate=(multipliers[difficulty]||1)*(1+raceIndex*.02);
-  ais=rivals.map((r,i)=>{
-    const boss=isBoss()&&i===3;
-    const style=boss?{...r,color:activeZone().bossColor,dark:"#462d36",accent:"#fff3cf",bodyType:"gt"}:r;
-    const a=makeCar(starts[i],lanes[i],style,boss?activeZone().boss:r.name);
-    a.cruise=(rates[i]+(boss?44:0))*difficultyRate;a.phase=i*1.8;a.attackTimer=(boss?1.7:3)+rnd()*3;a.speed=a.cruise;
+  const rates=[254,270,313],difficultyRate=(multipliers[difficulty]||1)*(1+raceIndex*.015);
+  const region=activeZone();
+  ais=[...rivals,{name:region.boss,color:region.bossColor||"#f3b968",dark:"#583c37",accent:"#fff0ca",bodyType:"gt"}].map((r,i)=>{
+    const boss=i===2;
+    const a=makeCar(starts[i],lanes[i],r,r.name);
+    a.isBoss=boss;
+    a.hp=boss?180:115;
+    a.cruise=(rates[i]+raceIndex*(boss?6:4))*difficultyRate;
+    a.phase=i*1.8;
+    a.attackTimer=(boss?1.2:3.3)+rnd()*(boss?1.4:2.8);
+    a.speed=a.cruise;
     return a;
   });
   cam.x=player.x;cam.y=player.y;
@@ -675,7 +686,7 @@ function updatePlayer(dt){
     player.speed*=.81;
   }
   for(const ai of ais){
-    if(hypot(player.x-ai.x,player.y-ai.y)<44){
+    if(!ai.destroyed&&hypot(player.x-ai.x,player.y-ai.y)<44){
       const angle=Math.atan2(player.y-ai.y,player.x-ai.x);
       player.x+=Math.cos(angle)*150*dt;player.y+=Math.sin(angle)*150*dt;
       player.speed*=.97;
@@ -687,7 +698,7 @@ function updatePlayer(dt){
 }
 function updateAI(dt){
   for(const a of ais){
-    if(a.finished)continue;
+    if(a.finished||a.destroyed)continue;
     a.hitFlash=Math.max(0,a.hitFlash-dt);a.stun=Math.max(0,a.stun-dt);
     a.attackTimer-=dt;
     const pace=a.cruise*(a.stun>0?.52:1)*(1+Math.sin(elapsed*.34+a.phase)*.023);
@@ -696,9 +707,9 @@ function updateAI(dt){
     a.x=p.x+p.nx*lane;a.y=p.y+p.ny*lane;a.angle=Math.atan2(p.dy,p.dx);
     a.boosting=a.stun<=0&&Math.sin(elapsed*.34+a.phase)>0.97;
     if(a.progress>=FINISH+TRACK_LENGTH*LAPS){a.finished=true;if(finishOrder===null)finishOrder=a.name;}
-    if(a.attackTimer<=0&&hypot(player.x-a.x,player.y-a.y)<430&&state==="race"){
-      if(Math.random()<.7)shoot(a);
-      a.attackTimer=3.8+rnd()*3.4;
+    if(a.attackTimer<=0&&hypot(player.x-a.x,player.y-a.y)<(a.isBoss?560:420)&&state==="race"){
+      if(rnd()<(a.isBoss?.92:.63))shoot(a);
+      a.attackTimer=(a.isBoss?2.7:4.4)+rnd()*(a.isBoss?1.4:3.4);
     }
   }
 }
@@ -706,7 +717,7 @@ function targetFor(owner){
   const enemies=owner.isPlayer?ais:[player];
   let target=null,best=Infinity;
   for(const e of enemies){
-    if(e.finished)continue;
+    if(e.finished||e.destroyed)continue;
     const dx=e.x-owner.x,dy=e.y-owner.y,d=hypot(dx,dy),f=dx*Math.cos(owner.angle)+dy*Math.sin(owner.angle);
     if(d<540&&d<best&&(owner.isPlayer?f/d>.03:true)){target=e;best=d;}
   }
@@ -722,8 +733,8 @@ function shoot(owner){
   if(owner.isPlayer){owner.ammo-=weapon.cost;sound.effect("fire");}
   if(owner.isPlayer&&selectedWeapon==="pulse"){
     let hits=0;
-    for(const ai of ais)if(!ai.finished&&hypot(owner.x-ai.x,owner.y-ai.y)<215){
-      ai.stun=Math.max(ai.stun,2.65);ai.hitFlash=.34;spawnFX(ai.x,ai.y,"#8fefff",13);hits++;
+    for(const ai of ais)if(!ai.finished&&!ai.destroyed&&hypot(owner.x-ai.x,owner.y-ai.y)<215){
+      damageOpponent(ai,28,2.65);ai.hitFlash=.34;spawnFX(ai.x,ai.y,"#8fefff",13);hits++;
     }
     spawnFX(owner.x,owner.y,"#9af0f5",30);
     setToast(hits?"ONDE EMP · "+hits+" PILOTE(S) TOUCHÉ(S)":"ONDE EMP · ZONE DÉGAGÉE");
@@ -743,10 +754,24 @@ function rotateToward(a,b,max){
   let d=mod(b-a+Math.PI,TAU)-Math.PI;
   return a+clamp(d,-max,max);
 }
+function destroyOpponent(ai){
+  if(ai.destroyed)return;
+  ai.destroyed=true;ai.finished=true;ai.hp=0;ai.progress=-100000000;
+  raceKOs++;
+  spawnFX(ai.x,ai.y,ai.isBoss?"#ffe1a0":"#f6ad6c",38);
+  setToast("DESTRUCTION : "+ai.name+"  +"+KO_REWARD+" CR");
+  if(sound.enabled)sound.effect("hit");
+}
+function damageOpponent(ai,amount,stun){
+  if(ai.destroyed||ai.finished)return;
+  ai.hp=Math.max(0,ai.hp-amount*(ai.isBoss?.75:1));
+  ai.hitFlash=.25;ai.stun=Math.max(ai.stun,stun);
+  if(ai.hp<=0)destroyOpponent(ai);
+}
 function updateRockets(dt){
   for(let i=rockets.length-1;i>=0;i--){
     const r=rockets[i];r.ttl-=dt;
-    if(r.target&&!r.target.finished&&r.target.hp>0){
+    if(r.target&&!r.target.finished&&!r.target.destroyed&&r.target.hp>0){
       const desired=Math.atan2(r.target.y-r.y,r.target.x-r.x);
       r.angle=rotateToward(r.angle,desired,3.2*dt);
     }
@@ -754,13 +779,16 @@ function updateRockets(dt){
     r.x+=mx*670*dt;r.y+=my*670*dt;
     let hit=null;
     for(const c of r.isPlayer?ais:[player]){
-      if(c===r.owner||c.finished)continue;
+      if(c===r.owner||c.finished||c.destroyed)continue;
       if(hypot(r.x-c.x,r.y-c.y)<40){hit=c;break;}
     }
     if(hit){
-      spawnFX(hit.x,hit.y,r.isPlayer?"#f8dc69":"#f77d65",24);hit.hitFlash=.24;
-      if(hit.isPlayer){hit.hp=Math.max(0,hit.hp-23/hit.style.armor);hit.speed*=.72;setToast("TOUCHÉ !");sound.effect("hit");}
-      else{hit.stun=2.2;if(r.isPlayer)setToast("IMPACT !");}
+      spawnFX(hit.x,hit.y,r.isPlayer?"#f8dc69":"#f77d65",24);
+      hit.hitFlash=.24;
+      if(hit.isPlayer){
+        hit.hp=Math.max(0,hit.hp-(r.owner.isBoss?30:23)/hit.style.armor);
+        hit.speed*=.72;setToast("TOUCHÉ !");sound.effect("hit");
+      }else damageOpponent(hit,44,1.9);
     }
     if(hit||r.ttl<=0)rockets.splice(i,1);
   }
@@ -769,8 +797,8 @@ function updateMines(dt){
   for(let i=mines.length-1;i>=0;i--){
     const mine=mines[i];mine.ttl-=dt;
     let hit=false;
-    for(const ai of ais)if(!ai.finished&&hypot(ai.x-mine.x,ai.y-mine.y)<48){
-      ai.stun=Math.max(ai.stun,3);ai.hitFlash=.42;
+    for(const ai of ais)if(!ai.finished&&!ai.destroyed&&hypot(ai.x-mine.x,ai.y-mine.y)<48){
+      damageOpponent(ai,85,3);ai.hitFlash=.42;
       spawnFX(mine.x,mine.y,"#78f0ed",26);
       setToast("PIÈGE ACTIVÉ !");hit=true;break;
     }
@@ -782,7 +810,9 @@ function updatePickups(dt){
   for(const p of pickups){
     if(p.cooldown>0){p.cooldown=Math.max(0,p.cooldown-dt);continue;}
     if(hypot(player.x-p.x,player.y-p.y)<41){
-      p.cooldown=19;spawnFX(p.x,p.y,"#85f8e7",13);
+      p.cooldown=p.kind==="gold"?3600:19;
+      spawnFX(p.x,p.y,p.kind==="gold"?"#f7d456":"#85f8e7",13);
+      if(p.kind==="gold"){raceGold+=p.value;setToast("LINGOT +"+p.value+" CR");}
       if(p.kind==="repair"){player.hp=clamp(player.hp+30,0,100);setToast("RÉPARATION +30");}
       if(p.kind==="ammo"){player.ammo=Math.min(12,player.ammo+3);setToast("MISSILES +3");}
       if(p.kind==="nitro"){player.nitro=clamp(player.nitro+40,0,player.maxNitro);setToast("NITRO +40");}
@@ -812,7 +842,7 @@ function update(dt){
   if(player){cam.x+=((player.x+Math.cos(player.angle)*90)-cam.x)*Math.min(1,dt*4.8);
              cam.y+=((player.y+Math.sin(player.angle)*90)-cam.y)*Math.min(1,dt*4.8);}
 }
-function position(){return 1+ais.filter(a=>a.progress>player.progress).length;}
+function position(){return 1+ais.filter(a=>!a.destroyed&&a.progress>player.progress).length;}
 function formatTime(s){
   const m=Math.floor(s/60),sec=Math.floor(s%60),tenth=Math.floor(s*10)%10;
   return String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0")+"."+tenth;
@@ -821,6 +851,7 @@ function setHud(){
   if(!player)return;
   $("position").textContent=position();$("lap").textContent=clamp(Math.floor((player.progress-FINISH)/TRACK_LENGTH)+1,1,LAPS);
   $("timer").textContent=formatTime(elapsed);$("ammo").textContent=player.ammo;
+  $("raceGold").textContent=raceGold;$("raceKOs").textContent=raceKOs;
   $("speed").textContent=Math.floor(Math.abs(player.speed)*.70);
   $("hpLabel").textContent=Math.round(player.hp)+"%";$("nitroLabel").textContent=Math.round(player.nitro/player.maxNitro*100)+"%";
   $("hpFill").style.width=player.hp+"%";$("nitroFill").style.width=player.nitro/player.maxNitro*100+"%";
@@ -832,7 +863,7 @@ function drawMinimap(){
   mctx.beginPath();points.forEach((p,i)=>{const s=conv(p.x,p.y);i?mctx.lineTo(s.x,s.y):mctx.moveTo(s.x,s.y);});
   mctx.closePath();mctx.strokeStyle="#536778";mctx.lineWidth=10;mctx.lineJoin="round";mctx.stroke();
   mctx.strokeStyle="#d0cfc1";mctx.lineWidth=2;mctx.stroke();
-  for(const ai of ais){const s=conv(ai.x,ai.y);mctx.fillStyle=ai.style.color;mctx.beginPath();mctx.arc(s.x,s.y,4,0,TAU);mctx.fill();}
+  for(const ai of ais.filter(a=>!a.destroyed)){const s=conv(ai.x,ai.y);mctx.fillStyle=ai.style.color;mctx.beginPath();mctx.arc(s.x,s.y,4,0,TAU);mctx.fill();}
   if(player){const s=conv(player.x,player.y);mctx.fillStyle="#fbe763";mctx.beginPath();mctx.arc(s.x,s.y,5.7,0,TAU);mctx.fill();mctx.strokeStyle="#0a0a0a";mctx.lineWidth=1;mctx.stroke();}
   mctx.fillStyle="#d0dcec";mctx.font="bold 10px Arial";mctx.fillText("CIRCUIT "+String(trackId+1).padStart(2,"0"),8,12);
 }
