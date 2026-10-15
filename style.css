@@ -167,3 +167,11 @@
   .zone-card em{max-width:51px}
   .car-select{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+
+html,body,#gameShell{touch-action:pan-y}
+#game,.touch-btn{touch-action:none}
+.world-calendar{max-width:830px;border-left:2px solid #9678c7;color:#929aba;background:#1b1d31a6;font-size:9px;letter-spacing:.5px;line-height:1.6;margin:10px 0 4px;padding:8px 12px}
+.world-calendar strong{color:#cfbbf3}
+.start-btn:disabled{filter:grayscale(1);opacity:.5;cursor:not-allowed;transform:none}
+.car-card:not(:disabled):hover,.race-card:not(:disabled):hover,.zone-card:not(:disabled):hover,.weapon-card:hover{border-color:#d8b95e}
