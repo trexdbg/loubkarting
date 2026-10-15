@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#0c101c">
+  <meta name="description" content="LoubKarting: course arcade isométrique solo, missiles et nitro. Jouable gratuitement dans le navigateur.">
+  <title>LOUBKARTING — Neon Circuit</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="gameShell">
+    <canvas id="game" aria-label="Circuit de course isométrique"></canvas>
+    <div id="vignette" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">LK<span>★</span></span><div><strong>LOUB<span>KARTING</span></strong><small>NEON CIRCUIT <i>//</i> ARCADE RACING</small></div></div>
+      <div class="top-actions">
+        <button id="soundBtn" class="icon-btn" title="Activer ou couper le son" aria-label="Activer ou couper le son">♫ <span id="soundText">OFF</span></button>
+        <button id="pauseBtn" class="icon-btn" title="Pause" aria-label="Pause">Ⅱ</button>
+      </div>
+    </header>
+
+    <section id="hud" class="hud hidden" aria-live="off">
+      <div class="hud-top">
+        <div class="hud-card placing"><span class="hud-label">POSITION</span><span class="big-numeric"><b id="position">1</b><em> / 5</em></span></div>
+        <div class="hud-card"><span class="hud-label">TOUR</span><span class="big-numeric"><b id="lap">1</b><em> / 3</em></span></div>
+        <div class="hud-card"><span class="hud-label">TEMPS</span><span class="big-numeric time" id="timer">00:00.0</span></div>
+        <div class="hud-card ammo"><span class="hud-label">MISSILES</span><span class="big-numeric"><span class="ammo-symbol">➤</span><b id="ammo">5</b></span></div>
+      </div>
+      <div class="hud-bottom">
+        <div class="vehicle-vitals"><span>BLINDAGE <b id="hpLabel">100%</b></span><div class="meter"><div id="hpFill"></div></div><span class="nitro-title">NITRO <b id="nitroLabel">100%</b></span><div class="meter blue"><div id="nitroFill"></div></div></div>
+        <div class="speedboard"><span>VITESSE</span><strong id="speed">0</strong><small>KM/H</small></div>
+        <canvas id="minimap" width="200" height="145" aria-label="Mini-carte du circuit"></canvas>
+      </div>
+      <div id="eventToast" class="toast"></div>
+    </section>
+
+    <section id="menu" class="overlay shown">
+      <div class="menu-panel">
+        <div class="eyebrow"><span class="live-dot"></span> SAISON 01 <span class="separation">/</span> SOLO CHAMPIONSHIP</div>
+        <h1>NO RULES.<br><span>JUST RACING.</span></h1>
+        <p class="intro">Virages serrés. Missiles. Nitro. Cinq pilotes, une seule place sur le podium.</p>
+        <div class="panel-line"></div>
+        <div class="option-label">CHOISIS TON BOLIDE</div>
+        <div class="car-select" role="group" aria-label="Choix du véhicule">
+          <button class="car-card active" data-car="0"><span class="car-emblem red">◆</span><strong>VIPER GT</strong><small>ÉQUILIBRÉE</small></button>
+          <button class="car-card" data-car="1"><span class="car-emblem cyan">◆</span><strong>PHANTOM</strong><small>AGILE</small></button>
+          <button class="car-card" data-car="2"><span class="car-emblem yellow">◆</span><strong>BRUISER</strong><small>ROBUSTE</small></button>
+        </div>
+        <div class="option-row"><label for="difficulty">NIVEAU</label><select id="difficulty"><option value="easy">ROOKIE</option><option selected value="normal">RACER</option><option value="hard">LEGEND</option></select></div>
+        <button id="startBtn" class="start-btn">DÉMARRER LA COURSE <span>↗</span></button>
+        <p class="bestline">MEILLEUR TEMPS <strong id="bestTime">--:--.-</strong></p>
+        <p class="disclaimer">Prototype original inspiré des jeux de course arcade isométriques des années 90. Aucun contenu Blizzard utilisé.</p>
+      </div>
+      <div class="menu-side"><span class="vertical-caption">WELCOME TO THE CIRCUIT // 001</span><span class="decor-number">01</span></div>
+    </section>
+
+    <section id="raceOverlay" class="overlay center-overlay hidden" aria-live="polite">
+      <div class="dialog">
+        <span class="eyebrow" id="dialogEyebrow">COURSE TERMINÉE</span>
+        <h2 id="dialogTitle">FINISH!</h2>
+        <p id="dialogDetail"></p>
+        <div id="resultStats"></div>
+        <button id="resumeBtn" class="start-btn hidden">REPRENDRE <span>▶</span></button>
+        <button id="againBtn" class="start-btn">REJOUER <span>↗</span></button>
+        <button id="menuBtn" class="secondary-btn">RETOUR AU GARAGE</button>
+      </div>
+    </section>
+
+    <div id="countdown" class="countdown hidden" aria-live="polite">3</div>
+
+    <footer id="controlsHint" class="controls-hint"><span>↑ ACCÉLÉRER</span><span>↓ FREINER</span><span>← → DIRIGER</span><span>ESPACE TIR</span><span>SHIFT NITRO</span><span>P PAUSE</span></footer>
+
+    <section id="touchControls" class="touch-controls" aria-label="Commandes tactiles">
+      <div class="touch-left"><button class="touch-btn steer" data-control="left" aria-label="Tourner à gauche">◀</button><button class="touch-btn steer" data-control="right" aria-label="Tourner à droite">▶</button></div>
+      <div class="touch-right"><button class="touch-btn action shoot" data-control="fire">TIR <b>➤</b></button><button class="touch-btn action boost" data-control="nitro">NITRO <b>⚡</b></button><button class="touch-btn drive brake" data-control="brake">FREIN</button><button class="touch-btn drive gas" data-control="gas">GAZ <b>▲</b></button></div>
+    </section>
+  </main>
+  <script src="game.js" defer></script>
+</body>
+</html>
