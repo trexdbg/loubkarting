@@ -209,3 +209,13 @@ html,body,#gameShell{touch-action:pan-y}
   .fee-btn{padding:9px;font-size:11px}
 }
 @media(min-width:821px) and (max-width:1100px){.transport-card{flex-wrap:wrap}.transport-card>b{margin-left:auto}}
+
+
+@media(max-width:600px){
+  .hud-track-name{top:144px;right:10px;left:auto;max-width:calc(100vw - 20px);font-size:8px;line-height:1.2;padding:4px 7px}
+  .race-earnings{top:118px;right:10px;width:max-content;max-width:calc(100vw - 20px);flex-wrap:wrap}
+  .dialog{max-height:88dvh;overflow-y:auto}
+  .dialog .result-grid{gap:6px}
+  .dialog .result-grid div{min-width:calc(33.333% - 7px);padding:7px}
+  .dialog .result-grid b{font-size:23px}
+}
