@@ -119,6 +119,7 @@ function loadProgress(){
     engine:lvl("engine"),armor:lvl("armor"),nitro:lvl("nitro"),track:zone,zone,race,
     ownedCars:[...new Set(owned)],selectedCar:owned.includes(car)?car:0,weapon,cleared:[...new Set(cleared)]};
 }
+let progress=loadProgress();
 function saveProgress(){try{localStorage.setItem(SAVE_KEY,JSON.stringify(progress));}catch(e){}}
 function costOf(k){return upgrades[k].base*(1+progress[k]);}
 
