@@ -14,7 +14,7 @@
     <div id="vignette" aria-hidden="true"></div>
 
     <header class="topbar">
-      <div class="brand"><span class="brand-mark">LK<span>★</span></span><div><strong>LOUB<span>KARTING</span></strong><small>NEON CIRCUIT <i>//</i> ARCADE RACING</small></div></div>
+      <div class="brand"><span class="brand-mark">LK<span>★</span></span><div><strong>LOUB<span>KARTING</span></strong><small>WORLD TOUR <i>//</i> ARCADE RACING</small></div></div>
       <div class="top-actions">
         <button id="soundBtn" class="icon-btn" title="Activer ou couper le son" aria-label="Activer ou couper le son">♫ <span id="soundText">OFF</span></button>
         <button id="pauseBtn" class="icon-btn" title="Pause" aria-label="Pause">Ⅱ</button>
@@ -22,6 +22,7 @@
     </header>
 
     <section id="hud" class="hud hidden" aria-live="off">
+      <div class="hud-track-name" id="trackName">NEON CANYON // CIRCUIT 01</div>
       <div class="hud-top">
         <div class="hud-card placing"><span class="hud-label">POSITION</span><span class="big-numeric"><b id="position">1</b><em> / 5</em></span></div>
         <div class="hud-card"><span class="hud-label">TOUR</span><span class="big-numeric"><b id="lap">1</b><em> / 3</em></span></div>
@@ -48,10 +49,25 @@
           <button class="car-card" data-car="1"><span class="car-emblem cyan">◆</span><strong>PHANTOM</strong><small>AGILE</small></button>
           <button class="car-card" data-car="2"><span class="car-emblem yellow">◆</span><strong>BRUISER</strong><small>ROBUSTE</small></button>
         </div>
+
+        <div class="option-label track-label">CHOISIS TON CIRCUIT</div>
+        <div class="track-select" role="group" aria-label="Choix du circuit">
+          <button class="track-card active" data-track="0"><span class="track-num">01</span><span><strong>NEON CANYON</strong><small>Roches &amp; virages rapides</small></span><span class="track-glyph">◆</span></button>
+          <button class="track-card" data-track="1"><span class="track-num">02</span><span><strong>COASTLINE RUSH</strong><small>Côte &amp; épingles</small></span><span class="track-glyph">≈</span></button>
+        </div>
+        <section class="garage" aria-label="Garage et améliorations">
+          <div class="garage-head"><div><div class="option-label">GARAGE / AMÉLIORATIONS</div><small>Les courses rapportent des crédits</small></div><strong><span id="credits">0</span> <em>CR</em></strong></div>
+          <div class="upgrade-grid">
+            <button class="upgrade-card" data-upgrade="engine"><span class="upgrade-icon">↗</span><strong>MOTEUR</strong><small id="engineLevel">NIV. 0 / 3</small><span class="upgrade-price" id="engineCost">200 CR</span></button>
+            <button class="upgrade-card" data-upgrade="armor"><span class="upgrade-icon">⬡</span><strong>BLINDAGE</strong><small id="armorLevel">NIV. 0 / 3</small><span class="upgrade-price" id="armorCost">200 CR</span></button>
+            <button class="upgrade-card" data-upgrade="nitro"><span class="upgrade-icon">⚡</span><strong>NITRO</strong><small id="nitroLevel">NIV. 0 / 3</small><span class="upgrade-price" id="nitroCost">200 CR</span></button>
+          </div>
+          <div class="garage-feedback" id="garageFeedback" aria-live="polite"></div>
+        </section>
         <div class="option-row"><label for="difficulty">NIVEAU</label><select id="difficulty"><option value="easy">ROOKIE</option><option selected value="normal">RACER</option><option value="hard">LEGEND</option></select></div>
         <button id="startBtn" class="start-btn">DÉMARRER LA COURSE <span>↗</span></button>
         <p class="bestline">MEILLEUR TEMPS <strong id="bestTime">--:--.-</strong></p>
-        <p class="disclaimer">Prototype original inspiré des jeux de course arcade isométriques des années 90. Aucun contenu Blizzard utilisé.</p>
+        <p class="disclaimer">Jeu indépendant de course-combat arcade. Visuels, musique et code originaux, sans ressources Blizzard.</p>
       </div>
       <div class="menu-side"><span class="vertical-caption">WELCOME TO THE CIRCUIT // 001</span><span class="decor-number">01</span></div>
     </section>
