@@ -106,7 +106,7 @@ test("race naturally ends after three laps and saves best time",()=>{
 });
 
 test("credits buy actual vehicles and improvements and survive reload",()=>{
-  const h=harness({loubkarting_progress_v2:JSON.stringify({credits:20000,ownedCars:[0]})});
+  const h=harness({loubkarting_progress_v2:JSON.stringify({credits:30000,ownedCars:[0]})});
   h.groups["[data-car]"][1].events.click();
   h.groups["[data-car]"][2].events.click();
   h.groups["[data-car]"][3].events.click();
