@@ -1,68 +1,77 @@
-# 🏁 LOUBKARTING — World Tour
+# 🏁 LOUBKARTING — Earth Tour (v0.3)
 
-**Jeu solo de course-combat isométrique**, jouable sur ordinateur et mobile, sans installation ni serveur.
+Un jeu **solo de course-combat isométrique sur Terre**, avec garage, armes et carrière. Jeu indépendant en HTML/CSS/Canvas JavaScript, hébergeable sur **GitHub Pages**.
 
-🎮 **Adresse prévue : https://trexdbg.github.io/loubkarting/**
+🎮 **Jeu (après activation Pages) : https://trexdbg.github.io/loubkarting/**
 
-> Si le site retourne une erreur 404, activer GitHub Pages une seule fois dans **Settings → Pages → Build and deployment → Deploy from a branch → main → / (root) → Save**. Le dépôt doit rester public pour une publication gratuite classique.
+📖 **[Game Design complet : Earth Tour](docs/GAME_DESIGN.md)**
 
-## Version 0.2 — World Tour
+## Jouable dès maintenant
 
-### Les courses
-- **2 circuits** : **Neon Canyon** (rochers, néons et grandes courbes) et **Coastline Rush** (côte, virages et épingles).
-- Choix de la voiture : **Viper GT**, **Phantom**, **Bruiser**, avec des statistiques différentes.
-- 4 adversaires IA, 3 difficultés, 3 tours, chronomètre, classement et mini-carte.
-- Missiles guidés, dégâts de collisions, blindage, nitro, réparations et caisses de munitions.
-- Effets sonores et musique rétro synthétique originale, activables depuis l'interface.
-- Course et garage fonctionnent sur **GitHub Pages** en pur HTML/CSS/JavaScript.
+- **Montagne · Alpes (Europe) : quatre courses** : Col des Brumes, Épingle des Cimes, Crête du Tonnerre et **Ascension Royale (boss : Le Bouquetin)**.
+- **Plage · Littoral (Océanie) : quatre courses** : Baie d'Azur, Corniche des Embruns, Cap Solaire et **Couronne des Marées (boss : Sirène du Cap)**.
+- **Huit tracés distincts**, deux décors thématiques en version prototype (rochers et conifères ; littoral, océan et palmiers).
+- **Cinq voitures originales**, à acheter progressivement :
+  1. Citadine 91 — petite française, **gratuite**.
+  2. RS Éclipse — sportive compacte, **900 CR**.
+  3. Kaze AWD — berline de rallye japonaise, **2 600 CR**.
+  4. Vortex V12 — supercar GT, **6 500 CR**.
+  5. Apex Formula — monoplace, **13 000 CR**.
+- **Trois armes au choix** : Dard ionique (guidé), Onde EMP (de zone), Piège magnétique (mine).
+- 4 concurrents IA, missiles, collisions, réparation, nitro, blindage, difficulté, classements et meilleurs temps par épreuve.
+- Crédits gagnés en course et **trois améliorations** (moteur, blindage, nitro) jusqu'au niveau 3.
+- **Carrière** : podium pour passer à la course suivante, victoire obligatoire sur le boss pour déverrouiller la zone Plage. Après un résultat qualificatif, le bouton « Épreuve suivante » permet de continuer immédiatement.
+- Sauvegardes locales du garage, des armes sélectionnées, des crédits et de la progression. Aucun compte requis.
 
-### Garage & progression
-- Les courses rapportent des **crédits (CR)** : 450 CR en 1re position, 360 en 2e, 290 en 3e, 230 en 4e, 180 en 5e, 75 en cas de destruction.
-- Acheter jusqu'à **3 niveaux** d'amélioration pour le **moteur**, le **blindage** et la **nitro**. Les niveaux coûtent successivement **200 CR**, **400 CR** puis **600 CR**.
-- Le moteur augmente vitesse maximale et accélération ; le blindage réduit les dégâts ; la nitro augmente la capacité, la recharge et l'autonomie.
-- Sauvegarde automatique des crédits, des améliorations et du circuit sélectionné dans le navigateur (`localStorage`).
-- **Meilleur temps séparé pour chaque circuit**. L'ancien meilleur temps du prototype v0.1 est conservé pour Neon Canyon.
+## Prévu, mais pas encore jouable
+
+- **Neige · Grand Nord (Amérique du Nord)** — quatre courses + boss.
+- **Désert · Sahara (Afrique)** — quatre courses + boss.
+- **Forêt · Amazonie (Amérique du Sud)** — quatre courses + boss.
+- **World Grand Prix** : dix GP rappelant *l'esprit* des grands classiques automobiles (Riviera, Ardennes, Lombardia et autres), sur **tracés originaux**. La **Apex Formula** sera nécessaire pour y entrer.
+
+**Objectif final : 5 régions × 4 courses + 10 Grands Prix = 30 courses.**
 
 ## Commandes
 
-| Action | Clavier | Tactile |
+| Action | Ordinateur | Téléphone |
 |---|---|---|
 | Accélérer | ↑ / Z / W | GAZ |
-| Freiner / marche arrière | ↓ / S | FREIN |
-| Tourner | ← / → ou Q / D | ◀ / ▶ |
-| Tirer | Espace / J | TIR |
+| Freiner | ↓ / S | FREIN |
+| Diriger | ← / → ou Q / D | ◀ / ▶ |
+| Utiliser l'arme choisie | Espace / J | TIR |
 | Nitro | Maj / K | NITRO |
 | Pause | P / Échap | Ⅱ |
-| Nouvelle course | R | REJOUER |
+| Relancer | R | REJOUER |
 
-*Astuce : sur mobile, le mode paysage est conseillé.*
+Le mode paysage est recommandé sur téléphone. La musique originale synthétique et les effets sonores sont facultatifs.
 
-## Structure technique
+## Mettre en ligne sur GitHub Pages
 
-- `index.html` : écrans, HUD, garage et interface.
-- `style.css` : rendu néon, styles et adaptation mobile.
-- `game.js` : tracés fermés avec splines, projection isométrique Canvas 2D, physique, IA, collisions, combat et sauvegarde.
-- `.nojekyll` : publication de fichiers statiques sur GitHub Pages.
+1. Ouvrir **Settings → Pages** dans ce dépôt.
+2. Sous **Build and deployment**, sélectionner **Deploy from a branch**.
+3. Choisir **main** et **/ (root)**, puis **Save**.
+4. Jouer depuis **https://trexdbg.github.io/loubkarting/**.
 
-Aucun framework, aucune dépendance JavaScript, aucun compte requis. Le rendu utilise des dessins originaux générés directement par Canvas.
+Ouvrir localement `index.html` permet aussi de tester le jeu dans le navigateur. Si la sauvegarde est bloquée sous `file://`, servir le dossier avec un petit serveur local HTTP.
 
-## Développement
+## Développement & tests
+
+Le jeu est volontairement sans framework ni étape de compilation :
+- `index.html` : interface, sélection des zones, épreuves, voitures et armes ;
+- `style.css` : rendu responsive, garage, HUD ;
+- `game.js` : tracés isométriques, physique, IA, modules d'attaque, progression ;
+- `docs/GAME_DESIGN.md` : bible de conception et feuille de route ;
+- `tests/smoke.test.cjs` : tests autonomes sans dépendances.
+
+Exécuter avec **Node.js ≥ 20** :
 
 ```bash
-git clone https://github.com/trexdbg/loubkarting.git
-cd loubkarting
+node --test tests/smoke.test.cjs
 ```
 
-Ouvrir `index.html` dans un navigateur récent. Les fonctionnalités de sauvegarde nécessitent un contexte autorisant `localStorage` ; pour un test reproductible, utiliser un petit serveur local HTTP si besoin.
+Les tests sont également configurés dans `.github/workflows/smoke.yml` pour s'exécuter sur GitHub Actions (sous réserve des paramètres Actions du dépôt).
 
-### Feuille de route
+## Indépendance artistique
 
-- **0.3 :** dérapages, mines, meilleurs retours de collisions et nouveaux décors.
-- **0.4 :** championnat et déblocages, davantage d'adversaires et circuits.
-- **0.5 :** graphismes 2.5D plus travaillés, bande-son rock originale, manette.
-- **1.0 :** campagne solo équilibrée et optimisée mobile.
-- **Ultérieurement :** multijoueur, qui nécessitera une infrastructure serveur dédiée.
-
-## Propriété intellectuelle
-
-Jeu indépendant inspiré du **genre** des courses arcade isométriques des années 1990. Aucun nom de personnage, sprite, texture, piste audio, marque ou autre ressource propriétaire de *Rock N' Roll Racing* / Blizzard n'est utilisé.
+Ce jeu ne reproduit ni assets, ni marques, ni modèles sous licence, ni musiques, ni tracés officiels de Blizzard, de constructeurs automobiles ou de la Formule 1. Les influences sont des références de genre et d'ambiance seulement. Les noms et créations publiés sont propres à LOUBKARTING.
