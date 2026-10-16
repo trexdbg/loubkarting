@@ -185,7 +185,7 @@ const SCREEN_TITLES={
   home:"QUARTIER GÉNÉRAL",world:"CARTE DU MONDE",dealer:"CONCESSIONNAIRE",
   garage:"ATELIER MÉCANIQUE",travel:"TRANSPORTS & LOGISTIQUE",race:"PADDOCK / DÉPART"
 };
-let currentScreen="home",screenHistory=[],showroomPreview=0;
+let currentScreen="home",screenHistory=[],showroomPreview=progress.selectedCar;
 function openCareerScreen(name,back=false){
   if(!CAREER_SCREENS.includes(name))return;
   if(!back&&currentScreen!==name&&state==="menu")screenHistory.push(currentScreen);
@@ -226,6 +226,14 @@ function previewDealerCar(index){
   $("showroomAccelBar").style.width=Math.round(clamp(spec.accel/450,0,1)*100)+"%";
   $("showroomGripBar").style.width=Math.round(clamp(spec.steering/3.1,0,1)*100)+"%";
   document.querySelectorAll("[data-car]").forEach(btn=>btn.classList.toggle("previewed",Number(btn.dataset.car)===index));
+  const owned=progress.ownedCars.includes(index),active=index===selected;
+  $("dealerCheckoutName").textContent=spec.name;
+  $("dealerCheckoutNote").textContent=owned?active?"CETTE VOITURE EST PRÊTE AU DÉPART.":"VÉHICULE DÉJÀ ACHETÉ, PRÊT À ÊTRE ÉQUIPÉ.":
+    "ACHAT DÉFINITIF · "+spec.price.toLocaleString("fr-FR")+" CR";
+  $("dealerBuyBtn").disabled=active||(!owned&&progress.credits<spec.price);
+  $("dealerBuyBtn").textContent=active?"DÉJÀ SÉLECTIONNÉE ✓":
+    owned?"ÉQUIPER CETTE VOITURE":"ACHETER · "+spec.price.toLocaleString("fr-FR")+" CR";
+
 }
 function refreshCareerDisplays(){
   const zone=activeZone(),car=specs[selected],isAccessible=raceAccessible(trackId,raceIndex);
@@ -238,6 +246,7 @@ function refreshCareerDisplays(){
   $("hubNextStatus").textContent=raceUnlocked(trackId,raceIndex)?"DÉPART AUTORISÉ":
     !isAccessible?"TRANSPORT OU RÉSULTAT REQUIS":"INSCRIPTION À PAYER";
   $("sidebarCar").textContent=car.name;
+  $("heroVehicle").dataset.carStyle=car.bodyType;
   $("sidebarZone").textContent=zone.name+" · "+zone.region;
   $("worldRegionTitle").textContent=zone.name;
   $("worldRegionInfo").textContent=zone.region;
@@ -1057,7 +1066,8 @@ document.querySelectorAll("[data-control]").forEach(btn=>{
 document.querySelectorAll("[data-screen]").forEach(btn=>btn.addEventListener("click",()=>openCareerScreen(btn.dataset.screen)));
 document.querySelectorAll("[data-go]").forEach(btn=>btn.addEventListener("click",()=>openCareerScreen(btn.dataset.go)));
 $("backBtn").addEventListener("click",goBackCareer);
-document.querySelectorAll("[data-car]").forEach(btn=>btn.addEventListener("click",()=>buyOrSelectCar(Number(btn.dataset.car))));
+document.querySelectorAll("[data-car]").forEach(btn=>btn.addEventListener("click",()=>previewDealerCar(Number(btn.dataset.car))));
+$("dealerBuyBtn").addEventListener("click",()=>buyOrSelectCar(showroomPreview));
 document.querySelectorAll("[data-transport]").forEach(btn=>btn.addEventListener("click",()=>buyTransport(btn.dataset.transport)));
 $("unlockRaceBtn").addEventListener("click",buyRaceEntry);
 document.querySelectorAll("[data-upgrade]").forEach(btn=>btn.addEventListener("click",()=>buyUpgrade(btn.dataset.upgrade)));
