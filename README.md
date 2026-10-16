@@ -1,4 +1,4 @@
-# 🏁 LOUBKARTING — Earth Tour (v0.6)
+# 🏁 LOUBKARTING — Earth Tour (v0.7 — circuits mythiques)
 
 Un jeu **solo de course-combat isométrique sur Terre**, avec garage, armes et carrière. Jeu indépendant en HTML/CSS/Canvas JavaScript, hébergeable sur **GitHub Pages**.
 
@@ -18,9 +18,22 @@ Les **cinq véhicules** sont désormais dessinés à partir de **maillages polyg
 
 Le moteur de rendu `vehicles.js` est **partagé entre la piste, le grand showroom et les cinq vignettes** ; peinture, surfaces vitrées, ombres, pneumatiques et éléments de carrosserie restent cohérents dans les trois contextes. Les animations de vitrine sont limitées aux menus pour préserver la fluidité des courses. La physique, l'économie et les sauvegardes ne changent pas.
 
+## Nouveau — quatre courses alpines qui ont une personnalité
+
+| Course | Passage mythique | Risque réel |
+|---|---|---|
+| Les Gorges Rouges | Épingle sur le ravin | Pont étroit, rocher et saut optionnel |
+| Le Pont du Chaos | Grand saut entre deux falaises | Deux ponts étroits, saut obligatoire |
+| La Mine Noire | Wagonnets qui traversent la route | Huile, roches, wagonnets mobiles |
+| Le Sommet des Titans | Descente glacée contre Le Bouquetin | Glace, saut, pont étroit et huile |
+
+**La mécanique est jouable**, pas seulement décorative : les rampes projettent la voiture, la voiture reste en l'air puis atterrit ; un saut manqué ou une sortie de pont renvoie au dernier passage sûr (perte de blindage et +2 s). L'huile et le verglas modifient le délai de braquage et la glisse. Les rochers et wagonnets causent des collisions. Les trois adversaires ressentent aussi les zones de ralentissement et les obstacles ; le boss tente de fermer la trajectoire du joueur lorsqu'il s'approche.
+
+Les dangers sont dessinés dans la scène et repérés sur la mini-carte. La préparation de course annonce les pièges. Les huit tracés existants, sauvegardes, peintures, achats, péages et récompenses sont conservés.
+
 ## Jouable dès maintenant
 
-- **Montagne · Alpes (Europe) : quatre courses** : Col des Brumes, Épingle des Cimes, Crête du Tonnerre et **Ascension Royale (boss : Le Bouquetin)**.
+- **Montagne · Alpes (Europe) : quatre courses à obstacles réels** : Les Gorges Rouges, Le Pont du Chaos, La Mine Noire et **Le Sommet des Titans (boss : Le Bouquetin)**.
 - **Plage · Littoral (Océanie) : quatre courses** : Baie d'Azur, Corniche des Embruns, Cap Solaire et **Couronne des Marées (boss : Sirène du Cap)**.
 - **Huit tracés distincts**, deux décors thématiques en version prototype (rochers et conifères ; littoral, océan et palmiers).
 - **Cinq voitures originales**, à acheter progressivement :
@@ -103,6 +116,7 @@ Le jeu est volontairement sans framework ni étape de compilation :
 - `index.html` : interface, sélection des zones, épreuves, voitures et armes ;
 - `style.css` : rendu responsive, garage, HUD ;
 - `game.js` : tracés isométriques, physique, IA, modules d'attaque, progression ;
+- `course-challenges.js` : configuration par circuit, danger, détection des surfaces et rendu des obstacles ;
 - `docs/GAME_DESIGN.md` : bible de conception et feuille de route ;
 - `tests/smoke.test.cjs` : tests autonomes sans dépendances.
 
