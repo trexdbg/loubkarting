@@ -822,3 +822,6 @@ html,body,#gameShell{touch-action:pan-y}
  #menu .garage-paint-panel>canvas{height:115px}
  #menu .garage-paint-panel .paint-picker{flex-direction:column;align-items:flex-start}
 }
+
+/* Circuit danger briefing — one concise line below the course title. */
+.brief-hazards{margin:5px 0 8px!important;color:#f1c276!important;font-size:11px!important;font-weight:750;letter-spacing:.15px;line-height:1.35}
