@@ -205,7 +205,7 @@ function openCareerScreen(name,back=false){
   });
   $("screenEyebrow").textContent=SCREEN_TITLES[name];
   $("screenIndex").textContent=String(PRIMARY_SCREENS.indexOf(name)+1).padStart(2,"0")+" / 04";
-  $("backBtn").classList.toggle("hidden",name==="race");
+  $("backBtn").classList.toggle("hidden",PRIMARY_SCREENS.includes(name));
   $("careerPage").scrollTop=0;
   refreshCareerDisplays();
 }
@@ -241,8 +241,9 @@ function drawCareerVehicles(time){
   if(state!=="menu"||time<previewFrameDue||!window.LKVehicleRenderer)return;
   previewFrameDue=time+.07;
   const artist=window.LKVehicleRenderer;
-  artist.preview($("heroCarCanvas"),specs[selected],{angle:-.47+Math.sin(time*.33)*.17,time});
-  artist.preview($("showroomCarCanvas"),specs[showroomPreview],{angle:-.53+Math.sin(time*.42)*.22,time});
+  if(currentScreen!=="dealer")return;
+  const showcase=$("showroomCarCanvas");
+  if(showcase)artist.preview(showcase,specs[showroomPreview],{angle:-.53+Math.sin(time*.42)*.22,time});
   if(thumbsNeedRedraw){
     document.querySelectorAll("[data-car]").forEach(btn=>{
       const index=Number(btn.dataset.car),view=btn.querySelector("canvas.car-thumb");
@@ -267,10 +268,9 @@ function refreshCareerDisplays(){
   $("briefWeapon").textContent=WEAPONS[selectedWeapon].name;
   const fee=entryFee(trackId,raceIndex),paid=entryPaid(trackId,raceIndex);
   const travelInstruction=!travelAllowed(trackId,raceIndex)?
-    (trackId===0?"ACHÈTE LA REMORQUE : TU DOIS TRANSPORTER TON BOLIDE ENTRE LES CIRCUITS ALPINS.":"ACHÈTE LE BATEAU APRÈS LA VICTOIRE SUR LE BOSS DES ALPES."):
-    !raceQualified(trackId,raceIndex)?"TERMINE L'ÉPREUVE PRÉCÉDENTE POUR ACCÉDER À CELLE-CI.":
-    !paid?"DROIT D'INSCRIPTION À RÉGLER : "+fee+" CR. CE PAIEMENT EST DÉFINITIF.":
-    "TRANSPORT ET INSCRIPTION VALIDÉS. TU PEUX REJOINDRE LE PADDOCK.";
+    (trackId===0?"Remorque requise.":"Bateau requis."):
+    !raceQualified(trackId,raceIndex)?"Termine la course précédente.":
+    !paid?"Inscription : "+fee+" CR":"Prêt à partir.";
   $("travelInstruction").textContent=travelInstruction;
   $("briefAccess").textContent=raceUnlocked(trackId,raceIndex)?"Prêt":
     !isAccessible?"Bloqué":fee+" CR";
