@@ -59,6 +59,12 @@ Les obstacles sont édités **par course** dans `course-challenges.js`, avec une
 
 **Règles de qualité des 20 futurs circuits :** silhouette unique, moment signature, choix risque/récompense, lecture immédiate des pièges, rival le plus dangereux identifiable. Les biomes suivants (Littoral, Grand Nord, Sahara, Amazonie) reprendront le moteur de pièges mais avec leurs propres matériaux et scénarios. La version 0.7 implémente spécifiquement les quatre Alpes ; les autres biomes ne sont pas annoncés comme terminés.
 
+### Animations de chute et équité entre les pilotes
+
+Pour **tous les concurrents** : une chute déclenche une animation d'environ 1 seconde (rotation, profondeur, rétrécissement et fondu) suivie d'un retour sur la route signalé par un halo. Pendant la chute, le véhicule est non-interactif : il n'avance pas, ne tire pas et ne peut ni prendre un bonus ni subir de nouveau projectile. Après réapparition il est brièvement protégé. Les sauts hors des limites de la piste sont également sanctionnés.
+
+Le joueur conserve le barème : **+2 secondes** pour une chute non létale (et perte de PV), **+3 secondes** pour une destruction, y compris après une chute létale ; il n'y a pas de double pénalité. Pour les IA, la chute suspend la progression et les renvoie en arrière, sans fin de course définitive. Un véhicule ennemi détruit par les armes est maintenant réparé puis revient aussi.
+
 ### Littoral — 4 épreuves jouables
 1. **Baie d'Azur** : grandes courbes en bord de mer.
 2. **Corniche des Embruns** : tracé sinueux.
@@ -118,7 +124,7 @@ Droits d'inscription (paiement une seule fois) : **Alpes** : 0 / 120 / 240 / 360
 
 Les lingots ont une représentation originale en perspective isométrique dorée avec l'inscription **CR**. Ils peuvent être ramassés pendant le pilotage et leur valeur s'affiche en direct. Il ne s'agit pas de sprites extraits de *Rock N' Roll Racing*. Le bilan détaillé de course additionne classement, bonus de première qualification, lingots ramassés et voitures détruites ; le total est ajouté au portefeuille à l'arrivée, même en cas d'élimination du joueur.
 
-Les voitures rivales ont des points de blindage : les dards ioniques, impulsions EMP et mines magnétiques infligent des dégâts. Une voiture détruite quitte le classement actif pour l'épreuve en cours. Le boss a une jauge de résistance supérieure et subit moins de dégâts ; il reste néanmoins destructible.
+Les voitures rivales ont des points de blindage : les dards ioniques, impulsions EMP et mines magnétiques infligent des dégâts. Une voiture détruite passe désormais par une animation de chute, puis revient sur la piste (boss compris) avec son blindage restauré. Le boss a une jauge de résistance supérieure et subit moins de dégâts. Un adversaire ne rapporte le bonus de destruction qu'une fois par course, même s'il peut être neutralisé à nouveau.
 
 Pour des raisons de jouabilité, le jeu sauvegarde les crédits, transports et inscriptions achetés, voitures, améliorations et qualifications dans le navigateur. Les anciennes sauvegardes v0.3 sont migrées pour préserver les parcours déjà validés.
 

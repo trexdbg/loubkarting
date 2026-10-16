@@ -64,7 +64,7 @@ function harness(initial={}){
     let dist=300,limit=Math.ceil(win.__test.length()*3/27)+10;
     for(let i=0;i<limit&&win.__test.state()==="race";i++){
       dist+=27;const at=win.__test.at(dist),p=win.__test.player();
-      p.x=at.x;p.y=at.y;p.angle=Math.atan2(at.dy,at.dx);p.speed=0;p.hp=100;
+      p.x=at.x;p.y=at.y;p.angle=Math.atan2(at.dy,at.dx);p.speed=0;p.hp=100;p.invulnerable=10;
       advance();
     }
     assert.equal(win.__test.state(),"finish","Three laps end normally");
@@ -206,7 +206,8 @@ test("gold bars and destroying an opponent award credits on finishing",()=>{
   const opponent=h.win.__test.ais()[0];
   h.win.__test.damageOpponent(opponent,500,1);
   h.win.__test.damageOpponent(opponent,500,1);
-  assert.equal(opponent.destroyed,true);
+  assert.ok(opponent.fall,"Enemy destruction has a fall animation");
+  assert.equal(opponent.destroyed,undefined,"Defeated AI are not permanently eliminated");
   h.winInstant();
   assert.match(h.el("resultStats").innerHTML,/DESTRUCTIONS/);
   assert.match(h.el("resultStats").innerHTML,/LINGOTS/);
@@ -373,6 +374,9 @@ test("narrow bridges penalize driving on the edge but retain a center path",()=>
   assert.ok(p.hp<100,"Bridge edges must cause a fall");
   assert.ok(p.invulnerable>0,"Respawn must be protected");
   assert.match(h.el("eventToast").textContent,/CHUTE/);
+  assert.ok(p.fall,"The fall must animate before teleporting");
+  h.advance(82);
+  assert.equal(p.fall,null,"Respawn should finish after the fall animation");
   assert.ok(Math.hypot(p.x-at.x,p.y-at.y)>100,"Respawn must return to an earlier checkpoint");
 });
 test("oil lowers steering grip, and ramp launches the vehicle",()=>{
@@ -405,12 +409,15 @@ test("destroyed player respawns in the same race with three-second penalty",()=>
   const before=h.el("timer").textContent;
   p.hp=0;
   const start=h.win.__test.state();
-  h.advance(8);
+  h.advance(1);
+  assert.ok(p.fall,"Destroyed car should visibly fall before respawn");
+  assert.ok(h.el("eventToast").textContent.includes("+3 S"));
+  h.advance(82);
   assert.equal(start,"race");
   assert.equal(h.win.__test.state(),"race","Destruction must not end the race");
   assert.equal(p.hp,100,"Respawn restores all armor");
+  assert.ok(p.spawnPhase>=0,"Respawn has a materialization phase");
   assert.ok(p.invulnerable>0,"Spawn protection prevents immediate re-destruction");
-  assert.ok(h.el("eventToast").textContent.includes("+3 S"));
   assert.ok(h.win.__test.player().progress>=0);
   const t=h.el("timer").textContent;
   assert.notEqual(t,before);
@@ -425,9 +432,12 @@ test("a lethal bridge fall charges only three seconds, and the race keeps going"
   const before=h.win.__test.elapsed();
   h.win.__test.updatePlayer(.016);
   assert.equal(h.win.__test.state(),"race");
-  assert.equal(p.hp,100);
+  assert.equal(p.hp,0,"Car is damaged until the fall animation ends");
+  assert.ok(p.fall,"Fatal bridge falls are animated");
   assert.equal(h.win.__test.elapsed()-before,3,"Fatal falls must not accumulate the ordinary 2 s");
   assert.ok(h.el("eventToast").textContent.includes("+3 S"));
+  h.advance(80);
+  assert.equal(p.hp,100);
 });
 test("a non-lethal bridge fall still has the original two-second penalty",()=>{
   const h=harness();h.start();
@@ -450,10 +460,71 @@ test("lethal rocket destroys and repairs the player without losing the race",()=
   const before=h.win.__test.elapsed();
   h.advance(1);
   assert.equal(h.win.__test.state(),"race");
-  assert.equal(p.hp,100);
+  assert.ok(p.fall,"Lethal rockets initiate the fall animation");
   assert.ok(h.win.__test.elapsed()>=before+3);
+  h.advance(80);
+  assert.equal(p.hp,100);
   assert.ok(p.invulnerable>0);
   h.win.__test.rockets().push({x:p.x-5,y:p.y,angle:0,ttl:1,owner:boss,target:null,isPlayer:false});
   h.win.__test.updateRockets(.001);
   assert.equal(p.hp,100,"Spawn immunity prevents immediate follow-up rocket damage");
+});
+
+test("AI also visibly fall from a bridge then return without losing their race",()=>{
+  const h=harness();h.start();
+  const bridge=h.win.__test.course().features.find(f=>f.type==="bridge");
+  const a=h.win.__test.ais()[0],originalHp=a.hp;
+  a.progress=bridge.s-8;a.lane=88;a.airZ=0;a.airV=0;
+  h.win.__test.updateAI(.08);
+  assert.ok(a.fall,"AI crossing outside the bridge must animate a fall");
+  assert.equal(a.finished,false);
+  const frozen=a.progress;
+  h.advance(24);
+  assert.ok(a.fall&&a.airZ<0,"Falling car descends below the track");
+  assert.equal(a.progress,frozen,"AI cannot keep racing while falling");
+  h.advance(65);
+  assert.equal(a.fall,null,"AI respawns on the road");
+  assert.ok(a.hp<originalHp&&a.hp>0,"AI loses armor but is not eliminated");
+  assert.ok(a.invulnerable>0,"AI return with brief collision protection");
+  assert.equal(a.finished,false);
+});
+test("AI return after missing a jump, not teleport instantly",()=>{
+  const h=harness();h.start();
+  const gap=h.win.__test.course().features.find(f=>f.type==="gap");
+  const a=h.win.__test.ais()[1];
+  a.progress=gap.s-8;a.lane=gap.lane;a.airZ=0;a.airV=0;
+  h.win.__test.updateAI(.06);
+  assert.ok(a.fall);
+  h.advance(85);
+  assert.equal(a.fall,null);
+  assert.equal(a.finished,false);
+});
+test("an airborne player who leaves the road has a cinematic fall and returns",()=>{
+  const h=harness();h.start();
+  const p=h.win.__test.player(),at=h.win.__test.at(950);
+  p.x=at.x+at.nx*142;p.y=at.y+at.ny*142;
+  p.speed=120;p.airZ=67;p.airV=90;
+  const before=h.win.__test.elapsed();
+  h.win.__test.updatePlayer(.016);
+  assert.ok(p.fall);
+  assert.ok(h.el("eventToast").textContent.includes("HORS PISTE"));
+  assert.ok(Math.abs(h.win.__test.elapsed()-before-2)<1e-8);
+  h.advance(85);
+  assert.equal(p.fall,null);
+  assert.equal(h.win.__test.state(),"race");
+});
+test("destroyed enemies return and can only give one destruction bonus each",()=>{
+  const h=harness();h.start();
+  const ai=h.win.__test.ais()[0],baseHp=ai.hp;
+  h.win.__test.damageOpponent(ai,500,1);
+  assert.ok(ai.fall);
+  assert.equal(h.win.__test.knockouts(),1);
+  h.advance(84);
+  assert.equal(ai.fall,null);
+  assert.equal(ai.hp,baseHp);
+  assert.equal(ai.finished,false);
+  ai.invulnerable=0;
+  h.win.__test.damageOpponent(ai,500,1);
+  assert.ok(ai.fall);
+  assert.equal(h.win.__test.knockouts(),1,"Respawned AI must not grant unlimited credits");
 });

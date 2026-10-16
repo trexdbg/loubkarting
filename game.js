@@ -673,9 +673,44 @@ function carPolygon(car,coords,color){
 function drawCar(car,t){
   const visual=window.LKVehicleRenderer;
   if(!visual)return;
-  if(car.airZ>3){
+  if(car.airZ>3&&!car.fall){
     const shadow=screen(car.x,car.y,0);
     ctx.fillStyle="#03071288";ctx.beginPath();ctx.ellipse(shadow.x,shadow.y,30*zoom,14*zoom,-.3,0,TAU);ctx.fill();
+  }
+  // Respawn materialization: a bright ground ring and rising guide beams.
+  if(car.spawnPhase>0&&!car.fall){
+    const phase=clamp(car.spawnPhase/.55,0,1),origin=screen(car.x,car.y,0);
+    ctx.save();
+    ctx.globalAlpha=phase*.78;ctx.strokeStyle=car.isPlayer?"#a5fff4":"#79ddec";ctx.lineWidth=3*zoom;
+    ctx.beginPath();ctx.ellipse(origin.x,origin.y,(48-20*phase)*zoom,(22-9*phase)*zoom,-.23,0,TAU);ctx.stroke();
+    for(let i=-1;i<=1;i++){
+      const offset=i*22*zoom;
+      ctx.beginPath();ctx.moveTo(origin.x+offset,origin.y);
+      ctx.lineTo(origin.x+offset,origin.y-(35+35*phase)*zoom);
+      ctx.lineWidth=2*zoom;ctx.stroke();
+    }
+    ctx.restore();
+  }
+  // Spin, shrink and sink below the road when falling. Works with the existing
+  // polygonal vehicle meshes, including the heavyweight boss and the formula car.
+  ctx.save();
+  const pivot=screen(car.x,car.y,(car.airZ||0)+22);
+  if(car.fall){
+    const u=clamp(car.fall.t/car.fall.duration,0,1);
+    const scale=Math.max(.16,1-.82*u);
+    ctx.translate(pivot.x,pivot.y);
+    ctx.rotate((car.fall.side||1)*u*1.62);
+    ctx.scale(scale,scale);
+    ctx.translate(-pivot.x,-pivot.y);
+    ctx.globalAlpha=clamp((1-u)*2.8,0,1);
+  }else if(car.spawnPhase>0){
+    const u=1-clamp(car.spawnPhase/.55,0,1);
+    const scale=.64+.36*u;
+    ctx.translate(pivot.x,pivot.y);ctx.scale(scale,scale);ctx.translate(-pivot.x,-pivot.y);
+    ctx.globalAlpha=.30+.70*u;
+  }else if(car.airZ>3){
+    const tilt=Math.sin((t-car.jumpTime)*8)*.055;
+    ctx.translate(pivot.x,pivot.y);ctx.rotate(tilt);ctx.translate(-pivot.x,-pivot.y);
   }
   visual.draw(ctx,{
     project:(f,r,z)=>bodyPoint(car,f,r,z),zoom,
@@ -684,7 +719,6 @@ function drawCar(car,t){
   });
   const z=car.style.bodyType==="rally"?57:car.style.bodyType==="formula"?51:48;
   const label=bodyPoint(car,0,0,z);
-  ctx.save();
   ctx.font="800 "+Math.max(9,Math.round(11*zoom))+"px Inter,Arial";
   ctx.textAlign="center";ctx.shadowColor="#030712";ctx.shadowBlur=5;
   ctx.fillStyle=car.isPlayer?"#fff3a5":"#e0e5f4";
@@ -733,6 +767,23 @@ function draw(t){
   const toRender=[player,...ais].filter(c=>c&&!c.destroyed).sort((a,b)=>iso(a.x,a.y).y-iso(b.x,b.y).y);
   for(const car of toRender)drawCar(car,t);
   drawMines(t);drawRockets();drawParticles();
+  // Player-only brief motion streaks convey depth and impact without moving HUD.
+  if(player&&player.fall){
+    const u=player.fall.t/player.fall.duration;
+    const focus=screen(player.fall.startX,player.fall.startY,0);
+    ctx.save();
+    ctx.globalAlpha=.06+.12*Math.sin(u*Math.PI);
+    ctx.fillStyle="#d95443";ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle="#ffd18b";ctx.lineWidth=3*zoom;
+    for(let i=0;i<11;i++){
+      const a=i*TAU/11+t*.3,outer=90+u*160,inner=outer-46;
+      ctx.beginPath();
+      ctx.moveTo(focus.x+Math.cos(a)*inner*zoom,focus.y+Math.sin(a)*inner*.58*zoom);
+      ctx.lineTo(focus.x+Math.cos(a)*outer*zoom,focus.y+Math.sin(a)*outer*.58*zoom);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 }
 function spawnFX(x,y,color,count=12){
   for(let i=0;i<count;i++){
@@ -745,7 +796,7 @@ function makeCar(s,lane,style,name,isPlayer=false){
   const p=trackAt(s);
   const enhanced=isPlayer?{...style,speed:style.speed*(1+progress.engine*.065),accel:style.accel*(1+progress.engine*.025),armor:style.armor+progress.armor*.19}:style;
   return {x:p.x+p.nx*lane,y:p.y+p.ny*lane,angle:Math.atan2(p.dy,p.dx),speed:0,progress:s,lastRaw:mod(s,TRACK_LENGTH),
-    lane,style:enhanced,name,isPlayer,hp:100,maxNitro:isPlayer?100+progress.nitro*20:100,nitro:isPlayer?100+progress.nitro*20:100,ammo:5,fireCooldown:0,hitFlash:0,stun:0,boosting:false,finished:false,airZ:0,airV:0,roadGrip:1,steerMomentum:0,hazardHits:Object.create(null),invulnerable:0};
+    lane,style:enhanced,name,isPlayer,hp:100,maxNitro:isPlayer?100+progress.nitro*20:100,nitro:isPlayer?100+progress.nitro*20:100,ammo:5,fireCooldown:0,hitFlash:0,stun:0,boosting:false,finished:false,airZ:0,airV:0,roadGrip:1,steerMomentum:0,hazardHits:Object.create(null),invulnerable:0,fall:null,spawnPhase:0,justLanded:false,jumpTime:-10};
 }
 function resetRace(){
   raceGold=0;raceKOs=0;
@@ -762,6 +813,7 @@ function resetRace(){
     const a=makeCar(starts[i],lanes[i],r,r.name);
     a.isBoss=boss;
     a.hp=boss?180:115;
+    a.maxHp=a.hp;a.knockouts=0;
     a.cruise=(rates[i]+raceIndex*(boss?6:4))*difficultyRate;
     a.phase=i*1.8;
     a.attackTimer=(boss?1.2:3.3)+rnd()*(boss?1.4:2.8);
@@ -796,7 +848,8 @@ function courseHazardAt(s,lane){
 function launchJump(car){
   car.airZ=5;
   car.airV=155+Math.max(0,car.speed)*.23;
-  spawnFX(car.x,car.y,"#ffcb6b",11);
+  car.jumpTime=elapsed;
+  spawnFX(car.x,car.y,"#ffcb6b",12);
   if(car.isPlayer)setToast("SAUT !");
 }
 function advanceJump(car,dt){
@@ -804,52 +857,77 @@ function advanceJump(car,dt){
   car.airV-=480*dt;
   car.airZ=Math.max(0,car.airZ+car.airV*dt);
   if(car.airZ===0){
-    car.airV=0;
-    if(car.isPlayer)spawnFX(car.x,car.y,"#f8d99b",5);
+    car.airV=0;car.justLanded=true;
+    spawnFX(car.x,car.y,"#f8d99b",7);
   }
 }
-// A destroyed vehicle may always rejoin the race, with a fixed 3-second penalty.
-function respawnDestroyedVehicle(){
-  if(state!=="race"||player.hp>0)return false;
-  const nearest=closestTrack(player.x,player.y);
-  const checkpoint=trackAt(nearest.s-130);
-  const before=player.lastRaw;
-  let back=checkpoint.s-before;
-  if(back>TRACK_LENGTH*.5)back-=TRACK_LENGTH;
-  if(back< -TRACK_LENGTH*.5)back+=TRACK_LENGTH;
-  player.progress=Math.max(0,player.progress+Math.min(0,back));
-  player.lastRaw=checkpoint.s;
-  player.x=checkpoint.x;player.y=checkpoint.y;
-  player.angle=Math.atan2(checkpoint.dy,checkpoint.dx);
-  player.speed=0;player.hp=100;player.airZ=0;player.airV=0;
-  player.steerMomentum=0;player.roadGrip=1;player.boosting=false;
-  player.invulnerable=2.5;
-  shockCooldown=1;
-  elapsed+=3;
-  spawnFX(player.x,player.y,"#ffce78",24);
-  setToast("VOITURE RÉPARÉE · +3 S");
+// Chutes et réapparitions partagent la même animation pour les joueurs et toutes les IA.
+function startVehicleFall(car,nearest,reason,penalty,damage=0){
+  if(car.fall||car.finished||car.destroyed||car.invulnerable>0)return false;
+  const fatal=car.isPlayer&&car.hp<=damage;
+  car.hp=fatal?0:Math.max(1,car.hp-damage);
+  car.fall={
+    t:0,duration:1.08,startX:car.x,startY:car.y,startZ:Math.max(0,car.airZ),
+    angle:car.angle,speed:Math.max(90,Math.abs(car.speed)),
+    side:(Math.sin(car.angle)*nearest.dist>=0?1:-1),
+    s:nearest.s,rewind:car.isPlayer?170:155,fatal,reason
+  };
+  car.speed=0;car.boosting=false;car.airV=0;car.invulnerable=1;
+  if(car.isPlayer){
+    elapsed+=penalty;
+    shockCooldown=1;
+    setToast(reason+" · +"+penalty+" S");
+    sound.effect("hit");
+  }
+  spawnFX(car.x,car.y,"#f39964",22);
   return true;
+}
+function updateVehicleFall(car,dt){
+  const fall=car.fall;
+  if(!fall)return false;
+  fall.t=Math.min(fall.duration,fall.t+dt);
+  const u=fall.t/fall.duration;
+  const drift=fall.speed*fall.t*.40;
+  car.x=fall.startX+Math.cos(fall.angle)*drift-Math.sin(fall.angle)*55*u;
+  car.y=fall.startY+Math.sin(fall.angle)*drift+Math.cos(fall.angle)*55*u;
+  // A brief upward lurch followed by a steep fall gives visible depth in isometric view.
+  car.airZ=fall.startZ+35*Math.sin(u*Math.PI)-310*u*u;
+  if(u<.76&&rnd()<dt*22)spawnFX(car.x,car.y,"#dda779",2);
+  if(u<1)return true;
+  const checkpoint=trackAt(fall.s-fall.rewind);
+  car.progress=Math.max(0,car.progress-fall.rewind);
+  car.lastRaw=checkpoint.s;
+  car.x=checkpoint.x+checkpoint.nx*(car.isPlayer?0:clamp(car.lane,-23,23));
+  car.y=checkpoint.y+checkpoint.ny*(car.isPlayer?0:clamp(car.lane,-23,23));
+  car.angle=Math.atan2(checkpoint.dy,checkpoint.dx);
+  car.airZ=0;car.airV=0;car.justLanded=false;
+  car.steerMomentum=0;car.roadGrip=1;car.boosting=false;
+  car.spawnPhase=.55;car.invulnerable=1.8;car.fall=null;
+  if(!car.isPlayer&&fall.reason==="DESTRUCTION")car.hp=car.maxHp||115;
+  if(car.isPlayer){
+    car.speed=0;
+    if(fall.fatal)car.hp=100;
+    cam.x=car.x;cam.y=car.y;
+    spawnFX(car.x,car.y,"#84f4ee",25);
+    setToast(fall.fatal?"VOITURE RÉPARÉE !":"RETOUR EN PISTE !");
+  }else{
+    car.lane=clamp(car.lane,-23,23);
+    car.stun=Math.max(car.stun,.65);
+    car.speed=0;
+    spawnFX(car.x,car.y,"#81e8df",11);
+  }
+  return true;
+}
+// Damage from rockets, collisions or hazards never removes the player permanently.
+function respawnDestroyedVehicle(){
+  if(state!=="race"||player.hp>0||player.fall)return false;
+  return startVehicleFall(player,closestTrack(player.x,player.y),"VOITURE DÉTRUITE",3,0);
 }
 function fallFromCourse(nearest,reason){
-  if(player.invulnerable>0)return false;
-  // A fatal fall counts as vehicle destruction: exactly +3 s, never +2 s plus +3 s.
-  if(player.hp<=17/player.style.armor){
-    player.hp=0;
-    return respawnDestroyedVehicle();
-  }
-  const checkpoint=trackAt(nearest.s-170);
-  player.x=checkpoint.x;player.y=checkpoint.y;
-  player.angle=Math.atan2(checkpoint.dy,checkpoint.dx);
-  player.lastRaw=checkpoint.s;
-  player.progress=Math.max(0,player.progress-170);
-  player.speed=85;player.airZ=0;player.airV=0;player.steerMomentum=0;
-  player.hp=Math.max(0,player.hp-17/player.style.armor);
-  player.invulnerable=1.4;
-  elapsed+=2;
-  shockCooldown=.8;
-  spawnFX(checkpoint.x,checkpoint.y,"#f39964",18);
-  setToast(reason+" · +2 S");
-  return true;
+  if(player.fall||player.invulnerable>0)return false;
+  const damage=17/player.style.armor;
+  const fatal=player.hp<=damage;
+  return startVehicleFall(player,nearest,reason,fatal?3:2,damage);
 }
 function updateCourseHazardForPlayer(nearest){
   const p=trackAt(nearest.s);
@@ -860,6 +938,10 @@ function updateCourseHazardForPlayer(nearest){
     &&elapsed-(player.hazardHits[hazard.ramp.id]??-100)>2){
     player.hazardHits[hazard.ramp.id]=elapsed;
     launchJump(player);
+  }
+  // A sideways jump beyond the tarmac is a real fall, not an invisible wall bounce.
+  if((player.airZ>8||player.justLanded)&&nearest.dist>ROAD_HALF-9){
+    return fallFromCourse(nearest,"SAUT HORS PISTE");
   }
   if(hazard.bridge&&Math.abs(lane)>hazard.bridge.width-12&&player.airZ<12){
     return fallFromCourse(nearest,"CHUTE DU PONT");
@@ -891,6 +973,9 @@ function updateProgress(){
   return n;
 }
 function updatePlayer(dt){
+  if(player.fall){updateVehicleFall(player,dt);return;}
+  player.spawnPhase=Math.max(0,player.spawnPhase-dt);
+  player.justLanded=false;
   const gas=pressed("gas"),brake=pressed("brake"),left=pressed("left"),right=pressed("right"),nitro=pressed("nitro");
   player.fireCooldown=Math.max(0,player.fireCooldown-dt);
   player.hitFlash=Math.max(0,player.hitFlash-dt);
@@ -925,7 +1010,7 @@ function updatePlayer(dt){
     player.speed*=.81;
   }
   for(const ai of ais){
-    if(!ai.destroyed&&player.invulnerable<=0&&hypot(player.x-ai.x,player.y-ai.y)<44){
+    if(!ai.destroyed&&!ai.fall&&ai.invulnerable<=0&&player.invulnerable<=0&&hypot(player.x-ai.x,player.y-ai.y)<44){
       const angle=Math.atan2(player.y-ai.y,player.x-ai.x);
       player.x+=Math.cos(angle)*150*dt;player.y+=Math.sin(angle)*150*dt;
       player.speed*=.97;
@@ -938,6 +1023,10 @@ function updatePlayer(dt){
 function updateAI(dt){
   for(const a of ais){
     if(a.finished||a.destroyed)continue;
+    if(a.fall){updateVehicleFall(a,dt);continue;}
+    a.spawnPhase=Math.max(0,a.spawnPhase-dt);
+    a.invulnerable=Math.max(0,a.invulnerable-dt);
+    a.justLanded=false;
     a.hitFlash=Math.max(0,a.hitFlash-dt);a.stun=Math.max(0,a.stun-dt);
     a.attackTimer-=dt;
     const current=trackAt(a.progress);
@@ -959,12 +1048,16 @@ function updateAI(dt){
       launchJump(a);
     }
     advanceJump(a,dt);
-    if(hazard.gap&&a.airZ<17){
-      a.progress=Math.max(0,a.progress-150);
-      a.stun=1.5;a.hp=Math.max(1,a.hp-12);a.airZ=0;a.airV=0;
+    const fellFromBridge=hazard.bridge&&Math.abs(lane)>hazard.bridge.width-12&&a.airZ<12;
+    const missedGap=hazard.gap&&a.airZ<17;
+    const jumpedOffRoad=(a.airZ>8||a.justLanded)&&Math.abs(lane)>ROAD_HALF-9;
+    if((fellFromBridge||missedGap||jumpedOffRoad)
+      &&startVehicleFall(a,p,
+        fellFromBridge?"CHUTE DU PONT":missedGap?"SAUT MANQUÉ":"SAUT HORS PISTE",0,12)){
+      continue;
     }
     for(const obstacle of [hazard.rock,hazard.cart]){
-      if(obstacle&&a.airZ<32&&elapsed-(a.hazardHits[obstacle.id]??-100)>1.5){
+      if(obstacle&&!a.invulnerable&&a.airZ<32&&elapsed-(a.hazardHits[obstacle.id]??-100)>1.5){
         a.hazardHits[obstacle.id]=elapsed;a.stun=.85;a.hp=Math.max(1,a.hp-9);
       }
     }
@@ -982,14 +1075,14 @@ function targetFor(owner){
   const enemies=owner.isPlayer?ais:[player];
   let target=null,best=Infinity;
   for(const e of enemies){
-    if(e.finished||e.destroyed)continue;
+    if(e.finished||e.destroyed||e.fall||e.invulnerable>0)continue;
     const dx=e.x-owner.x,dy=e.y-owner.y,d=hypot(dx,dy),f=dx*Math.cos(owner.angle)+dy*Math.sin(owner.angle);
     if(d<540&&d<best&&(owner.isPlayer?f/d>.03:true)){target=e;best=d;}
   }
   return target;
 }
 function shoot(owner){
-  if(owner.fireCooldown>0)return;
+  if(owner.fireCooldown>0||owner.fall)return;
   const weapon=owner.isPlayer?WEAPONS[selectedWeapon]:WEAPONS.dart;
   if(owner.isPlayer&&owner.ammo<weapon.cost){
     owner.fireCooldown=.4;setToast("MUNITIONS INSUFFISANTES");return;
@@ -998,7 +1091,7 @@ function shoot(owner){
   if(owner.isPlayer){owner.ammo-=weapon.cost;sound.effect("fire");}
   if(owner.isPlayer&&selectedWeapon==="pulse"){
     let hits=0;
-    for(const ai of ais)if(!ai.finished&&!ai.destroyed&&hypot(owner.x-ai.x,owner.y-ai.y)<215){
+    for(const ai of ais)if(!ai.finished&&!ai.destroyed&&!ai.fall&&ai.invulnerable<=0&&hypot(owner.x-ai.x,owner.y-ai.y)<215){
       damageOpponent(ai,28,2.65);ai.hitFlash=.34;spawnFX(ai.x,ai.y,"#8fefff",13);hits++;
     }
     spawnFX(owner.x,owner.y,"#9af0f5",30);
@@ -1020,15 +1113,19 @@ function rotateToward(a,b,max){
   return a+clamp(d,-max,max);
 }
 function destroyOpponent(ai){
-  if(ai.destroyed)return;
-  ai.destroyed=true;ai.finished=true;ai.hp=0;ai.progress=-100000000;
-  raceKOs++;
+  if(ai.destroyed||ai.finished||ai.fall)return;
+  // Weapon KOs are spectacular but temporary; each rival awards credits once per race.
+  ai.hp=0;
+  if(!startVehicleFall(ai,closestTrack(ai.x,ai.y),"DESTRUCTION",0,0))return;
+  ai.knockouts=(ai.knockouts||0)+1;
+  const bonus=ai.knockouts===1;
+  if(bonus)raceKOs++;
   spawnFX(ai.x,ai.y,ai.isBoss?"#ffe1a0":"#f6ad6c",38);
-  setToast("DESTRUCTION : "+ai.name+"  +"+KO_REWARD+" CR");
+  setToast("DESTRUCTION : "+ai.name+(bonus?"  +"+KO_REWARD+" CR":"  · REVIENT EN PISTE"));
   if(sound.enabled)sound.effect("hit");
 }
 function damageOpponent(ai,amount,stun){
-  if(ai.destroyed||ai.finished)return;
+  if(ai.destroyed||ai.finished||ai.fall||ai.invulnerable>0)return;
   ai.hp=Math.max(0,ai.hp-amount*(ai.isBoss?.75:1));
   ai.hitFlash=.25;ai.stun=Math.max(ai.stun,stun);
   if(ai.hp<=0)destroyOpponent(ai);
@@ -1044,7 +1141,7 @@ function updateRockets(dt){
     r.x+=mx*670*dt;r.y+=my*670*dt;
     let hit=null;
     for(const c of r.isPlayer?ais:[player]){
-      if(c===r.owner||c.finished||c.destroyed||(c.isPlayer&&c.invulnerable>0))continue;
+      if(c===r.owner||c.finished||c.destroyed||c.fall||c.invulnerable>0)continue;
       if(hypot(r.x-c.x,r.y-c.y)<40){hit=c;break;}
     }
     if(hit){
@@ -1062,7 +1159,7 @@ function updateMines(dt){
   for(let i=mines.length-1;i>=0;i--){
     const mine=mines[i];mine.ttl-=dt;
     let hit=false;
-    for(const ai of ais)if(!ai.finished&&!ai.destroyed&&hypot(ai.x-mine.x,ai.y-mine.y)<48){
+    for(const ai of ais)if(!ai.finished&&!ai.destroyed&&!ai.fall&&ai.invulnerable<=0&&hypot(ai.x-mine.x,ai.y-mine.y)<48){
       damageOpponent(ai,85,3);ai.hitFlash=.42;
       spawnFX(mine.x,mine.y,"#78f0ed",26);
       setToast("PIÈGE ACTIVÉ !");hit=true;break;
@@ -1072,6 +1169,7 @@ function updateMines(dt){
 }
 
 function updatePickups(dt){
+  if(player.fall)return;
   for(const p of pickups){
     if(p.cooldown>0){p.cooldown=Math.max(0,p.cooldown-dt);continue;}
     if(hypot(player.x-p.x,player.y-p.y)<41){
@@ -1104,8 +1202,12 @@ function update(dt){
     hudTicker-=dt;if(hudTicker<=0){hudTicker=.09;setHud();drawMinimap();}
   }
   updateParticles(dt);
-  if(player){cam.x+=((player.x+Math.cos(player.angle)*90)-cam.x)*Math.min(1,dt*4.8);
-             cam.y+=((player.y+Math.sin(player.angle)*90)-cam.y)*Math.min(1,dt*4.8);}
+  if(player){
+    const tx=player.fall?player.fall.startX:player.x+Math.cos(player.angle)*90;
+    const ty=player.fall?player.fall.startY:player.y+Math.sin(player.angle)*90;
+    cam.x+=(tx-cam.x)*Math.min(1,dt*4.8);
+    cam.y+=(ty-cam.y)*Math.min(1,dt*4.8);
+  }
 }
 function position(){return 1+ais.filter(a=>!a.destroyed&&a.progress>player.progress).length;}
 function formatTime(s){

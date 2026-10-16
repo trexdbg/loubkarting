@@ -31,6 +31,10 @@ Le moteur de rendu `vehicles.js` est **partagé entre la piste, le grand showroo
 
 Les dangers sont dessinés dans la scène et repérés sur la mini-carte. La préparation de course annonce les pièges. Les huit tracés existants, sauvegardes, peintures, achats, péages et récompenses sont conservés.
 
+### Chutes et retours en piste animés
+
+Lorsque le joueur ou un rival passe à côté d'un pont, rate un saut ou atterrit hors de la route : **la voiture tourne sur elle-même, plonge sous le circuit, devient plus petite et disparaît**, puis revient quelques instants après sur une portion sûre, avec un cercle lumineux et une protection temporaire. L'IA ne continue plus fictivement à progresser pendant sa chute : elle suspend sa course, perd de l'avance et reprend ensuite. Les destructions par armes font également revenir les rivaux (boss compris), sans donner plusieurs fois la prime de 240 CR pour le même adversaire.
+
 ## Jouable dès maintenant
 
 - **Montagne · Alpes (Europe) : quatre courses à obstacles réels** : Les Gorges Rouges, Le Pont du Chaos, La Mine Noire et **Le Sommet des Titans (boss : Le Bouquetin)**.
@@ -63,7 +67,7 @@ La première course de chaque région est gratuite une fois le voyage payé. Les
 
 **Récompenses d'une course :** 450 / 360 / 290 / 230 CR (de la première à la quatrième place), ou 75 CR en cas d'élimination du joueur ; puis **+40 ou +65 CR par lingot collecté**, **+240 CR par rival détruit**, et +280 CR lors du premier podium sur une épreuve ordinaire / +850 CR lors de la première victoire en finale de région.
 
-Les véhicules détruits quittent la piste pour cette course. Le boss possède davantage de blindage et tire plus souvent, mais peut aussi être éliminé.
+Les véhicules détruits **reviennent maintenant en piste** après une chute animée, y compris le boss. Le joueur subit **+3 s** lorsque sa voiture est détruite et récupère son blindage ; une chute non létale dans un trou coûte **+2 s** et des PV. Chaque adversaire peut rapporter **une seule prime de destruction par course** pour éviter les gains infinis.
 
 ## Interface de carrière : simple et directe (v0.6)
 
