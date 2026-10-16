@@ -596,3 +596,137 @@ html,body,#gameShell{touch-action:pan-y}
 #menu .career-page{touch-action:pan-y}
 @media(max-width:760px){#menu .continent-art{min-height:170px}}
 @media(prefers-reduced-motion:reduce){#menu .earth-svg .map-pin circle:first-child{animation:none!important}}
+
+
+/* v0.6 — minimalist navigation and practical screen hierarchy */
+#menu.career-overlay{background:#0d1620}
+#menu.career-overlay:before{background:linear-gradient(125deg,#18273672,#0a111b 75%)!important}
+#menu .career-shell{grid-template-columns:188px minmax(0,1fr)}
+#menu .career-sidebar{background:#101a25}
+#menu .career-logo{height:78px;padding:14px}
+#menu .career-logo strong{font-size:16px}
+#menu .career-logo small{display:none}
+#menu .sidebar-chapter{padding:18px 18px 9px}
+#menu .career-nav{padding:0 9px;gap:4px}
+#menu .nav-tab{min-height:46px;padding:9px 12px;gap:11px}
+#menu .nav-tab .nav-picto{font-size:22px;width:23px}
+#menu .nav-tab>span:nth-child(2){font:750 17px 'Barlow Condensed',Impact,sans-serif;letter-spacing:0}
+#menu .nav-tab.active{background:#36372f;border-color:#ddc36d7f}
+#menu .sidebar-bottom{padding:12px 17px 18px}
+#menu .career-bar{height:65px;padding:0 26px}
+#menu .career-wallet strong{font-size:26px}
+#menu .career-page{padding:27px clamp(20px,4vw,57px) 32px}
+#menu .career-screen{max-width:1030px}
+#menu .screen-heading{align-items:center;min-height:45px;margin-bottom:17px}
+#menu .screen-heading h2{font:800 clamp(32px,3.5vw,46px)/1.1 'Barlow Condensed',Impact,sans-serif;letter-spacing:0;margin:0;color:#f7f0df}
+#menu .screen-heading .eyebrow,#menu .screen-heading p,#menu .screen-heading .screen-ornament{display:none}
+#menu .section-head{max-width:none;margin:13px 0 10px}
+#menu .section-head .option-label{font-size:11px;letter-spacing:.2px;text-transform:none}
+#menu .primary-action{padding:12px 17px;font-size:17px}
+#menu .secondary-action{padding:12px 16px;font-size:13px;letter-spacing:0}
+#menu .bottom-action-row{margin-top:17px;gap:8px}
+#menu .career-progress{font-size:11px;letter-spacing:0}
+#menu .map-region-preview{grid-template-columns:1.35fr .75fr;min-height:148px;margin-bottom:13px}
+#menu .continent-art{min-height:148px}
+#menu .map-continent{display:none}
+#menu .region-info{padding:14px 19px}
+#menu .region-info>.option-label{display:none}
+#menu .region-info h3{font-size:35px;margin:0}
+#menu .region-info>div{font-size:11px}
+#menu .region-info p{margin:7px 0 0;font-size:11px}
+#menu .zone-select{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+#menu .zone-card{min-height:66px;padding:9px 13px}
+#menu .zone-card strong{font-size:19px}
+#menu .zone-card small{font-size:9px;letter-spacing:.6px}
+#menu .zone-card em{font-size:10px}
+#menu .future-regions{display:block;grid-column:1/-1;margin-top:2px;color:#8b9fac;font-size:11px;padding:6px 2px}
+#menu .race-heading{margin-top:15px}
+#menu .race-select{grid-template-columns:repeat(4,minmax(0,1fr))}
+#menu .race-card{min-height:65px}
+#menu .race-card strong{font-size:15px}
+#menu .race-card small{font-size:10px}
+#menu .career-message{color:#bdc9d5;font-size:11px;margin-top:9px}
+#menu .showroom-stage{min-height:234px;padding:20px 22px;margin-bottom:17px}
+#menu .showroom-car{top:21%;height:107px}
+#menu .showroom-caption strong{font-size:clamp(36px,4vw,55px)}
+#menu .showroom-specs b{font-size:21px}
+#menu .car-select{grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+#menu .car-card{min-height:112px}
+#menu .car-card strong{font-size:17px}
+#menu .car-card small{font-size:9px}
+#menu .car-card em{margin-top:4px;font-size:10px}
+#menu .car-card.previewed{transform:none}
+#menu .dealer-checkout{margin-top:13px;padding:12px 16px}
+#menu .dealer-checkout-copy strong{font-size:25px}
+#menu .dealer-buy-btn{padding:11px 16px;font-size:17px}
+#menu .dealer-hint,#menu .selection-note,#menu .dealer-checkout-copy small{display:none}
+#menu .workshop-banner{min-height:74px;padding:11px 16px;margin-bottom:13px}
+#menu .workshop-banner strong{font-size:26px}
+#menu .workshop-tools,#menu .workshop-section-title>span,#menu .workshop-section-title p{display:none}
+#menu .workshop-section-title{margin:14px 0 9px}
+#menu .workshop-section-title h3{font-size:22px}
+#menu .garage{padding:12px}
+#menu .upgrade-card{min-height:82px}
+#menu .upgrade-card strong{font-size:17px}
+#menu .weapon-card{min-height:69px}
+#menu .weapon-card strong{font-size:16px}
+#menu .transport-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+#menu .transport-card{min-height:80px}
+#menu .transport-card strong{font-size:19px}
+#menu .travel-notice{margin-top:12px;padding:11px 14px}
+#menu .travel-notice p{margin:0}
+#menu .travel-notice>span{display:none}
+#menu .race-fee{margin-top:13px;padding-top:12px}
+#menu .race-briefing{min-height:157px;margin-bottom:12px}
+#menu .briefing-scene{min-height:157px}
+#menu .briefing-description{padding:19px 22px}
+#menu .briefing-description small{display:none}
+#menu .briefing-description h3{font-size:33px}
+#menu .briefing-description h4{font-size:22px}
+#menu .briefing-description p{font-size:11px;margin-top:9px}
+#menu .briefing-list{gap:8px;margin-bottom:12px}
+#menu .briefing-list button{min-height:83px;padding:12px;gap:5px}
+#menu .briefing-list button strong{font-size:21px}
+#menu .race-finalize{padding:15px}
+#menu .race-finalize .option-row{margin:0 0 9px}
+#menu .race-finalize .start-btn{font-size:23px;padding:14px 19px}
+#menu .launch-error:empty{display:none}
+#menu .career-back{font-size:11px}
+#menu .career-foot{display:none}
+@media(max-width:760px){
+ #menu .career-shell{display:flex;flex-direction:column}
+ #menu .career-sidebar{height:65px}
+ #menu .career-logo{width:108px;height:65px;padding:6px}
+ #menu .career-logo strong{font-size:12px}
+ #menu .career-nav{justify-content:space-evenly}
+ #menu .nav-tab{width:calc((100vw - 112px)/4);min-height:58px;padding:5px 1px}
+ #menu .nav-tab .nav-picto{font-size:21px}
+ #menu .nav-tab>span:nth-child(2){font-size:12px}
+ #menu .career-bar{height:50px;padding:0 13px}
+ #menu .career-page{padding:18px 12px 30px}
+ #menu .screen-heading h2{font-size:33px}
+ #menu .map-region-preview{grid-template-columns:1.2fr 1fr;min-height:128px}
+ #menu .continent-art{min-height:128px}
+ #menu .region-info{padding:10px}
+ #menu .region-info h3{font-size:27px}
+ #menu .zone-select{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #menu .zone-card{min-height:60px}
+ #menu .race-select{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #menu .race-card{min-height:62px}
+ #menu .showroom-stage{min-height:250px;padding:14px}
+ #menu .showroom-car{top:5%;height:105px;width:77%}
+ #menu .showroom-caption{margin-top:104px}
+ #menu .showroom-caption strong{font-size:38px}
+ #menu .showroom-specs{margin-top:7px}
+ #menu .car-select{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #menu .workshop-banner{min-height:63px}
+ #menu .race-briefing{grid-template-columns:1fr}
+ #menu .briefing-scene{min-height:113px}
+ #menu .briefing-description{padding:11px 14px}
+ #menu .briefing-list{grid-template-columns:1fr;gap:6px}
+ #menu .briefing-list button{min-height:59px;padding:8px}
+ #menu .briefing-list button strong{font-size:19px}
+ #menu .transport-grid{grid-template-columns:1fr}
+ #menu .transport-card{min-height:60px}
+ #menu .race-finalize .start-btn{font-size:21px}
+}
