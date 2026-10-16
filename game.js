@@ -813,6 +813,7 @@ function resetRace(){
     const a=makeCar(starts[i],lanes[i],r,r.name);
     a.isBoss=boss;
     a.hp=boss?180:115;
+    a.maxHp=a.hp;a.knockouts=0;
     a.cruise=(rates[i]+raceIndex*(boss?6:4))*difficultyRate;
     a.phase=i*1.8;
     a.attackTimer=(boss?1.2:3.3)+rnd()*(boss?1.4:2.8);
@@ -902,6 +903,7 @@ function updateVehicleFall(car,dt){
   car.airZ=0;car.airV=0;car.justLanded=false;
   car.steerMomentum=0;car.roadGrip=1;car.boosting=false;
   car.spawnPhase=.55;car.invulnerable=1.8;car.fall=null;
+  if(!car.isPlayer&&fall.reason==="DESTRUCTION")car.hp=car.maxHp||115;
   if(car.isPlayer){
     car.speed=0;
     if(fall.fatal)car.hp=100;
@@ -1111,11 +1113,15 @@ function rotateToward(a,b,max){
   return a+clamp(d,-max,max);
 }
 function destroyOpponent(ai){
-  if(ai.destroyed)return;
-  ai.destroyed=true;ai.finished=true;ai.hp=0;ai.progress=-100000000;
-  raceKOs++;
+  if(ai.destroyed||ai.finished||ai.fall)return;
+  // Weapon KOs are spectacular but temporary; each rival awards credits once per race.
+  ai.hp=0;
+  if(!startVehicleFall(ai,closestTrack(ai.x,ai.y),"DESTRUCTION",0,0))return;
+  ai.knockouts=(ai.knockouts||0)+1;
+  const bonus=ai.knockouts===1;
+  if(bonus)raceKOs++;
   spawnFX(ai.x,ai.y,ai.isBoss?"#ffe1a0":"#f6ad6c",38);
-  setToast("DESTRUCTION : "+ai.name+"  +"+KO_REWARD+" CR");
+  setToast("DESTRUCTION : "+ai.name+(bonus?"  +"+KO_REWARD+" CR":"  · REVIENT EN PISTE"));
   if(sound.enabled)sound.effect("hit");
 }
 function damageOpponent(ai,amount,stun){
