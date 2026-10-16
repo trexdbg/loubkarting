@@ -117,17 +117,17 @@
               <div class="screen-heading"><h2>Voitures</h2><span id="ownedCount" class="career-progress">1 / 5</span></div>
               <div class="showroom-stage">
                 <div class="showroom-light"></div>
-                <div class="showroom-car" id="showroomCar" data-car-style="city" aria-hidden="true"><span class="sc-wheel w1"></span><span class="sc-wheel w2"></span><span class="sc-wing"></span><span class="sc-windshield"></span><span class="sc-light"></span></div>
+                <div class="showroom-car" id="showroomCar" data-car-style="city" aria-hidden="true"><canvas id="showroomCarCanvas" class="vehicle-canvas"></canvas></div>
                 <div class="showroom-caption"><small>Modèle</small><strong id="showroomCarName">CITADINE 91</strong><span id="showroomCarClass">URBAINE · 1991</span></div>
                 <div class="showroom-specs"><div><span>VITESSE</span><b id="showroomSpeed">335</b><i><span id="showroomSpeedBar"></span></i></div><div><span>ACCÉLÉRATION</span><b id="showroomAccel">286</b><i><span id="showroomAccelBar"></span></i></div><div><span>AGILITÉ</span><b id="showroomGrip">2.74</b><i><span id="showroomGripBar"></span></i></div></div>
               </div>
               <div class="section-head"><span class="option-label">Choisir un modèle</span><span class="dealer-hint"></span></div>
               <div class="car-select" role="group" aria-label="Choix et achat du véhicule">
-          <button class="car-card active" data-car="0"><span class="car-preview hatch"><i></i></span><strong>CITADINE 91</strong><small>FRANÇAISE · URBAINE</small><em id="carCost0">POSSÉDÉE</em></button>
-          <button class="car-card" data-car="1"><span class="car-preview rs"><i></i></span><strong>RS ÉCLIPSE</strong><small>HOT HATCH · SPORT</small><em id="carCost1">900 CR</em></button>
-          <button class="car-card" data-car="2"><span class="car-preview rally"><i></i></span><strong>KAZE AWD</strong><small>JAPON · RALLYE</small><em id="carCost2">2 600 CR</em></button>
-          <button class="car-card" data-car="3"><span class="car-preview gt"><i></i></span><strong>VORTEX V12</strong><small>SUPERCAR · GT</small><em id="carCost3">6 500 CR</em></button>
-          <button class="car-card" data-car="4"><span class="car-preview formula"><i></i></span><strong>APEX FORMULA</strong><small>MONOPLACE · FINALE</small><em id="carCost4">13 000 CR</em></button>
+          <button class="car-card active" data-car="0"><canvas class="car-thumb" data-thumb="hatch" aria-hidden="true"></canvas><strong>CITADINE 91</strong><small>FRANÇAISE · URBAINE</small><em id="carCost0">POSSÉDÉE</em></button>
+          <button class="car-card" data-car="1"><canvas class="car-thumb" data-thumb="rs" aria-hidden="true"></canvas><strong>RS ÉCLIPSE</strong><small>HOT HATCH · SPORT</small><em id="carCost1">900 CR</em></button>
+          <button class="car-card" data-car="2"><canvas class="car-thumb" data-thumb="rally" aria-hidden="true"></canvas><strong>KAZE AWD</strong><small>JAPON · RALLYE</small><em id="carCost2">2 600 CR</em></button>
+          <button class="car-card" data-car="3"><canvas class="car-thumb" data-thumb="gt" aria-hidden="true"></canvas><strong>VORTEX V12</strong><small>SUPERCAR · GT</small><em id="carCost3">6 500 CR</em></button>
+          <button class="car-card" data-car="4"><canvas class="car-thumb" data-thumb="formula" aria-hidden="true"></canvas><strong>APEX FORMULA</strong><small>MONOPLACE · FINALE</small><em id="carCost4">13 000 CR</em></button>
         </div>
         <p class="selection-note" id="carDetails">CITADINE 91 · légère, modeste, mais capable de tout.</p>
               <div class="dealer-checkout"><div class="dealer-checkout-copy"><small></small><strong id="dealerCheckoutName">CITADINE 91</strong><span id="dealerCheckoutNote">Prête pour la course.</span></div><button id="dealerBuyBtn" class="dealer-buy-btn">DÉJÀ SÉLECTIONNÉE ✓</button></div>
@@ -218,6 +218,7 @@
       <div class="touch-right"><button class="touch-btn action shoot" data-control="fire">TIR <b>➤</b></button><button class="touch-btn action boost" data-control="nitro">NITRO <b>⚡</b></button><button class="touch-btn drive brake" data-control="brake">FREIN</button><button class="touch-btn drive gas" data-control="gas">GAZ <b>▲</b></button></div>
     </section>
   </main>
+  <script src="vehicles.js" defer></script>
   <script src="game.js" defer></script>
 </body>
 </html>
