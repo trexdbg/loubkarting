@@ -31,6 +31,12 @@ Le moteur de rendu `vehicles.js` est **partagé entre la piste, le grand showroo
 
 Les dangers sont dessinés dans la scène et repérés sur la mini-carte. La préparation de course annonce les pièges. Les huit tracés existants, sauvegardes, peintures, achats, péages et récompenses sont conservés.
 
+## Réapparition en course après destruction
+
+Si le blindage du joueur tombe à zéro (tir, choc, obstacle ou chute mortelle), la course **continue** : le véhicule réapparaît automatiquement, réparé à 100 %, sur une portion sûre du circuit. Une pénalité de **3 secondes** est ajoutée au chrono. Une courte immunité empêche les destructions en boucle. Les tours, lingots et crédits collectés sont conservés. Le bilan indique les réapparitions et le temps de pénalité associé.
+
+Les chutes non mortelles restent pénalisées de **2 secondes** et de 17 PV ajustés selon le blindage. Une chute mortelle entraîne uniquement la pénalité de destruction de **3 secondes** (pas de double pénalité).
+
 ## Jouable dès maintenant
 
 - **Montagne · Alpes (Europe) : quatre courses à obstacles réels** : Les Gorges Rouges, Le Pont du Chaos, La Mine Noire et **Le Sommet des Titans (boss : Le Bouquetin)**.
@@ -61,9 +67,9 @@ Les dangers sont dessinés dans la scène et repérés sur la mini-carte. La pr�
 
 La première course de chaque région est gratuite une fois le voyage payé. Les transports et droits sont sauvegardés. Les anciennes carrières sont migrées pour ne pas faire payer à nouveau les épreuves déjà obtenues.
 
-**Récompenses d'une course :** 450 / 360 / 290 / 230 CR (de la première à la quatrième place), ou 75 CR en cas d'élimination du joueur ; puis **+40 ou +65 CR par lingot collecté**, **+240 CR par rival détruit**, et +280 CR lors du premier podium sur une épreuve ordinaire / +850 CR lors de la première victoire en finale de région.
+**Récompenses d'une course :** 450 / 360 / 290 / 230 CR (de la première à la quatrième place)  ; puis **+40 ou +65 CR par lingot collecté**, **+240 CR par rival détruit**, et +280 CR lors du premier podium sur une épreuve ordinaire / +850 CR lors de la première victoire en finale de région.
 
-Les véhicules détruits quittent la piste pour cette course. Le boss possède davantage de blindage et tire plus souvent, mais peut aussi être éliminé.
+Les véhicules IA détruits quittent la piste pour cette course. Le joueur, lui, réapparaît avec +3 s au chrono. Le boss possède davantage de blindage et tire plus souvent, mais peut aussi être éliminé.
 
 ## Interface de carrière : simple et directe (v0.6)
 
