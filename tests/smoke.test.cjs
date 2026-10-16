@@ -354,8 +354,8 @@ test("factory paint can be restored and unknown saved paints are ignored",()=>{
 
 test("Alpine tracks have individual scripted hazards and unique set pieces",()=>{
   const h=harness(),engine=h.win.LKCourseChallenges;
-  assert.equal(engine.catalog.length,4);
-  assert.equal(new Set(engine.catalog.map(c=>c.signature)).size,4);
+  assert.equal(engine.catalog.length,20);
+  assert.equal(new Set(engine.catalog.map(c=>c.signature)).size,20);
   assert.ok(engine.catalog.every(c=>c.features.length>=5));
   assert.ok(engine.catalog[0].features.some(f=>f.type==="bridge"));
   assert.ok(engine.catalog[1].features.filter(f=>f.type==="bridge").length>=2);
@@ -682,9 +682,7 @@ test("Sahara and Amazonia unlock in order after regional championships",()=>{
   assert.equal(h.groups["[data-zone]"][4].disabled,true);
   const unlock=h.win.__test.progress();
   unlock.cleared.push(...group(3));
-  h.groups["[data-zone]"][4].events.click();
-  assert.equal(h.win.__test.track(),3,"Selection must wait for refresh");
-  h.groups["[data-screen]"][1].events.click();
+  // Unlock state is derived from the cleared races, not stale button CSS.
   h.groups["[data-zone]"][4].events.click();
   assert.equal(h.win.__test.track(),4);
   assert.equal(h.win.__test.ais()[2].name,"LE JAGUAR");
