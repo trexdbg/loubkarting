@@ -115,7 +115,8 @@ test("showroom previews unaffordable vehicles without buying them",()=>{
   assert.equal(h.el("showroomCarName").textContent,"APEX FORMULA");
   assert.equal(h.el("showroomCar").dataset.carStyle,"formula");
   assert.equal(car.classList.contains("previewed"),true);
-  assert.match(h.el("garageFeedback").textContent,/CR/);
+  assert.match(h.el("dealerCheckoutNote").textContent,/CR/);
+  assert.equal(h.el("dealerBuyBtn").disabled,true);
   h.groups["[data-screen]"][2].events.click();
   assert.equal(h.win.__test.screen(),"dealer");
 });
@@ -220,10 +221,11 @@ test("race naturally ends after three laps and saves best time",()=>{
 
 test("credits buy actual vehicles and improvements and survive reload",()=>{
   const h=harness({loubkarting_progress_v2:JSON.stringify({credits:30000,ownedCars:[0]})});
-  h.groups["[data-car]"][1].events.click();
-  h.groups["[data-car]"][2].events.click();
-  h.groups["[data-car]"][3].events.click();
-  h.groups["[data-car]"][4].events.click();
+  for(let i=1;i<=4;i++){
+    h.groups["[data-car]"][i].events.click();
+    assert.equal(h.el("showroomCarName").textContent,["","RS ÉCLIPSE","KAZE AWD","VORTEX V12","APEX FORMULA"][i]);
+    h.el("dealerBuyBtn").events.click();
+  }
   assert.equal(h.win.__test.selected(),4);
   assert.equal(h.win.__test.progress().ownedCars.length,5);
   assert.equal(h.win.__test.progress().credits,7000);
@@ -235,6 +237,24 @@ test("credits buy actual vehicles and improvements and survive reload",()=>{
   assert.equal(restored.win.__test.progress().credits,6800);
 });
 
+test("dealership separates selection from an explicit purchase",()=>{
+  const h=harness({loubkarting_progress_v2:JSON.stringify({credits:2000,ownedCars:[0]})});
+  h.groups["[data-screen]"][2].events.click();
+  h.groups["[data-car]"][1].events.click();
+  assert.equal(h.win.__test.selected(),0);
+  assert.equal(h.win.__test.progress().credits,2000);
+  assert.equal(h.el("dealerBuyBtn").disabled,false);
+  assert.match(h.el("dealerBuyBtn").textContent,/900/);
+  h.el("dealerBuyBtn").events.click();
+  assert.equal(h.win.__test.selected(),1);
+  assert.equal(h.win.__test.progress().credits,1100);
+  assert.equal(h.el("dealerBuyBtn").disabled,true);
+  h.groups["[data-car]"][0].events.click();
+  assert.match(h.el("dealerBuyBtn").textContent,/ÉQUIPER/);
+  h.el("dealerBuyBtn").events.click();
+  assert.equal(h.win.__test.selected(),0);
+  assert.equal(h.win.__test.progress().credits,1100);
+});
 test("ion dart, EMP and mine consume the correct ammunition",()=>{
   const h=harness();
   h.start();const player=h.win.__test.player();
