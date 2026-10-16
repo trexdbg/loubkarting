@@ -78,6 +78,17 @@ test("required game elements exist in HTML",()=>{
   assert.equal((html.match(/data-race="\d"/g)||[]).length,4);
 });
 
+test("all HTML panels and wrappers have balanced markup",()=>{
+  const stack=[],voids=new Set(["meta","link","img","input","br","hr","source","area","base","col","embed","param","track","wbr","path","rect","circle","stop","line","polyline","polygon","ellipse"]);
+  for(const match of html.matchAll(/<\/?([a-z][a-z0-9-]*)\b[^>]*>/gi)){
+    const tag=match[1].toLowerCase();
+    if(voids.has(tag)||match[0].endsWith("/>"))continue;
+    if(match[0].startsWith("</"))assert.equal(stack.pop(),tag,"Unbalanced HTML at "+match.index);
+    else stack.push(tag);
+  }
+  assert.equal(stack.length,0,"HTML has unclosed elements");
+  assert.ok(!html.includes('id="screen-home"'));
+});
 test("race-first layout shows four primary tabs and hides inactive sections",()=>{
   const h=harness();
   assert.equal(h.win.__test.screen(),"race");
