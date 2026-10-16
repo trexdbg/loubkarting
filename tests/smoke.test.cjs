@@ -398,3 +398,21 @@ test("missing a jump triggers checkpoint respawn and time penalty",()=>{
   assert.ok(p.hp<100);
   assert.match(h.el("eventToast").textContent,/SAUT MANQUÉ/);
 });
+
+test("destroyed player respawns in the same race with three-second penalty",()=>{
+  const h=harness();h.start();
+  const p=h.win.__test.player();
+  const before=h.el("timer").textContent;
+  p.hp=0;
+  const start=h.win.__test.state();
+  h.advance(8);
+  assert.equal(start,"race");
+  assert.equal(h.win.__test.state(),"race","Destruction must not end the race");
+  assert.equal(p.hp,100,"Respawn restores all armor");
+  assert.ok(p.invulnerable>0,"Spawn protection prevents immediate re-destruction");
+  assert.match(h.el("eventToast").textContent,/\+3 S/);
+  assert.ok(h.win.__test.player().progress>=0);
+  const t=h.el("timer").textContent;
+  assert.notEqual(t,before);
+  assert.ok(Number(t.slice(3))>=3,"Timer includes the three-second penalty");
+});
