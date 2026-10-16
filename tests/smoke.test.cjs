@@ -220,7 +220,7 @@ test("after a race the next-step transition opens the travel screen if payment i
   assert.match(h.el("travelInstruction").textContent,/REMORQUE/);
   h.groups["[data-transport]"][0].events.click();
   h.el("unlockRaceBtn").events.click();
-  h.groups["[data-screen]"][5].events.click();
+  h.groups["[data-screen]"][0].events.click();
   assert.equal(h.win.__test.screen(),"race");
   assert.equal(h.el("startBtn").disabled,false);
 });
