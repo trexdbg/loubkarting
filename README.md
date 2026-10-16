@@ -6,6 +6,18 @@ Un jeu **solo de course-combat isométrique sur Terre**, avec garage, armes et c
 
 📖 **[Game Design complet : Earth Tour](docs/GAME_DESIGN.md)**
 
+## Studio véhicules — refonte visuelle (v0.6)
+
+Les **cinq véhicules** sont désormais dessinés à partir de **maillages polygonaux 3D stylisés projetés dans le canvas**, sans WebGL ni dépendances supplémentaires :
+
+- **Citadine 91** : caisse courte, habitacle haut, boucliers et feux rétro.
+- **RS Éclipse** : compacte élargie, capot nervuré, prises d'air et becquet.
+- **Kaze AWD** : berline de rallye haute, prise d'air moteur, aileron et jantes épaisses.
+- **Vortex V12** : supercar profilée, ouïes latérales, caisse basse et diffuseur.
+- **Apex Formula** : monoplace à roues apparentes, museau étroit, halo, ailerons avant/arrière.
+
+Le moteur de rendu `vehicles.js` est **partagé entre la piste, le grand showroom et les cinq vignettes** ; peinture, surfaces vitrées, ombres, pneumatiques et éléments de carrosserie restent cohérents dans les trois contextes. Les animations de vitrine sont limitées aux menus pour préserver la fluidité des courses. La physique, l'économie et les sauvegardes ne changent pas.
+
 ## Jouable dès maintenant
 
 - **Montagne · Alpes (Europe) : quatre courses** : Col des Brumes, Épingle des Cimes, Crête du Tonnerre et **Ascension Royale (boss : Le Bouquetin)**.
