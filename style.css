@@ -777,3 +777,26 @@ html,body,#gameShell{touch-action:pan-y}
 @media(prefers-reduced-motion:reduce){
  #menu .car-card:hover .car-thumb{transform:none;transition:none}
 }
+
+
+/* Keep custom rendered cars, but prevent the art studio from enlarging every menu. */
+#menu .showroom-stage{min-height:295px;padding:20px}
+#menu .showroom-car{width:55%;height:215px;left:2%;top:4%}
+#menu .showroom-light{height:305px;top:-175px}
+#menu .car-card{min-height:125px;padding:7px}
+#menu .car-card.active{padding:6px}
+#menu .car-thumb{height:57px;margin-bottom:5px}
+#menu .car-card strong{font-size:17px}
+#menu .car-card em{font-size:10px}
+#menu .showroom-caption{z-index:3}
+@media(max-width:980px){
+ #menu .showroom-stage{min-height:290px}
+ #menu .showroom-car{height:205px;top:4%;width:60%}
+}
+@media(max-width:760px){
+ #menu .showroom-stage{min-height:315px;padding:160px 15px 15px}
+ #menu .showroom-car{width:100%;height:165px;left:0;top:0}
+ #menu .showroom-caption{margin-top:0}
+ #menu .car-card{min-height:115px}
+ #menu .car-thumb{height:50px}
+}
