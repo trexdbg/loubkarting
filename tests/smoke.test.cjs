@@ -9,7 +9,7 @@ const challenges=fs.readFileSync(path.join(__dirname,"..","course-challenges.js"
 const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
 const noop=()=>{};
 const debugSource=source.replace("resetRace();setMenu();requestAnimationFrame(frame);",
-"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,screen:()=>currentScreen,mines:()=>mines,pickups:()=>pickups,goldEarned:()=>raceGold,knockouts:()=>raceKOs,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace,position,course:()=>courseChallenge,updatePlayer,updateAI,courseHazardAt,elapsed:()=>elapsed,updateRockets,rockets:()=>rockets};\nresetRace();setMenu();requestAnimationFrame(frame);");
+"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,screen:()=>currentScreen,mines:()=>mines,pickups:()=>pickups,goldEarned:()=>raceGold,knockouts:()=>raceKOs,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace,position,course:()=>courseChallenge,coursePreviewDetails,drawCoursePreview,updatePlayer,updateAI,courseHazardAt,elapsed:()=>elapsed,updateRockets,rockets:()=>rockets};\nresetRace();setMenu();requestAnimationFrame(frame);");
 assert.notEqual(debugSource,source,"Debug instrumentation anchor should exist.");
 
 function harness(initial={}){
@@ -577,4 +577,56 @@ test("second in a regional boss final is not incorrectly counted as boss victory
   assert.match(h.el("dialogDetail").textContent,/Termine premier/);
   assert.equal(h.win.__test.progress().cleared.includes("0:3"),false);
   assert.equal(h.win.__test.progress().credits,5360);
+});
+
+test("pre-race briefing shows a real circuit map with start and hazard legend",()=>{
+  const h=harness(),info=h.win.__test.coursePreviewDetails();
+  assert.match(html,/id="coursePreviewMap"/);
+  assert.match(html,/CARTE DU CIRCUIT/);
+  assert.ok(info.pointCount>=200,"Map must use sampled racing-track geometry");
+  assert.equal(info.zone,0);
+  assert.equal(info.race,0);
+  assert.ok(info.hazards.length>=5);
+  assert.ok(info.labels.includes("PONTS"));
+  assert.ok(info.labels.includes("SAUTS"));
+  assert.ok(Number.isFinite(info.start.x)&&Number.isFinite(info.start.y));
+  assert.equal(h.el("coursePreviewMap").attributes["aria-label"].includes("LES GORGES ROUGES"),true);
+  assert.match(h.el("courseMapFeatures").textContent,/PONTS/);
+});
+test("the briefing map updates with the selected Alpine race, including ice",()=>{
+  const h=harness({loubkarting_progress_v2:JSON.stringify({
+    credits:6000,transports:["trailer"],paidEntries:["0:1","0:2","0:3"],
+    cleared:["0:0","0:1","0:2"],zone:0,race:3
+  })});
+  let info=h.win.__test.coursePreviewDetails();
+  assert.equal(info.race,3);
+  assert.ok(info.labels.includes("VERGLAS"));
+  assert.match(h.el("courseMapFeatures").textContent,/VERGLAS/);
+  assert.match(h.el("coursePreviewMap").attributes["aria-label"],/SOMMET DES TITANS/);
+  const point=h.win.__test.at(160);
+  assert.ok(Math.hypot(point.x-info.start.x,point.y-info.start.y)<.001);
+  h.groups["[data-race]"][1].events.click();
+  info=h.win.__test.coursePreviewDetails();
+  assert.equal(info.race,1);
+  assert.ok(info.hazards.filter(f=>f.type==="bridge").length>=2);
+  assert.ok(!info.labels.includes("VERGLAS"));
+  assert.match(h.el("coursePreviewMap").attributes["aria-label"],/PONT DU CHAOS/);
+});
+test("coastal courses display their own track instead of reusing the Alps map",()=>{
+  const h=harness({loubkarting_progress_v2:JSON.stringify({
+    credits:6000,transports:["trailer","boat"],
+    cleared:["0:0","0:1","0:2","0:3"],zone:1,race:0
+  })});
+  const info=h.win.__test.coursePreviewDetails();
+  assert.equal(info.zone,1);
+  assert.equal(info.race,0);
+  assert.equal(info.hazards.length,0);
+  assert.equal(h.el("courseMapFeatures").textContent,"TRACÉ DE LA COURSE");
+  assert.match(h.el("coursePreviewMap").attributes["aria-label"],/BAIE D'AZUR/);
+});
+test("map preview remains accessible and scales for mobile layouts",()=>{
+  const styles=fs.readFileSync(path.join(__dirname,"..","style.css"),"utf8");
+  assert.match(styles,/#menu #coursePreviewMap\{[^}]*width:100%/);
+  assert.match(styles,/#menu \.course-map-scene\{[^}]*min-width:0/);
+  assert.match(html,/role="img" aria-label="Tracé du circuit/);
 });

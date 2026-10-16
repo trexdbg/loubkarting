@@ -175,7 +175,11 @@
             <section id="screen-race" class="career-screen hidden" aria-label="Préparation de la course">
               <div class="screen-heading"><h2>Prochaine course</h2><button class="secondary-action" data-go="world">Changer de course</button></div>
               <div class="race-briefing">
-                <div class="briefing-scene" aria-hidden="true"><div class="briefing-mountain"></div><span class="briefing-race-no" id="briefRaceNo">01 / 04</span></div>
+                <div class="course-map-scene" aria-label="Carte du circuit">
+                  <div class="course-map-head"><strong>CARTE DU CIRCUIT</strong><span id="briefRaceNo">01 / 04</span></div>
+                  <canvas id="coursePreviewMap" width="720" height="440" role="img" aria-label="Tracé du circuit avec ligne de départ et dangers"></canvas>
+                  <div class="course-map-foot"><span><i class="course-map-start" aria-hidden="true"></i>DÉPART</span><span id="courseMapFeatures">TRACÉ DU CIRCUIT</span></div>
+                </div>
                 <div class="briefing-description"><small></small><h3 id="briefRegion">ALPES</h3><h4 id="briefRace">LES GORGES ROUGES</h4><p id="briefHazards" class="brief-hazards">Ravins et virages dangereux</p><p id="briefBoss">LE BOUQUETIN PARTICIPE À LA COURSE</p></div>
               </div>
               <div class="briefing-list">

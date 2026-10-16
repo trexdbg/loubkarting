@@ -336,6 +336,7 @@ function refreshCareerDisplays(){
     "Inscription à payer → Transport";
   const carPreview=Number.isInteger(showroomPreview)?showroomPreview:selected;
   previewDealerCar(carPreview);
+  if(state==="menu"&&currentScreen==="race")drawCoursePreview();
 }
 
 function redrawCareer(){
@@ -1227,6 +1228,91 @@ function setHud(){
   $("speed").textContent=Math.floor(Math.abs(player.speed)*.70);
   $("hpLabel").textContent=Math.round(player.hp)+"%";$("nitroLabel").textContent=Math.round(player.nitro/player.maxNitro*100)+"%";
   $("hpFill").style.width=player.hp+"%";$("nitroFill").style.width=player.nitro/player.maxNitro*100+"%";
+}
+// Draw the actual selected circuit (not a decorative/generic thumbnail).
+// Uses the same sampled road, start line and handcrafted hazards as the race.
+function coursePreviewDetails(){
+  const hazardNames={bridge:"PONTS",gap:"TROUS",ramp:"SAUTS",oil:"HUILE",
+    ice:"VERGLAS",rock:"ROCHERS",cart:"WAGONNETS"};
+  const types=[...new Set(courseChallenge.features.map(f=>f.type))];
+  return {
+    zone:trackId,race:raceIndex,pointCount:points.length,
+    start:trackAt(FINISH),hazards:courseChallenge.features,
+    labels:Object.keys(hazardNames).filter(type=>types.includes(type)).map(type=>hazardNames[type])
+  };
+}
+function drawCoursePreview(){
+  const canvas=$("coursePreviewMap");
+  if(!canvas||!canvas.getContext)return;
+  const c=canvas.getContext("2d");
+  if(!c)return;
+  const w=canvas.width,h=canvas.height,info=coursePreviewDetails();
+  c.clearRect(0,0,w,h);
+  const extentW=bounds.maxX-bounds.minX,extentH=bounds.maxY-bounds.minY;
+  const scale=Math.min((w-118)/extentW,(h-72)/extentH);
+  const midX=(bounds.minX+bounds.maxX)/2,midY=(bounds.minY+bounds.maxY)/2;
+  const xy=(x,y)=>({x:w/2+(x-midX)*scale,y:h/2+(y-midY)*scale});
+  // Subtle engineering-paper grid, without distracting from the geometry.
+  c.save();
+  c.lineWidth=1;c.strokeStyle="#6b91a61e";
+  for(let x=35;x<w;x+=48){c.beginPath();c.moveTo(x,0);c.lineTo(x,h);c.stroke();}
+  for(let y=20;y<h;y+=48){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();}
+  c.beginPath();
+  for(let i=0;i<points.length;i++){
+    const p=xy(points[i].x,points[i].y);
+    if(i===0)c.moveTo(p.x,p.y);else c.lineTo(p.x,p.y);
+  }
+  c.closePath();
+  c.lineCap="round";c.lineJoin="round";
+  c.strokeStyle="#07131fcc";c.lineWidth=27;c.stroke();
+  c.strokeStyle=trackId===0?"#d6a777":"#6bd2d0";c.lineWidth=21;c.stroke();
+  c.strokeStyle="#283b4b";c.lineWidth=16;c.stroke();
+  c.strokeStyle="#8baabb92";c.lineWidth=1.8;c.setLineDash([5,11]);c.stroke();c.setLineDash([]);
+  // Distinguish dangerous portions directly on the road, including the beach
+  // where the current set of hand-authored hazards is still empty.
+  const hazardColors={bridge:"#f5c568",gap:"#f17d6c",ramp:"#77f0ad",
+    oil:"#ab9af3",ice:"#90e9fb",rock:"#f0af80",cart:"#f6bd7c"};
+  for(const feature of info.hazards){
+    const count=Math.max(3,Math.ceil(feature.length/11));
+    const coords=[];
+    for(let i=0;i<=count;i++){
+      const p=trackAt(feature.s-feature.length/2+feature.length*i/count);
+      const lane=feature.type==="bridge"?0:(feature.lane||0);
+      coords.push(xy(p.x+p.nx*lane,p.y+p.ny*lane));
+    }
+    c.beginPath();
+    coords.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));
+    c.lineWidth=feature.type==="bridge"?19:feature.type==="gap"?17:12;
+    c.strokeStyle=hazardColors[feature.type]||"#f0c989";
+    c.stroke();
+    const center=xy(feature.center.x+feature.center.nx*(feature.lane||0),
+      feature.center.y+feature.center.ny*(feature.lane||0));
+    c.beginPath();c.arc(center.x,center.y,9.5,0,TAU);
+    c.fillStyle="#0b1b2d";c.fill();
+    c.strokeStyle=hazardColors[feature.type]||"#eac37e";c.lineWidth=2;c.stroke();
+    c.fillStyle=hazardColors[feature.type]||"#f3d48b";
+    c.font="bold 11px Arial";c.textAlign="center";c.textBaseline="middle";
+    c.fillText(({bridge:"P",gap:"!",ramp:"↗",oil:"~",ice:"*",rock:"R",cart:"W"})[feature.type]||"!",center.x,center.y+.4);
+  }
+  // Start-line stripe with a direction indicator, exactly at the race FINISH constant.
+  const start=info.start,p=xy(start.x,start.y);
+  const a=xy(start.x-start.nx*ROAD_HALF*.65,start.y-start.ny*ROAD_HALF*.65);
+  const b=xy(start.x+start.nx*ROAD_HALF*.65,start.y+start.ny*ROAD_HALF*.65);
+  c.beginPath();c.moveTo(a.x,a.y);c.lineTo(b.x,b.y);
+  c.strokeStyle="#f8faf2";c.lineWidth=4;c.stroke();
+  const head=xy(start.x+start.dx*100,start.y+start.dy*100);
+  const angle=Math.atan2(head.y-p.y,head.x-p.x);
+  c.beginPath();c.moveTo(head.x,head.y);
+  c.lineTo(head.x-Math.cos(angle-.45)*13,head.y-Math.sin(angle-.45)*13);
+  c.lineTo(head.x-Math.cos(angle+.45)*13,head.y-Math.sin(angle+.45)*13);
+  c.closePath();c.fillStyle="#8af3ad";c.fill();
+  c.beginPath();c.arc(p.x,p.y,7.5,0,TAU);
+  c.fillStyle="#7beca5";c.fill();c.strokeStyle="#f5fff4";c.lineWidth=2;c.stroke();
+  c.restore();
+  $("courseMapFeatures").textContent=info.labels.length?info.labels.join(" · "):"TRACÉ DE LA COURSE";
+  canvas.setAttribute("aria-label","Carte de "+activeZone().races[raceIndex]+
+    ". Départ indiqué en vert. "+
+    (info.labels.length?"Dangers : "+info.labels.join(", ")+".":"Aucun danger particulier signalé."));
 }
 function drawMinimap(){
   const w=mapCanvas.width,h=mapCanvas.height;
