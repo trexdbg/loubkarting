@@ -845,3 +845,31 @@ html,body,#gameShell{touch-action:pan-y}
  #menu #coursePreviewMap{width:100%;max-height:none}
  #menu .race-briefing .briefing-description{align-self:stretch}
 }
+
+
+/* Five-world championship: compact region selection, individual climate palettes. */
+#menu .zone-select{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#menu .zone-card{min-height:67px;padding:8px 10px}
+#menu .zone-card small{letter-spacing:.35px}
+#menu[data-region="snow"] .map-region-preview{background:linear-gradient(120deg,#2b586a,#223b57 58%,#14283e);border-color:#84c9e4}
+#menu[data-region="snow"] .continent-art{background:repeating-linear-gradient(35deg,#304d65 0 28px,#406c83 29px 30px)}
+#menu[data-region="snow"] .course-map-scene{background:radial-gradient(ellipse at 50% 40%,#2d536f,#122c42 75%)}
+#menu[data-region="desert"] .map-region-preview{background:linear-gradient(110deg,#a26a39,#62452c 56%,#2e2b31);border-color:#cd9051}
+#menu[data-region="desert"] .continent-art{background:repeating-linear-gradient(35deg,#a26d41 0 28px,#be8a54 29px 30px)}
+#menu[data-region="desert"] .course-map-scene{background:radial-gradient(ellipse at 50% 40%,#74563b,#342d29 75%)}
+#menu[data-region="jungle"] .map-region-preview{background:linear-gradient(115deg,#276543,#1d463d 55%,#10312f);border-color:#61aa81}
+#menu[data-region="jungle"] .continent-art{background:repeating-linear-gradient(35deg,#265941 0 28px,#3c7551 29px 30px)}
+#menu[data-region="jungle"] .course-map-scene{background:radial-gradient(ellipse at 50% 40%,#2b614b,#132e30 75%)}
+#menu[data-region="snow"] .earth-svg .map-pin.north circle:first-child{animation:lk-pin-pulse 2.6s ease-in-out infinite;transform-origin:168px 136px}
+#menu[data-region="desert"] .earth-svg .map-pin.desert circle:first-child{animation:lk-pin-pulse 2.6s ease-in-out infinite;transform-origin:415px 282px}
+#menu[data-region="jungle"] .earth-svg .map-pin.jungle circle:first-child{animation:lk-pin-pulse 2.6s ease-in-out infinite;transform-origin:264px 298px}
+#menu[data-region="snow"] .earth-svg .map-pin:not(.north),
+#menu[data-region="desert"] .earth-svg .map-pin:not(.desert),
+#menu[data-region="jungle"] .earth-svg .map-pin:not(.jungle){opacity:.6}
+@media(max-width:760px){
+ #menu .zone-select{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ #menu .zone-card{min-height:62px;padding:7px 9px}
+ #menu .zone-card em{font-size:8px}
+}
+@media(max-width:380px){#menu .zone-card strong{font-size:15px}}
+@media(prefers-reduced-motion:reduce){#menu .earth-svg .map-pin circle:first-child{animation:none!important}}
