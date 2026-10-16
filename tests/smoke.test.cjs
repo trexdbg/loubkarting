@@ -217,7 +217,7 @@ test("after a race the next-step transition opens the travel screen if payment i
   const h=harness();h.start();h.winInstant();
   h.el("nextBtn").events.click();
   assert.equal(h.win.__test.screen(),"travel");
-  assert.match(h.el("travelInstruction").textContent,/REMORQUE/);
+  assert.match(h.el("travelInstruction").textContent,/Remorque/);
   h.groups["[data-transport]"][0].events.click();
   h.el("unlockRaceBtn").events.click();
   h.groups["[data-screen]"][0].events.click();
