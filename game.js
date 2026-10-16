@@ -179,6 +179,93 @@ function buyRaceEntry(){
   saveProgress();refreshGarage();redrawCareer();
   $("careerMessage").textContent="INSCRIPTION PAYÉE · BONNE COURSE !";
 }
+// The career runs as six real navigable views instead of one scrolling dashboard.
+const CAREER_SCREENS=["home","world","dealer","garage","travel","race"];
+const SCREEN_TITLES={
+  home:"QUARTIER GÉNÉRAL",world:"CARTE DU MONDE",dealer:"CONCESSIONNAIRE",
+  garage:"ATELIER MÉCANIQUE",travel:"TRANSPORTS & LOGISTIQUE",race:"PADDOCK / DÉPART"
+};
+let currentScreen="home",screenHistory=[],showroomPreview=0;
+function openCareerScreen(name,back=false){
+  if(!CAREER_SCREENS.includes(name))return;
+  if(!back&&currentScreen!==name&&state==="menu")screenHistory.push(currentScreen);
+  currentScreen=name;
+  const menu=$("menu");
+  menu.dataset.screen=name;
+  menu.dataset.region=trackId===1?"coast":"mountain";
+  for(const id of CAREER_SCREENS){
+    const screen=$("screen-"+id),visible=id===name;
+    screen.classList.toggle("hidden",!visible);
+    screen.classList.toggle("active-screen",visible);
+  }
+  document.querySelectorAll("[data-screen]").forEach(btn=>{
+    btn.classList.toggle("active",btn.dataset.screen===name);
+    btn.setAttribute("aria-current",btn.dataset.screen===name?"page":"false");
+  });
+  $("screenEyebrow").textContent=SCREEN_TITLES[name];
+  $("screenIndex").textContent=String(CAREER_SCREENS.indexOf(name)+1).padStart(2,"0")+" / 06";
+  $("backBtn").classList.toggle("hidden",name==="home");
+  $("careerPage").scrollTop=0;
+  refreshCareerDisplays();
+}
+function goBackCareer(){
+  const prev=screenHistory.pop();
+  openCareerScreen(prev||"home",true);
+}
+function previewDealerCar(index){
+  if(!Number.isInteger(index)||index<0||index>=specs.length)return;
+  showroomPreview=index;
+  const spec=specs[index],hero=$("showroomCar");
+  hero.dataset.carStyle=spec.bodyType;
+  $("showroomCarName").textContent=spec.name;
+  $("showroomCarClass").textContent=spec.summary;
+  $("showroomSpeed").textContent=String(Math.round(spec.speed*.7))+" KM/H";
+  $("showroomAccel").textContent=String(spec.accel);
+  $("showroomGrip").textContent=spec.steering.toFixed(2);
+  $("showroomSpeedBar").style.width=Math.round(clamp(spec.speed/510,0,1)*100)+"%";
+  $("showroomAccelBar").style.width=Math.round(clamp(spec.accel/450,0,1)*100)+"%";
+  $("showroomGripBar").style.width=Math.round(clamp(spec.steering/3.1,0,1)*100)+"%";
+  document.querySelectorAll("[data-car]").forEach(btn=>btn.classList.toggle("previewed",Number(btn.dataset.car)===index));
+}
+function refreshCareerDisplays(){
+  const zone=activeZone(),car=specs[selected],isAccessible=raceAccessible(trackId,raceIndex);
+  $("hubProgress").textContent=progress.cleared.length+" / 20 ÉPREUVES";
+  $("hubZoneName").textContent=zone.name;
+  $("hubRaceName").textContent=zone.races[raceIndex];
+  $("hubCarName").textContent=car.name;
+  $("hubCarStats").textContent=car.summary;
+  $("hubTransport").textContent=hasTransport("boat")?"BATEAU DISPONIBLE":hasTransport("trailer")?"REMORQUE DISPONIBLE":"TRANSPORT À ACQUÉRIR";
+  $("hubNextStatus").textContent=raceUnlocked(trackId,raceIndex)?"DÉPART AUTORISÉ":
+    !isAccessible?"TRANSPORT OU RÉSULTAT REQUIS":"INSCRIPTION À PAYER";
+  $("sidebarCar").textContent=car.name;
+  $("sidebarZone").textContent=zone.name+" · "+zone.region;
+  $("worldRegionTitle").textContent=zone.name;
+  $("worldRegionInfo").textContent=zone.region;
+  $("worldBossInfo").textContent="RIVAL PRINCIPAL : "+zone.boss+" / 4 COURSES";
+  $("workshopCarName").textContent=car.name;
+  $("briefRaceNo").textContent=String(raceIndex+1).padStart(2,"0")+" / 04";
+  $("briefRegion").textContent=zone.name;
+  $("briefRace").textContent=zone.races[raceIndex];
+  $("briefBoss").textContent="BOSS RÉGIONAL : "+zone.boss+" · 3 RIVAUX SUR LA PISTE";
+  $("briefCar").textContent=car.name;
+  $("briefWeapon").textContent=WEAPONS[selectedWeapon].name;
+  const fee=entryFee(trackId,raceIndex),paid=entryPaid(trackId,raceIndex);
+  const travelInstruction=!travelAllowed(trackId,raceIndex)?
+    (trackId===0?"ACHÈTE LA REMORQUE : TU DOIS TRANSPORTER TON BOLIDE ENTRE LES CIRCUITS ALPINS.":"ACHÈTE LE BATEAU APRÈS LA VICTOIRE SUR LE BOSS DES ALPES."):
+    !raceQualified(trackId,raceIndex)?"TERMINE L'ÉPREUVE PRÉCÉDENTE POUR ACCÉDER À CELLE-CI.":
+    !paid?"DROIT D'INSCRIPTION À RÉGLER : "+fee+" CR. CE PAIEMENT EST DÉFINITIF.":
+    "TRANSPORT ET INSCRIPTION VALIDÉS. TU PEUX REJOINDRE LE PADDOCK.";
+  $("travelInstruction").textContent=travelInstruction;
+  $("briefAccess").textContent=raceUnlocked(trackId,raceIndex)?"ACCÈS CONFIRMÉ":
+    !isAccessible?"TRANSPORT / QUALIFICATION REQUIS":fee+" CR À RÉGLER";
+  $("briefAccessAction").textContent=raceUnlocked(trackId,raceIndex)?"VALIDÉ ✓":"RÉGLER ↗";
+  $("launchMessage").textContent=raceUnlocked(trackId,raceIndex)?
+    "TROIS ADVERSAIRES, DONT "+zone.boss+". GAGNE DES CRÉDITS ET DES LINGOTS !":
+    "ACCÈS BLOQUÉ : VA DANS TRANSPORTS POUR FINANCER TON DÉPART.";
+  const carPreview=Number.isInteger(showroomPreview)?showroomPreview:selected;
+  previewDealerCar(carPreview);
+}
+
 function redrawCareer(){
   const zone=activeZone();
   $("zoneSubtitle").textContent=zone.name+" · "+zone.region;
@@ -235,9 +322,11 @@ function redrawCareer(){
     !paid?"ACHÈTE TON INSCRIPTION POUR PRENDRE LE DÉPART":
     raceIndex===3?"FINALE · TERMINE 1ER DEVANT "+zone.boss:
     "BOSS : "+zone.boss+" · PODIUM POUR DÉBLOQUER LA SUITE";
+  refreshCareerDisplays();
 }
 function buyOrSelectCar(index){
   if(!Number.isInteger(index)||index<0||index>=specs.length)return;
+  previewDealerCar(index);
   const spec=specs[index];
   if(!progress.ownedCars.includes(index)){
     if(progress.credits<spec.price){
@@ -650,6 +739,7 @@ function setMenu(){
   $("countdown").classList.add("hidden");$("hud").classList.add("hidden");$("controlsHint").classList.remove("hidden");
   $("pauseBtn").style.visibility="hidden";$("nextBtn").classList.add("hidden");
   keys.clear();touch.clear();updateBest();refreshGarage();redrawCareer();
+  screenHistory=[];openCareerScreen("home",true);
 }
 function beginRace(){
   if(!raceUnlocked(trackId,raceIndex)||!progress.ownedCars.includes(selected))return;
@@ -949,9 +1039,11 @@ const keyMap={ArrowUp:"gas",KeyW:"gas",KeyZ:"gas",ArrowDown:"brake",KeyS:"brake"
 document.addEventListener("keydown",e=>{
   if(keyMap[e.code]){e.preventDefault();keys.add(keyMap[e.code]);}
   if(e.repeat)return;
-  if(e.code==="KeyP"||e.code==="Escape"){e.preventDefault();pause();}
+  if(e.code==="KeyP"||e.code==="Escape"){
+    e.preventDefault();if(state==="menu"&&currentScreen!=="home")goBackCareer();else pause();
+  }
   if(e.code==="KeyR"&&state!=="menu"){e.preventDefault();beginRace();}
-  if(e.code==="Enter"&&state==="menu"){e.preventDefault();beginRace();}
+  if(e.code==="Enter"&&state==="menu"){e.preventDefault();if(currentScreen==="race")beginRace();else openCareerScreen("race");}
 });
 document.addEventListener("keyup",e=>{if(keyMap[e.code]){e.preventDefault();keys.delete(keyMap[e.code]);}});
 window.addEventListener("blur",()=>{keys.clear();touch.clear();if(state==="race")pause();});
@@ -962,6 +1054,9 @@ document.querySelectorAll("[data-control]").forEach(btn=>{
   const up=e=>{e.preventDefault();touch.delete(c);btn.classList.remove("pressed");};
   btn.addEventListener("pointerup",up);btn.addEventListener("pointercancel",up);btn.addEventListener("lostpointercapture",up);
 });
+document.querySelectorAll("[data-screen]").forEach(btn=>btn.addEventListener("click",()=>openCareerScreen(btn.dataset.screen)));
+document.querySelectorAll("[data-go]").forEach(btn=>btn.addEventListener("click",()=>openCareerScreen(btn.dataset.go)));
+$("backBtn").addEventListener("click",goBackCareer);
 document.querySelectorAll("[data-car]").forEach(btn=>btn.addEventListener("click",()=>buyOrSelectCar(Number(btn.dataset.car))));
 document.querySelectorAll("[data-transport]").forEach(btn=>btn.addEventListener("click",()=>buyTransport(btn.dataset.transport)));
 $("unlockRaceBtn").addEventListener("click",buyRaceEntry);
@@ -977,7 +1072,7 @@ document.querySelectorAll("[data-race]").forEach(btn=>btn.addEventListener("clic
   const r=Number(btn.dataset.race);
   if(!raceAccessible(trackId,r))return;
   rebuildTrack(trackId,r);progress.race=r;saveProgress();
-  resetRace();updateBest();redrawCareer();
+  resetRace();updateBest();redrawCareer();openCareerScreen("race");
 }));
 document.querySelectorAll("[data-weapon]").forEach(btn=>btn.addEventListener("click",()=>{
   if(!WEAPONS[btn.dataset.weapon])return;
@@ -996,12 +1091,8 @@ $("nextBtn").addEventListener("click",()=>{
   }else return;
   progress.zone=trackId;progress.track=trackId;progress.race=raceIndex;saveProgress();
   redrawCareer();
-  if(raceUnlocked(trackId,raceIndex))beginRace();
-  else{
-    resetRace();setMenu();
-    $("careerMessage").textContent=trackId===1?"ACHÈTE UN BATEAU POUR REJOINDRE LA CÔTE.":
-      !hasTransport("trailer")?"ACHÈTE UNE REMORQUE POUR TRANSPORTER TON BOLIDE.":"PAIE TON INSCRIPTION AVANT LE DÉPART.";
-  }
+  resetRace();setMenu();
+  openCareerScreen(raceUnlocked(trackId,raceIndex)?"race":"travel");
 });
 $("resumeBtn").addEventListener("click",pause);
 $("menuBtn").addEventListener("click",()=>{resetRace();setMenu();});
