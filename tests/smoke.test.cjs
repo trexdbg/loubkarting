@@ -410,7 +410,7 @@ test("destroyed player respawns in the same race with three-second penalty",()=>
   assert.equal(h.win.__test.state(),"race","Destruction must not end the race");
   assert.equal(p.hp,100,"Respawn restores all armor");
   assert.ok(p.invulnerable>0,"Spawn protection prevents immediate re-destruction");
-  assert.match(h.el("eventToast").textContent,/\+3 S/);
+  assert.ok(h.el("eventToast").textContent.includes("+3 S"));
   assert.ok(h.win.__test.player().progress>=0);
   const t=h.el("timer").textContent;
   assert.notEqual(t,before);
@@ -427,7 +427,7 @@ test("a lethal bridge fall charges only three seconds, and the race keeps going"
   assert.equal(h.win.__test.state(),"race");
   assert.equal(p.hp,100);
   assert.equal(h.win.__test.elapsed()-before,3,"Fatal falls must not accumulate the ordinary 2 s");
-  assert.match(h.el("eventToast").textContent,/\\+3 S/);
+  assert.ok(h.el("eventToast").textContent.includes("+3 S"));
 });
 test("a non-lethal bridge fall still has the original two-second penalty",()=>{
   const h=harness();h.start();
@@ -438,7 +438,7 @@ test("a non-lethal bridge fall still has the original two-second penalty",()=>{
   h.win.__test.updatePlayer(.016);
   assert.equal(h.win.__test.state(),"race");
   assert.ok(p.hp>0&&p.hp<90);
-  assert.equal(h.win.__test.elapsed()-before,2);
+  assert.ok(Math.abs(h.win.__test.elapsed()-before-2)<1e-9);
 });
 test("lethal rocket destroys and repairs the player without losing the race",()=>{
   const h=harness();h.start();
