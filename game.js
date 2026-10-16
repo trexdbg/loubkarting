@@ -474,7 +474,7 @@ let cam={x:0,y:0},cameraIso={x:0,y:0};
 let state="menu",countdown=0,elapsed=0,selected=progress.selectedCar,difficulty="normal";
 selectedWeapon=progress.weapon;
 let player,ais=[],rockets=[],mines=[],particles=[],keys=new Set(),touch=new Set(),lastTime=0,hudTicker=0,toastTimeout=0;
-let raceGold=0,raceKOs=0;
+let raceGold=0,raceKOs=0,raceRespawns=0;
 let lastLap=1,shockCooldown=0,finishOrder=null;
 
 function resize(){
@@ -748,7 +748,7 @@ function makeCar(s,lane,style,name,isPlayer=false){
     lane,style:enhanced,name,isPlayer,hp:100,maxNitro:isPlayer?100+progress.nitro*20:100,nitro:isPlayer?100+progress.nitro*20:100,ammo:5,fireCooldown:0,hitFlash:0,stun:0,boosting:false,finished:false,airZ:0,airV:0,roadGrip:1,steerMomentum:0,hazardHits:Object.create(null),invulnerable:0};
 }
 function resetRace(){
-  raceGold=0;raceKOs=0;
+  raceGold=0;raceKOs=0;raceRespawns=0;
   rockets=[];mines=[];particles=[];elapsed=0;countdown=3.4;lastLap=1;shockCooldown=0;finishOrder=null;hudTicker=0;
   $("trackName").textContent=activeZone().name+" // "+activeZone().races[raceIndex]+" "+(isBoss()?"★ BOSS":"");
   pickups.forEach(p=>p.cooldown=0);
@@ -808,8 +808,46 @@ function advanceJump(car,dt){
     if(car.isPlayer)spawnFX(car.x,car.y,"#f8d99b",5);
   }
 }
+// A destroyed player never leaves the race. Only the clock is penalized.
+function respawnPlayer(){
+  if(state!=="race"||!player||player.hp>0)return false;
+  const fallenX=player.x,fallenY=player.y;
+  const nearest=closestTrack(fallenX,fallenY);
+  // Pick a safe point on the center line: don't respawn on a missing bridge,
+  // a ramp or a solid obstacle. Keep as much race progress as possible.
+  let checkpoint=trackAt(nearest.s),retreat=0;
+  for(let distance=0;distance<=450;distance+=45){
+    const candidate=trackAt(nearest.s-distance);
+    const hazards=courseHazardAt(candidate.s,0);
+    if(!hazards.gap&&!hazards.rock&&!hazards.cart&&!hazards.ramp){
+      checkpoint=candidate;retreat=distance;break;
+    }
+  }
+  spawnFX(fallenX,fallenY,"#f77d65",30);
+  player.x=checkpoint.x;player.y=checkpoint.y;
+  player.angle=Math.atan2(checkpoint.dy,checkpoint.dx);
+  player.progress=Math.max(0,player.progress-retreat);
+  player.lastRaw=checkpoint.s;
+  player.hp=100;
+  player.speed=105;
+  player.airZ=0;player.airV=0;
+  player.steerMomentum=0;player.roadGrip=1;
+  player.invulnerable=1.7;
+  player.hitFlash=0;
+  shockCooldown=1;
+  elapsed+=3;
+  raceRespawns++;
+  spawnFX(player.x,player.y,"#a8e6ff",14);
+  setToast("VÉHICULE RÉPARÉ · +3 S");
+  return true;
+}
 function fallFromCourse(nearest,reason){
   if(player.invulnerable>0)return false;
+  // A lethal fall uses the destruction penalty once, not +2 s plus +3 s.
+  if(player.hp<=17/player.style.armor){
+    player.hp=0;
+    return respawnPlayer();
+  }
   const checkpoint=trackAt(nearest.s-170);
   player.x=checkpoint.x;player.y=checkpoint.y;
   player.angle=Math.atan2(checkpoint.dy,checkpoint.dx);
@@ -822,7 +860,6 @@ function fallFromCourse(nearest,reason){
   shockCooldown=.8;
   spawnFX(checkpoint.x,checkpoint.y,"#f39964",18);
   setToast(reason+" · +2 S");
-  if(player.hp<=0)endRace(true);
   return true;
 }
 function updateCourseHazardForPlayer(nearest){
@@ -895,11 +932,11 @@ function updatePlayer(dt){
     const dx=player.x-closest.x,dy=player.y-closest.y,len=Math.max(1,closest.dist);
     player.x=closest.x+dx/len*(ROAD_HALF-17);
     player.y=closest.y+dy/len*(ROAD_HALF-17);
-    if(Math.abs(player.speed)>90&&shockCooldown<=0){spawnFX(player.x,player.y,"#f8bc68",9);player.hp=Math.max(0,player.hp-4/player.style.armor);shockCooldown=.5;}
+    if(Math.abs(player.speed)>90&&shockCooldown<=0&&player.invulnerable<=0){spawnFX(player.x,player.y,"#f8bc68",9);player.hp=Math.max(0,player.hp-4/player.style.armor);shockCooldown=.5;}
     player.speed*=.81;
   }
   for(const ai of ais){
-    if(!ai.destroyed&&hypot(player.x-ai.x,player.y-ai.y)<44){
+    if(!ai.destroyed&&player.invulnerable<=0&&hypot(player.x-ai.x,player.y-ai.y)<44){
       const angle=Math.atan2(player.y-ai.y,player.x-ai.x);
       player.x+=Math.cos(angle)*150*dt;player.y+=Math.sin(angle)*150*dt;
       player.speed*=.97;
@@ -907,7 +944,7 @@ function updatePlayer(dt){
     }
   }
   if(pressed("fire"))shoot(player);
-  if(player.hp<=0){player.hp=0;endRace(true);}
+  if(player.hp<=0){player.hp=0;respawnPlayer();}
 }
 function updateAI(dt){
   for(const a of ais){
@@ -1018,7 +1055,7 @@ function updateRockets(dt){
     r.x+=mx*670*dt;r.y+=my*670*dt;
     let hit=null;
     for(const c of r.isPlayer?ais:[player]){
-      if(c===r.owner||c.finished||c.destroyed)continue;
+      if(c===r.owner||c.finished||c.destroyed||(c.isPlayer&&c.invulnerable>0))continue;
       if(hypot(r.x-c.x,r.y-c.y)<40){hit=c;break;}
     }
     if(hit){
@@ -1073,7 +1110,7 @@ function update(dt){
   }else if(state==="race"){
     elapsed+=dt;shockCooldown=Math.max(0,shockCooldown-dt);
     updatePlayer(dt);
-    if(state==="race"){updateAI(dt);updateRockets(dt);updateMines(dt);updatePickups(dt);}
+    if(state==="race"){updateAI(dt);updateRockets(dt);if(player.hp<=0)respawnPlayer();updateMines(dt);updatePickups(dt);}
     if(toastTimeout>0){toastTimeout-=dt;if(toastTimeout<=0)$("eventToast").classList.remove("visible");}
     hudTicker-=dt;if(hudTicker<=0){hudTicker=.09;setHud();drawMinimap();}
   }
@@ -1111,20 +1148,20 @@ function drawMinimap(){
   if(player){const s=conv(player.x,player.y);mctx.fillStyle="#fbe763";mctx.beginPath();mctx.arc(s.x,s.y,5.7,0,TAU);mctx.fill();mctx.strokeStyle="#0a0a0a";mctx.lineWidth=1;mctx.stroke();}
   mctx.fillStyle="#d0dcec";mctx.font="bold 10px Arial";mctx.fillText("CIRCUIT "+String(trackId+1).padStart(2,"0"),8,12);
 }
-function endRace(destroyed=false){
+function endRace(){
   if(state!=="race")return;
-  state="finish";sound.effect(destroyed?"hit":"finish");
-  const rank=position(),boss=isBoss(),victory=!destroyed&&rank===1,qualified=!destroyed&&(boss?victory:rank<=3);
+  state="finish";sound.effect("finish");
+  const rank=position(),boss=isBoss(),victory=rank===1,qualified=boss?victory:rank<=3;
   const wasCleared=progress.cleared.includes(raceKey(trackId,raceIndex));
-  const placement=destroyed?75:[450,360,290,230][rank-1];
+  const placement=[450,360,290,230][rank-1];
   const firstTimeBonus=qualified&&!wasCleared?(boss?850:280):0;
   const knockoutBonus=raceKOs*KO_REWARD,prize=placement+firstTimeBonus+knockoutBonus+raceGold;
   progress.credits+=prize;
   if(qualified&&!wasCleared)progress.cleared.push(raceKey(trackId,raceIndex));
   saveProgress();
-  $("dialogEyebrow").textContent=destroyed?"TON BOLIDE EST HORS COURSE":boss?"DUEL CONTRE LE BOSS":"ÉPREUVE TERMINÉE";
-  $("dialogTitle").textContent=destroyed?"ÉLIMINÉ !":victory?"VICTOIRE !":"ARRIVÉE !";
-  let detail=destroyed?"Tu conserves les lingots et tes primes de destruction.":qualified?
+  $("dialogEyebrow").textContent=boss?"DUEL CONTRE LE BOSS":"ÉPREUVE TERMINÉE";
+  $("dialogTitle").textContent=victory?"VICTOIRE !":"ARRIVÉE !";
+  let detail=qualified?
     boss?"BOSS VAINCU · "+activeZone().boss+" !": "Résultat validé ! Prépare le transport et les droits de la prochaine course.":
     boss?"Termine premier pour décrocher le titre régional.":"Termine dans les trois premiers pour progresser.";
   if(qualified&&boss&&trackId===0)detail+=" Achète le BATEAU pour rejoindre la côte.";
@@ -1134,6 +1171,7 @@ function endRace(destroyed=false){
     '<div><span>COURSE</span><b>'+placement+' CR</b></div>'+
     '<div><span>LINGOTS</span><b>+'+raceGold+' CR</b></div>'+
     '<div><span>DESTRUCTIONS</span><b>'+raceKOs+' × '+KO_REWARD+'</b></div>'+
+    '<div><span>RETOURS PISTE</span><b>'+raceRespawns+' × 3 s</b></div>'+
     '<div><span>1re QUALIF.</span><b>+'+firstTimeBonus+'</b></div>'+
     '<div><span>TOTAL GAGNÉ</span><b>+'+prize+' CR</b></div></div>';
   $("resumeBtn").classList.add("hidden");$("againBtn").classList.remove("hidden");
@@ -1141,10 +1179,8 @@ function endRace(destroyed=false){
   $("nextBtn").classList.toggle("hidden",!hasNext);
   $("nextBtn").innerHTML='ÉPREUVE SUIVANTE / LOGISTIQUE <span>↗</span>';
   $("raceOverlay").classList.remove("hidden");
-  if(!destroyed){
-    const key="loubkarting_best_v3_"+trackId+"_"+raceIndex;
-    try{const old=Number(localStorage.getItem(key)||0);if(!old||elapsed<old)localStorage.setItem(key,String(elapsed));}catch(e){}
-  }
+  const key="loubkarting_best_v3_"+trackId+"_"+raceIndex;
+  try{const old=Number(localStorage.getItem(key)||0);if(!old||elapsed<old)localStorage.setItem(key,String(elapsed));}catch(e){}
 }
 function updateBest(){
   let best=0;
