@@ -8,15 +8,19 @@ const source=fs.readFileSync(path.join(__dirname,"..","game.js"),"utf8");
 const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
 const noop=()=>{};
 const debugSource=source.replace("resetRace();setMenu();requestAnimationFrame(frame);",
-"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,mines:()=>mines,pickups:()=>pickups,goldEarned:()=>raceGold,knockouts:()=>raceKOs,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace};\nresetRace();setMenu();requestAnimationFrame(frame);");
+"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,screen:()=>currentScreen,mines:()=>mines,pickups:()=>pickups,goldEarned:()=>raceGold,knockouts:()=>raceKOs,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace};\nresetRace();setMenu();requestAnimationFrame(frame);");
 assert.notEqual(debugSource,source,"Debug instrumentation anchor should exist.");
 
 function harness(initial={}){
   const saved={...initial},elements={},listeners={},gradient={addColorStop:noop};
   const draw=new Proxy({createLinearGradient:()=>gradient},{get:(o,k)=>k in o?o[k]:noop,set:(o,k,v)=>(o[k]=v,true)});
   function el(id){
-    return elements[id] ||= {id,dataset:{},style:{},textContent:"",innerHTML:"",value:"normal",disabled:false,
-      width:200,height:145,classList:{add:noop,remove:noop,toggle:noop},events:{},
+    if(elements[id])return elements[id];
+    const classes=new Set();
+    return elements[id]={id,dataset:{},style:{},textContent:"",innerHTML:"",value:"normal",disabled:false,
+      width:200,height:145,classList:{add:k=>classes.add(k),remove:k=>classes.delete(k),contains:k=>classes.has(k),
+      toggle(k,on){if(on===undefined)on=!classes.has(k);if(on)classes.add(k);else classes.delete(k);return on;}},events:{},attributes:{},
+      setAttribute(k,v){this.attributes[k]=v;},
       addEventListener(k,fn){this.events[k]=fn;},getContext:()=>draw,setPointerCapture:noop};
   }
   function group(key,ids){return ids.map(n=>{const x=el(key+n);x.dataset[key]=String(n);return x;});}
@@ -27,6 +31,10 @@ function harness(initial={}){
     "[data-weapon]":group("weapon",["dart","pulse","mine"]),
     "[data-upgrade]":group("upgrade",["engine","armor","nitro"]),
     "[data-transport]":group("transport",["trailer","boat","plane"]),
+    "[data-screen]":group("screen",["home","world","dealer","garage","travel","race"]),
+    "[data-go]":[...html.matchAll(/data-go="([^"]+)"/g)].map((match,i)=>{
+      const node=el("go"+i);node.dataset.go=match[1];return node;
+    }),
     "[data-control]":group("control",["gas","brake","left","right","fire","nitro"])
   };
   const doc={
@@ -68,6 +76,48 @@ test("required game elements exist in HTML",()=>{
   assert.equal((html.match(/data-car="\d"/g)||[]).length,5);
   assert.equal((html.match(/data-zone="\d"/g)||[]).length,6);
   assert.equal((html.match(/data-race="\d"/g)||[]).length,4);
+});
+
+test("the career is divided into six distinct accessible pages",()=>{
+  const h=harness();
+  assert.equal(h.win.__test.screen(),"home");
+  assert.equal(h.el("screen-home").classList.contains("active-screen"),true);
+  for(const name of ["world","dealer","garage","travel","race"]){
+    assert.equal(h.el("screen-"+name).classList.contains("hidden"),true);
+    const button=h.groups["[data-screen]"].find(b=>b.dataset.screen===name);
+    button.events.click();
+    assert.equal(h.win.__test.screen(),name);
+    assert.equal(h.el("screen-"+name).classList.contains("active-screen"),true);
+    assert.equal(h.el("screen-home").classList.contains("hidden"),true);
+    assert.equal(button.attributes["aria-current"],"page");
+    assert.equal(h.el("screenEyebrow").textContent.length>0,true);
+  }
+  h.el("backBtn").events.click();
+  assert.equal(h.win.__test.screen(),"travel");
+});
+
+test("the home shortcuts lead to their dedicated destination screens",()=>{
+  const h=harness();
+  for(const target of ["world","dealer","garage","travel","race"]){
+    const button=h.groups["[data-go]"].find(b=>b.dataset.go===target);
+    assert.ok(button);
+    button.events.click();
+    assert.equal(h.win.__test.screen(),target);
+  }
+});
+
+test("showroom previews unaffordable vehicles without buying them",()=>{
+  const h=harness();
+  const car=h.groups["[data-car]"][4];
+  car.events.click();
+  assert.equal(h.win.__test.selected(),0);
+  assert.equal(h.win.__test.progress().credits,0);
+  assert.equal(h.el("showroomCarName").textContent,"APEX FORMULA");
+  assert.equal(h.el("showroomCar").dataset.carStyle,"formula");
+  assert.equal(car.classList.contains("previewed"),true);
+  assert.match(h.el("garageFeedback").textContent,/CR/);
+  h.groups["[data-screen]"][2].events.click();
+  assert.equal(h.win.__test.screen(),"dealer");
 });
 
 test("mountain opens first; beach and planned worlds stay locked",()=>{
@@ -148,6 +198,18 @@ test("gold bars and destroying an opponent award credits on finishing",()=>{
   assert.ok(h.win.__test.goldEarned()>=gold.value);
   assert.equal(h.win.__test.knockouts(),1);
   assert.equal(h.win.__test.progress().credits,730+h.win.__test.goldEarned()+240);
+});
+
+test("after a race the next-step transition opens the travel screen if payment is due",()=>{
+  const h=harness();h.start();h.winInstant();
+  h.el("nextBtn").events.click();
+  assert.equal(h.win.__test.screen(),"travel");
+  assert.match(h.el("travelInstruction").textContent,/REMORQUE/);
+  h.groups["[data-transport]"][0].events.click();
+  h.el("unlockRaceBtn").events.click();
+  h.groups["[data-screen]"][5].events.click();
+  assert.equal(h.win.__test.screen(),"race");
+  assert.equal(h.el("startBtn").disabled,false);
 });
 
 test("race naturally ends after three laps and saves best time",()=>{
