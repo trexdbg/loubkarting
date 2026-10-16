@@ -1,20 +1,23 @@
 # LOUBKARTING — Game Design Document / Earth Tour
-**Version du concept : 0.5** · Jeu solo isométrique pour le navigateur · GitHub Pages
+**Version du concept : 0.6** · Jeu solo isométrique pour le navigateur · GitHub Pages
 
-## Parcours utilisateur & interfaces (implémenté en v0.5)
+## Interface et navigation (v0.6)
 
-Au lieu d'un panneau unique mêlant toutes les actions, le pilote évolue dans un **menu de carrière divisé en six lieux** :
+**Objectif : accéder à l'action voulue avec le moins de choix possible.** Le jeu s'ouvre directement sur **Course**, sans écran d'accueil intermédiaire.
 
-1. **QG du pilote** — menu d'accueil, résumé de la saison, raccourcis vers les autres lieux.
-2. **Carte du monde** — atlas original en SVG, continents et épreuves, mise en valeur du lieu sélectionné.
-3. **Concessionnaire** — chaque modèle a sa présentation, ses statistiques et sa silhouette. Un bouton dédié permet l'achat ou la sélection ; consulter ne prélève aucun crédit.
-4. **Atelier** — sélection des armes et amélioration mécanique de la voiture.
-5. **Transports** — gestion du convoyage et droits d'inscription. Les frais de voyage bloquent le départ tant qu'ils ne sont pas réglés.
-6. **Paddock de course** — rappel de la région, du boss, de la voiture, de l'arme et du niveau avant le départ.
+Quatre onglets toujours visibles :
+- **Course** : prochaine épreuve, boss, voiture, arme, accès, difficulté et bouton de départ.
+- **Monde** : atlas, deux régions actuellement jouables, quatre courses par région et état de déblocage. Les régions futures sont résumées sur une seule ligne.
+- **Voitures** : voir un modèle, comparer trois caractéristiques, acheter ou équiper.
+- **Atelier** : améliorer les performances et choisir une arme.
 
-Navigation latérale sur ordinateur, onglets horizontaux sur smartphone, bouton retour et raccourcis entre les écrans. Après une course, **Retour au garage** mène à l'atelier ; **Épreuve suivante** mène au transport s'il manque un droit d'accès, sinon au paddock. Le moteur de course Canvas reste chargé, mais la carrière se comporte comme une application à écrans distincts.
+**Transport** est un écran secondaire, ouvert via le Monde ou le statut « Accès » de la course. Il présente les achats nécessaires (remorque, bateau, avion prévu) et les droits d'inscription. Le solde est visible à tout moment.
 
-**À ajouter plus tard** : véritables scènes animées de transport (chargement sur remorque, bateau, avion), illustrations détaillées des différents concessionnaires, vue 3D/2.5D des voitures, cinématiques d'arrivée et déplacements sur le globe.
+Principes d'ergonomie : un seul appel à l'action dominant par écran ; labels courts ; états de blocage clairs avec la condition utile ; pas de décor ou de paragraphe explicatif qui repousse la fonction ; pas d'achat involontaire par simple sélection du modèle ; navigation à quatre onglets utilisable au clavier et sur mobile. Conservation des voitures dessinées en perspective dans le concessionnaire.
+
+Après une course, « Retour au garage » ouvre l'atelier ; « Épreuve suivante » ouvre la préparation ou le transport si le paiement manque. Les anciennes sauvegardes et les règles de progression sont conservées.
+
+**Hors périmètre :** animations de transport, cinématiques, nouvel atelier 3D, nouvelles zones.
 
 ## Direction
 
