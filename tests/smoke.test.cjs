@@ -9,7 +9,7 @@ const challenges=fs.readFileSync(path.join(__dirname,"..","course-challenges.js"
 const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
 const noop=()=>{};
 const debugSource=source.replace("resetRace();setMenu();requestAnimationFrame(frame);",
-"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,screen:()=>currentScreen,mines:()=>mines,pickups:()=>pickups,goldEarned:()=>raceGold,knockouts:()=>raceKOs,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace,course:()=>courseChallenge,updatePlayer,updateAI,courseHazardAt};\nresetRace();setMenu();requestAnimationFrame(frame);");
+"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,screen:()=>currentScreen,mines:()=>mines,pickups:()=>pickups,goldEarned:()=>raceGold,knockouts:()=>raceKOs,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace,course:()=>courseChallenge,updatePlayer,updateAI,courseHazardAt,elapsed:()=>elapsed,respawns:()=>raceRespawns,respawnPlayer,updateRockets,rockets:()=>rockets};\nresetRace();setMenu();requestAnimationFrame(frame);");
 assert.notEqual(debugSource,source,"Debug instrumentation anchor should exist.");
 
 function harness(initial={}){
@@ -397,4 +397,58 @@ test("missing a jump triggers checkpoint respawn and time penalty",()=>{
   h.win.__test.updatePlayer(.016);
   assert.ok(p.hp<100);
   assert.match(h.el("eventToast").textContent,/SAUT MANQUÉ/);
+});
+
+test("a destroyed player respawns immediately with a 3-second time penalty",()=>{
+  const h=harness();h.start();
+  const p=h.win.__test.player(),before=h.win.__test.elapsed(),progress=p.progress;
+  p.hp=0;p.speed=220;
+  h.win.__test.updatePlayer(.016);
+  assert.equal(h.win.__test.state(),"race","Destruction must not end the race");
+  assert.equal(p.hp,100,"The car should return repaired");
+  assert.equal(h.win.__test.respawns(),1);
+  assert.equal(h.win.__test.elapsed(),before+3);
+  assert.ok(p.invulnerable>0,"Respawn protection prevents instant destruction");
+  assert.ok(p.progress<=progress+10,"Respawn should keep current lap instead of resetting the race");
+  assert.match(h.el("eventToast").textContent,/\\+3 S/);
+});
+test("a lethal rocket triggers respawn and respects temporary invulnerability",()=>{
+  const h=harness();h.start();
+  const p=h.win.__test.player(),boss=h.win.__test.ais()[2];
+  p.hp=5;
+  h.win.__test.rockets().push({x:p.x-5,y:p.y,angle:0,ttl:1,owner:boss,target:null,isPlayer:false});
+  const before=h.win.__test.elapsed();
+  h.win.__test.updateRockets(.001);
+  assert.equal(p.hp,0,"The boss rocket should be lethal");
+  h.advance(1);
+  assert.equal(h.win.__test.state(),"race");
+  assert.equal(p.hp,100);
+  assert.equal(h.win.__test.respawns(),1);
+  assert.ok(h.win.__test.elapsed()>=before+3);
+  h.win.__test.rockets().push({x:p.x-5,y:p.y,angle:0,ttl:1,owner:boss,target:null,isPlayer:false});
+  h.win.__test.updateRockets(.001);
+  assert.equal(p.hp,100,"Invulnerable respawn must ignore nearby rockets");
+});
+test("a lethal bridge fall applies only the 3-second destruction penalty",()=>{
+  const h=harness();h.start();
+  const p=h.win.__test.player(),bridge=h.win.__test.course().features.find(f=>f.type==="bridge");
+  const at=h.win.__test.at(bridge.s);
+  p.x=at.x+at.nx*85;p.y=at.y+at.ny*85;p.speed=90;p.hp=1;
+  const before=h.win.__test.elapsed();
+  h.win.__test.updatePlayer(.016);
+  assert.equal(h.win.__test.state(),"race");
+  assert.equal(p.hp,100);
+  assert.equal(h.win.__test.respawns(),1);
+  assert.equal(h.win.__test.elapsed(),before+3,"Should not cumulate the existing +2 s fall penalty");
+});
+test("respawn counters reset with each race and appear in race results",()=>{
+  const h=harness();h.start();
+  const p=h.win.__test.player();
+  p.hp=0;h.win.__test.updatePlayer(.016);
+  h.winInstant();
+  assert.match(h.el("resultStats").innerHTML,/RETOURS PISTE/);
+  assert.match(h.el("resultStats").innerHTML,/1 × 3 s/);
+  h.el("againBtn").events.click();h.advance(230);
+  assert.equal(h.win.__test.respawns(),0);
+  assert.equal(h.win.__test.state(),"race");
 });
