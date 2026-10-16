@@ -76,7 +76,7 @@ test("required game elements exist in HTML",()=>{
   const ids=[...new Set([...source.matchAll(/\$\("([^"]+)"\)/g)].map(m=>m[1]))];
   for(const id of ids)assert.ok(html.includes('id="'+id+'"'),"Missing #"+id);
   assert.equal((html.match(/data-car="\d"/g)||[]).length,5);
-  assert.equal((html.match(/data-zone="\d"/g)||[]).length,2);
+  assert.equal((html.match(/data-zone="\d"/g)||[]).length,5);
   assert.equal((html.match(/data-race="\d"/g)||[]).length,4);
 });
 
@@ -135,13 +135,13 @@ test("showroom previews unaffordable vehicles without buying them",()=>{
   assert.equal(h.win.__test.screen(),"dealer");
 });
 
-test("mountain opens first; beach and planned worlds stay locked",()=>{
+test("mountain opens first; later worlds need their bosses and transports",()=>{
   const h=harness();
   assert.equal(h.win.__test.track(),0);
   assert.equal(h.win.__test.race(),0);
   assert.equal(h.groups["[data-zone]"][0].disabled,false);
   assert.equal(h.groups["[data-zone]"][1].disabled,true);
-  for(let i=2;i<6;i++)assert.equal(h.groups["[data-zone]"][i].disabled,true);
+  for(let i=2;i<5;i++)assert.equal(h.groups["[data-zone]"][i].disabled,true);
   assert.equal(h.groups["[data-race]"][1].disabled,true);
   assert.equal(h.win.__test.progress().ownedCars.join(","),"0");
 });
@@ -620,8 +620,8 @@ test("coastal courses display their own track instead of reusing the Alps map",(
   const info=h.win.__test.coursePreviewDetails();
   assert.equal(info.zone,1);
   assert.equal(info.race,0);
-  assert.equal(info.hazards.length,0);
-  assert.equal(h.el("courseMapFeatures").textContent,"TRACÉ DE LA COURSE");
+  assert.ok(info.hazards.length>=5,"Coastal world now features real terrain dangers");
+  assert.match(h.el("courseMapFeatures").textContent,/EAU|SABLE|PONTS/);
   assert.match(h.el("coursePreviewMap").attributes["aria-label"],/BAIE D'AZUR/);
 });
 test("map preview remains accessible and scales for mobile layouts",()=>{
@@ -629,4 +629,99 @@ test("map preview remains accessible and scales for mobile layouts",()=>{
   assert.match(styles,/#menu #coursePreviewMap\{[^}]*width:100%/);
   assert.match(styles,/#menu \.course-map-scene\{[^}]*min-width:0/);
   assert.match(html,/role="img" aria-label="Tracé du circuit/);
+});
+
+test("twenty unique tracks cover five playable worlds and their permanent bosses",()=>{
+  const cleared=Array.from({length:5},(_,z)=>Array.from({length:4},(_,i)=>z+":"+i)).flat();
+  const h=harness({loubkarting_progress_v2:JSON.stringify({credits:65000,transports:["trailer","boat","plane"],cleared,paidEntries:cleared,zone:0,race:0})});
+  const actual=new Set();
+  const bosses=["LE BOUQUETIN","SIRÈNE DU CAP","LE BLIZZARD","LE SCORPION","LE JAGUAR"];
+  for(let z=0;z<5;z++){
+    const zoneBtn=h.groups["[data-zone]"][z];
+    assert.equal(zoneBtn.disabled,false,"World "+z+" should be selectable");
+    zoneBtn.events.click();
+    assert.equal(h.win.__test.track(),z);
+    assert.equal(h.win.__test.ais()[2].name,bosses[z]);
+    for(let i=0;i<4;i++){
+      if(i)h.groups["[data-race]"][i].events.click();
+      const map=h.win.__test.coursePreviewDetails();
+      assert.equal(map.zone,z);
+      assert.equal(map.race,i);
+      assert.ok(map.pointCount>100);
+      assert.ok(map.hazards.length>=5,"Every course needs distinctive obstacles");
+      const courseName=h.el("briefRace").textContent;
+      assert.ok(!actual.has(courseName),"Course names should be unique");
+      actual.add(courseName);
+    }
+  }
+  assert.equal(actual.size,20);
+  assert.equal(h.el("careerProgress").textContent,"20 / 20 ÉPREUVES");
+});
+test("aviation only unlocks after the coastal boss; the same plane serves later worlds",()=>{
+  const all=(max)=>Array.from({length:max},(_,z)=>Array.from({length:4},(_,i)=>z+":"+i)).flat();
+  const previous=all(2);
+  const h=harness({loubkarting_progress_v2:JSON.stringify({credits:8000,transports:["trailer","boat"],cleared:previous,zone:1,race:3})});
+  assert.equal(h.groups["[data-zone]"][2].disabled,true);
+  assert.equal(h.groups["[data-transport]"][2].disabled,false);
+  h.groups["[data-transport]"][2].events.click();
+  assert.ok(h.win.__test.progress().transports.includes("plane"));
+  assert.equal(h.win.__test.progress().credits,3000);
+  assert.equal(h.groups["[data-zone]"][2].disabled,false);
+  assert.equal(h.groups["[data-zone]"][3].disabled,true,"Desert still needs northern boss");
+  h.groups["[data-zone]"][2].events.click();
+  assert.equal(h.win.__test.track(),2);
+  assert.equal(h.win.__test.ais()[2].name,"LE BLIZZARD");
+  assert.equal(h.win.__test.raceUnlocked(2,0),true);
+});
+test("Sahara and Amazonia unlock in order after regional championships",()=>{
+  const group=z=>Array.from({length:4},(_,i)=>z+":"+i);
+  const firstThree=[...group(0),...group(1),...group(2)];
+  const h=harness({loubkarting_progress_v2:JSON.stringify({credits:10000,transports:["trailer","boat","plane"],cleared:firstThree,zone:3,race:0})});
+  assert.equal(h.win.__test.track(),3);
+  assert.equal(h.win.__test.ais()[2].name,"LE SCORPION");
+  assert.equal(h.groups["[data-zone]"][4].disabled,true);
+  const unlock=h.win.__test.progress();
+  unlock.cleared.push(...group(3));
+  h.groups["[data-zone]"][4].events.click();
+  assert.equal(h.win.__test.track(),3,"Selection must wait for refresh");
+  h.groups["[data-screen]"][1].events.click();
+  h.groups["[data-zone]"][4].events.click();
+  assert.equal(h.win.__test.track(),4);
+  assert.equal(h.win.__test.ais()[2].name,"LE JAGUAR");
+  assert.equal(h.win.__test.raceUnlocked(4,0),true);
+});
+test("paid races in the new worlds are saved and never charged twice",()=>{
+  const group=z=>Array.from({length:4},(_,i)=>z+":"+i);
+  const saved=JSON.stringify({credits:10000,transports:["trailer","boat","plane"],cleared:[...group(0),...group(1),"2:0"],zone:2,race:1});
+  const h=harness({loubkarting_progress_v2:saved});
+  assert.equal(h.el("startBtn").disabled,true);
+  const old=h.win.__test.progress().credits;
+  h.el("unlockRaceBtn").events.click();
+  assert.equal(h.win.__test.raceUnlocked(2,1),true);
+  assert.equal(h.win.__test.progress().credits,old-260);
+  assert.ok(h.win.__test.progress().paidEntries.includes("2:1"));
+  const again=harness(h.saved);
+  assert.equal(again.win.__test.progress().paidEntries.includes("2:1"),true);
+  assert.equal(again.el("startBtn").disabled,false);
+});
+test("new biome features expose snow, shifting sand, water, mud and fallen logs",()=>{
+  const cleared=Array.from({length:5},(_,z)=>Array.from({length:4},(_,i)=>z+":"+i)).flat();
+  const h=harness({loubkarting_progress_v2:JSON.stringify({credits:10000,transports:["trailer","boat","plane"],cleared,paidEntries:cleared,zone:0,race:0})});
+  for(const [zone,type] of [[1,"water"],[2,"ice"],[3,"sand"],[4,"mud"]]){
+    h.groups["[data-zone]"][zone].events.click();
+    const f=h.win.__test.course().features.find(v=>v.type===type);
+    assert.ok(f,"Biome "+zone+" needs "+type);
+    const detected=h.win.__test.courseHazardAt(f.s,f.lane||0);
+    assert.equal(detected[type].id,f.id);
+    assert.ok(h.win.__test.coursePreviewDetails().labels.length>=2);
+  }
+  assert.ok(h.win.__test.course().features.some(v=>v.type==="log"));
+});
+test("new saves preserve old career status and world 0 race identifiers",()=>{
+  const saved=JSON.stringify({credits:1200,transports:["trailer","boat"],cleared:["0:0","0:1","0:2","0:3"],paidEntries:["0:1","0:2","0:3"],zone:1,race:0});
+  const h=harness({loubkarting_progress_v2:saved});
+  assert.equal(h.win.__test.track(),1);
+  assert.equal(h.el("briefRace").textContent,"BAIE D'AZUR");
+  assert.equal(h.win.__test.progress().cleared.length,4);
+  assert.equal(h.win.__test.progress().paidEntries.length,3);
 });
