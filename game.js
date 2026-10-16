@@ -964,7 +964,8 @@ function updateCourseHazardForPlayer(nearest){
   const p=trackAt(nearest.s);
   const lane=(player.x-p.x)*p.nx+(player.y-p.y)*p.ny;
   const hazard=courseHazardAt(nearest.s,lane);
-  player.roadGrip=hazard.oil?.34:hazard.ice?.46:1;
+  player.roadGrip=hazard.oil?.34:hazard.ice?.42:hazard.mud?.56:hazard.water?.65:hazard.sand?.77:1;
+  player.terrainDrag=hazard.mud?.66:hazard.sand?.73:hazard.water?.80:1;
   if(hazard.ramp&&player.airZ===0&&player.speed>85
     &&elapsed-(player.hazardHits[hazard.ramp.id]??-100)>2){
     player.hazardHits[hazard.ramp.id]=elapsed;
@@ -980,7 +981,7 @@ function updateCourseHazardForPlayer(nearest){
   if(hazard.gap&&player.airZ<17){
     return fallFromCourse(nearest,"SAUT MANQUÉ");
   }
-  for(const obstacle of [hazard.rock,hazard.cart]){
+  for(const obstacle of [hazard.rock,hazard.cart,hazard.log]){
     if(!obstacle||player.airZ>36||player.invulnerable>0)continue;
     if(elapsed-(player.hazardHits[obstacle.id]??-100)<1.35)continue;
     player.hazardHits[obstacle.id]=elapsed;
@@ -988,7 +989,7 @@ function updateCourseHazardForPlayer(nearest){
     player.hp=Math.max(0,player.hp-11/player.style.armor);
     player.steerMomentum+=(lane>0?-.6:.6);
     spawnFX(player.x,player.y,"#fba663",14);
-    setToast(obstacle.type==="cart"?"CHOC WAGONNET !":"CHOC ROCHER !");
+    setToast(obstacle.type==="cart"?"CHOC WAGONNET !":obstacle.type==="log"?"CHOC TRONC !":"CHOC ROCHER !");
   }
   return false;
 }
@@ -1022,6 +1023,7 @@ function updatePlayer(dt){
     if(rnd()<.37)spawnFX(player.x-Math.cos(player.angle)*35,player.y-Math.sin(player.angle)*35,"#60e8f7",1);
   }else{player.nitro=Math.min(player.maxNitro,player.nitro+(7+progress.nitro*2)*dt);}
   player.speed=clamp(player.speed,-95,maxSpeed);
+  if(player.terrainDrag<1)player.speed*=1-(1-player.terrainDrag)*dt*3.4;
   const steer=(right?1:0)-(left?1:0);
   const turn=player.style.steering*(.38+.67*Math.min(1,Math.abs(player.speed)/270));
   const steerTarget=Math.abs(player.speed)>12?steer*turn*(player.speed<0?-1:1):0;
@@ -1068,7 +1070,7 @@ function updateAI(dt){
       const playerLane=(player.x-pt.x)*pt.nx+(player.y-pt.y)*pt.ny;
       a.lane+= (clamp(playerLane,-31,31)-a.lane)*Math.min(1,dt*1.4);
     }
-    const slow=nearby.ice?.77:nearby.oil?.84:1;
+    const slow=nearby.ice?.77:nearby.oil?.84:nearby.mud?.70:nearby.sand?.76:nearby.water?.82:1;
     const pace=a.cruise*(a.stun>0?.52:1)*slow*(1+Math.sin(elapsed*.34+a.phase)*.023);
     a.speed=pace;a.progress+=pace*dt;
     const p=trackAt(a.progress),lane=a.lane+Math.sin(elapsed*.5+a.phase)*9;
@@ -1087,7 +1089,7 @@ function updateAI(dt){
         fellFromBridge?"CHUTE DU PONT":missedGap?"SAUT MANQUÉ":"SAUT HORS PISTE",0,12)){
       continue;
     }
-    for(const obstacle of [hazard.rock,hazard.cart]){
+    for(const obstacle of [hazard.rock,hazard.cart,hazard.log]){
       if(obstacle&&!a.invulnerable&&a.airZ<32&&elapsed-(a.hazardHits[obstacle.id]??-100)>1.5){
         a.hazardHits[obstacle.id]=elapsed;a.stun=.85;a.hp=Math.max(1,a.hp-9);
       }
@@ -1263,7 +1265,7 @@ function setHud(){
 // Uses the same sampled road, start line and handcrafted hazards as the race.
 function coursePreviewDetails(){
   const hazardNames={bridge:"PONTS",gap:"TROUS",ramp:"SAUTS",oil:"HUILE",
-    ice:"VERGLAS",rock:"ROCHERS",cart:"WAGONNETS"};
+    ice:"VERGLAS",rock:"ROCHERS",cart:"WAGONNETS",water:"EAU",sand:"SABLE",mud:"BOUE",log:"TRONCS"};
   const types=[...new Set(courseChallenge.features.map(f=>f.type))];
   return {
     zone:trackId,race:raceIndex,pointCount:points.length,
@@ -1301,7 +1303,8 @@ function drawCoursePreview(){
   // Distinguish dangerous portions directly on the road, including the beach
   // where the current set of hand-authored hazards is still empty.
   const hazardColors={bridge:"#f5c568",gap:"#f17d6c",ramp:"#77f0ad",
-    oil:"#ab9af3",ice:"#90e9fb",rock:"#f0af80",cart:"#f6bd7c"};
+    oil:"#ab9af3",ice:"#90e9fb",rock:"#f0af80",cart:"#f6bd7c",
+    water:"#6cc6e9",sand:"#e6b663",mud:"#a58b60",log:"#d8a77a"};
   for(const feature of info.hazards){
     const count=Math.max(3,Math.ceil(feature.length/11));
     const coords=[];
@@ -1322,7 +1325,7 @@ function drawCoursePreview(){
     c.strokeStyle=hazardColors[feature.type]||"#eac37e";c.lineWidth=2;c.stroke();
     c.fillStyle=hazardColors[feature.type]||"#f3d48b";
     c.font="bold 11px Arial";c.textAlign="center";c.textBaseline="middle";
-    c.fillText(({bridge:"P",gap:"!",ramp:"↗",oil:"~",ice:"*",rock:"R",cart:"W"})[feature.type]||"!",center.x,center.y+.4);
+    c.fillText(({bridge:"P",gap:"!",ramp:"↗",oil:"~",ice:"*",rock:"R",cart:"W",water:"≈",sand:"S",mud:"B",log:"T"})[feature.type]||"!",center.x,center.y+.4);
   }
   // Start-line stripe with a direction indicator, exactly at the race FINISH constant.
   const start=info.start,p=xy(start.x,start.y);
@@ -1353,7 +1356,8 @@ function drawMinimap(){
   mctx.strokeStyle="#d0cfc1";mctx.lineWidth=2;mctx.stroke();
   for(const obstacle of courseChallenge.features){
     const p=conv(obstacle.center.x,obstacle.center.y);
-    mctx.fillStyle=obstacle.type==="bridge"?"#e8b26a":obstacle.type==="ramp"?"#7cf3ae":obstacle.type==="gap"?"#ed6654":"#8bc9eb";
+    mctx.fillStyle=({bridge:"#e8b26a",ramp:"#7cf3ae",gap:"#ed6654",oil:"#ab9af3",
+      ice:"#8bc9eb",water:"#62d8ee",sand:"#dfb165",mud:"#aa885c",log:"#ce956c"})[obstacle.type]||"#b7ced7";
     mctx.fillRect(p.x-2.3,p.y-2.3,4.6,4.6);
   }
   for(const ai of ais.filter(a=>!a.destroyed)){const s=conv(ai.x,ai.y);mctx.fillStyle=ai.style.color;mctx.beginPath();mctx.arc(s.x,s.y,4,0,TAU);mctx.fill();}
