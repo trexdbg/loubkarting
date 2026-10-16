@@ -5,10 +5,11 @@ const fs=require("node:fs");
 const vm=require("node:vm");
 const path=require("node:path");
 const source=fs.readFileSync(path.join(__dirname,"..","game.js"),"utf8");
+const challenges=fs.readFileSync(path.join(__dirname,"..","course-challenges.js"),"utf8");
 const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
 const noop=()=>{};
 const debugSource=source.replace("resetRace();setMenu();requestAnimationFrame(frame);",
-"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,screen:()=>currentScreen,mines:()=>mines,pickups:()=>pickups,goldEarned:()=>raceGold,knockouts:()=>raceKOs,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace};\nresetRace();setMenu();requestAnimationFrame(frame);");
+"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,screen:()=>currentScreen,mines:()=>mines,pickups:()=>pickups,goldEarned:()=>raceGold,knockouts:()=>raceKOs,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace,course:()=>courseChallenge,updatePlayer,updateAI,courseHazardAt};\nresetRace();setMenu();requestAnimationFrame(frame);");
 assert.notEqual(debugSource,source,"Debug instrumentation anchor should exist.");
 
 function harness(initial={}){
@@ -46,6 +47,7 @@ function harness(initial={}){
   let animation,clock=0;
   const locals={getItem:k=>saved[k]??null,setItem:(k,v)=>saved[k]=String(v)};
   const sandbox={document:doc,window:win,localStorage:locals,requestAnimationFrame:fn=>animation=fn,console};
+  vm.runInNewContext(challenges,sandbox,{filename:"course-challenges.js",timeout:5000});
   vm.runInNewContext(debugSource,sandbox,{filename:"game.js",timeout:5000});
   function advance(n=1){for(let i=0;i<n;i++){clock+=16.667;animation(clock);}}
   function start(){
@@ -347,4 +349,52 @@ test("factory paint can be restored and unknown saved paints are ignored",()=>{
   h.el("garagePaintOptions").events.click({target:{closest:()=>({dataset:{paint:"factory"}})}});
   assert.equal(h.win.__test.progress().paintColors[0],"factory");
   assert.equal(h.win.__test.player().style.color,"#d8d9c6");
+});
+
+test("Alpine tracks have individual scripted hazards and unique set pieces",()=>{
+  const h=harness(),engine=h.win.LKCourseChallenges;
+  assert.equal(engine.catalog.length,4);
+  assert.equal(new Set(engine.catalog.map(c=>c.signature)).size,4);
+  assert.ok(engine.catalog.every(c=>c.features.length>=5));
+  assert.ok(engine.catalog[0].features.some(f=>f.type==="bridge"));
+  assert.ok(engine.catalog[1].features.filter(f=>f.type==="bridge").length>=2);
+  assert.ok(engine.catalog[1].features.some(f=>f.type==="gap"));
+  assert.ok(engine.catalog[2].features.some(f=>f.type==="cart"));
+  assert.ok(engine.catalog[3].features.some(f=>f.type==="ice"));
+  assert.match(html,/course-challenges\.js/);
+  assert.match(h.el("briefHazards").textContent,/Ravins/);
+});
+test("narrow bridges penalize driving on the edge but retain a center path",()=>{
+  const h=harness();h.start();
+  const bridge=h.win.__test.course().features.find(f=>f.type==="bridge");
+  const p=h.win.__test.player(),at=h.win.__test.at(bridge.s);
+  p.x=at.x+at.nx*86;p.y=at.y+at.ny*86;p.speed=90;
+  h.win.__test.updatePlayer(.016);
+  assert.ok(p.hp<100,"Bridge edges must cause a fall");
+  assert.ok(p.invulnerable>0,"Respawn must be protected");
+  assert.match(h.el("eventToast").textContent,/CHUTE/);
+  assert.ok(Math.hypot(p.x-at.x,p.y-at.y)>100,"Respawn must return to an earlier checkpoint");
+});
+test("oil lowers steering grip, and ramp launches the vehicle",()=>{
+  const h=harness();h.start();
+  const p=h.win.__test.player(),hazards=h.win.__test.course().features;
+  const oil=hazards.find(f=>f.type==="oil"),atOil=h.win.__test.at(oil.s);
+  p.x=atOil.x+atOil.nx*oil.lane;p.y=atOil.y+atOil.ny*oil.lane;p.speed=140;
+  h.win.__test.updatePlayer(.016);
+  assert.ok(p.roadGrip<.5,"Oil must change car physics");
+  const ramp=hazards.find(f=>f.type==="ramp"),atRamp=h.win.__test.at(ramp.s);
+  p.x=atRamp.x+atRamp.nx*ramp.lane;p.y=atRamp.y+atRamp.ny*ramp.lane;
+  p.speed=215;p.airZ=0;p.airV=0;
+  h.win.__test.updatePlayer(.016);
+  assert.ok(p.airZ>0,"Ramp must launch car into air");
+  assert.ok(p.airV>0);
+});
+test("missing a jump triggers checkpoint respawn and time penalty",()=>{
+  const h=harness();h.start();
+  const p=h.win.__test.player(),gap=h.win.__test.course().features.find(f=>f.type==="gap");
+  const at=h.win.__test.at(gap.s);
+  p.x=at.x+at.nx*gap.lane;p.y=at.y+at.ny*gap.lane;p.airZ=0;p.airV=0;p.speed=75;
+  h.win.__test.updatePlayer(.016);
+  assert.ok(p.hp<100);
+  assert.match(h.el("eventToast").textContent,/SAUT MANQUÉ/);
 });
