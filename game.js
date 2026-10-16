@@ -22,9 +22,9 @@ function shadePaint(hex){return "#"+[1,3,5].map((i,n)=>Math.round(parseInt(hex.s
 const ZONES = [
   {name:"ALPES",region:"EUROPE / MONTAGNE",status:"ready",boss:"LE BOUQUETIN",bossColor:"#d9b067",races:["LES GORGES ROUGES","LE PONT DU CHAOS","LA MINE NOIRE","LE SOMMET DES TITANS"]},
   {name:"LITTORAL",region:"OCÉANIE / PLAGE",status:"ready",boss:"SIRÈNE DU CAP",bossColor:"#79e5d8",races:["BAIE D'AZUR","CORNICHE DES EMBRUNS","CAP SOLAIRE","COURONNE DES MARÉES"]},
-  {name:"GRAND NORD",region:"AMÉRIQUE DU NORD / NEIGE",status:"planned",boss:"LE BLIZZARD",races:["SENTIER BLANC","LAC GELÉ","COL DU NORD","TEMPÊTE ROYALE"]},
-  {name:"SAHARA",region:"AFRIQUE / DÉSERT",status:"planned",boss:"LE SCORPION",races:["DUNES ROUGES","OASIS MIRAGE","GORGE DES SABLES","SOLEIL NOIR"]},
-  {name:"AMAZONIE",region:"AMÉRIQUE DU SUD / FORÊT",status:"planned",boss:"LE JAGUAR",races:["ROUTE CANOPÉE","FLEUVE VERT","PISTE TROPICALE","ROI DE LA JUNGLE"]}
+  {name:"GRAND NORD",region:"AMÉRIQUE DU NORD / NEIGE",status:"ready",boss:"LE BLIZZARD",bossColor:"#a1e5fc",races:["SENTIER BLANC","LAC GELÉ","COL DU NORD","TEMPÊTE ROYALE"]},
+  {name:"SAHARA",region:"AFRIQUE / DÉSERT",status:"ready",boss:"LE SCORPION",bossColor:"#f3a55d",races:["DUNES ROUGES","OASIS MIRAGE","GORGE DES SABLES","SOLEIL NOIR"]},
+  {name:"AMAZONIE",region:"AMÉRIQUE DU SUD / FORÊT",status:"ready",boss:"LE JAGUAR",bossColor:"#9ade77",races:["ROUTE CANOPÉE","FLEUVE VERT","PISTE TROPICALE","ROI DE LA JUNGLE"]}
 ];
 const WORLD_GP = [
   "RIVIERA GP","ARDENNES GP","LOMBARDIA GP","SUZUKA SPIRIT",
@@ -43,7 +43,10 @@ const rivals = [
 ];
 const trackDefs=[
 {name:"NEON CANYON",sky:["#12263a","#132b32","#0c1925"],edge:"#318f9a",anchors:[[-840,-430],[-510,-725],[-25,-800],[520,-702],[846,-413],[916,-55],[750,214],[483,168],[251,345],[285,640],[-33,814],[-485,746],[-770,445],[-922,-20]]},
-{name:"COASTLINE RUSH",sky:["#15374a","#194d56","#102a3b"],edge:"#d2a460",anchors:[[-800,-580],[-340,-800],[235,-775],[825,-480],[922,-95],[585,140],[675,510],[365,830],[-155,770],[-430,500],[-360,160],[-735,260],[-960,-45],[-935,-360]]}
+{name:"COASTLINE RUSH",sky:["#15374a","#194d56","#102a3b"],edge:"#d2a460",anchors:[[-800,-580],[-340,-800],[235,-775],[825,-480],[922,-95],[585,140],[675,510],[365,830],[-155,770],[-430,500],[-360,160],[-735,260],[-960,-45],[-935,-360]]},
+{name:"FROZEN FRONTIER",sky:["#273e56","#203d53","#0d1c30"],edge:"#a4dded",anchors:[[-930,-470],[-720,-820],[-230,-905],[280,-760],[780,-890],[980,-510],[760,-110],[420,-20],[750,310],[630,670],[150,870],[-420,810],[-750,420],[-920,-70]]},
+{name:"SANDSTORM RUN",sky:["#674733","#9d663c","#51382b"],edge:"#f2af5c",anchors:[[-970,-390],[-650,-780],[-160,-910],[440,-800],[900,-530],[760,-180],[450,100],[780,360],[520,810],[-60,900],[-600,700],[-810,290],[-540,-30],[-950,-100]]},
+{name:"GREEN HELL",sky:["#142f28","#1d4636","#0b211e"],edge:"#76c080",anchors:[[-890,-570],[-490,-880],[110,-820],[720,-710],[930,-330],[560,-60],[330,280],[790,380],[510,800],[-120,890],[-640,680],[-900,240],[-540,50],[-960,-100]]}
 ];
 const COURSE_LAYOUTS = [
   [
@@ -55,6 +58,21 @@ const COURSE_LAYOUTS = [
     [[-770,-650],[-170,-840],[330,-780],[880,-620],[750,-170],[950,190],[650,500],[210,420],[250,810],[-300,800],[-650,520],[-460,90],[-930,180],[-930,-390]],
     [[-970,-550],[-420,-800],[70,-610],[400,-850],[880,-650],[930,-180],[650,50],[820,420],[520,780],[20,850],[-470,700],[-750,340],[-480,0],[-1000,-130]],
     [[-900,-550],[-400,-900],[180,-830],[650,-670],[950,-310],[580,-40],[850,190],[760,610],[330,850],[-250,780],[-700,520],[-890,160],[-590,-160],[-990,-220]]
+  ],
+  [
+    [[-950,-600],[-560,-900],[-50,-780],[350,-900],[790,-680],[940,-260],[600,-130],[360,160],[760,340],[760,720],[240,930],[-310,740],[-770,430],[-850,-20]],
+    [[-900,-480],[-690,-860],[-160,-880],[340,-660],[710,-870],[950,-480],[840,-100],[510,100],[870,370],[410,610],[210,930],[-320,780],[-790,400],[-950,0]],
+    [[-970,-520],[-560,-880],[-30,-960],[400,-720],[850,-820],[900,-370],[500,-220],[780,40],[960,490],[530,830],[10,700],[-260,910],[-770,560],[-850,-40]]
+  ],
+  [
+    [[-930,-470],[-710,-810],[-240,-890],[370,-730],[850,-830],[990,-390],[550,-200],[800,20],[960,380],[510,630],[230,920],[-390,820],[-770,390],[-890,10]],
+    [[-870,-550],[-480,-960],[80,-890],[550,-600],[970,-520],[840,-80],[450,120],[770,360],[430,780],[-10,950],[-440,690],[-920,490],[-730,40],[-1000,-80]],
+    [[-960,-490],[-680,-850],[-220,-760],[150,-940],[620,-790],[960,-360],[600,-120],[870,190],[580,540],[780,860],[210,930],[-290,690],[-850,560],[-980,40]]
+  ],
+  [
+    [[-940,-460],[-570,-890],[10,-940],[480,-720],[870,-890],[970,-420],[610,-120],[930,150],[640,540],[410,940],[-100,780],[-480,870],[-900,440],[-720,20]],
+    [[-930,-630],[-560,-970],[-10,-740],[470,-890],[910,-620],[670,-300],[980,60],[720,390],[930,760],[420,920],[-150,690],[-490,880],[-870,400],[-780,-60]],
+    [[-960,-480],[-730,-900],[-200,-960],[310,-770],[720,-920],[960,-560],[520,-270],[930,40],[830,490],[420,730],[-30,920],[-540,650],[-930,390],[-720,-90]]
   ]
 ];
 let trackId=0,raceIndex=0;
@@ -120,7 +138,7 @@ for(let i=0;i<14;i++){
 const SAVE_KEY="loubkarting_progress_v2";
 const upgrades={engine:{label:"MOTEUR",base:200},armor:{label:"BLINDAGE",base:200},nitro:{label:"NITRO",base:200}};
 const TRANSPORTS={trailer:{label:"REMORQUE",price:320},boat:{label:"BATEAU",price:1600},plane:{label:"AVION",price:5000}};
-const ENTRY_FEES=[[0,120,240,360],[0,200,340,480]];
+const ENTRY_FEES=[[0,120,240,360],[0,200,340,480],[0,260,440,650],[0,310,520,750],[0,360,620,850]];
 const KO_REWARD=240;
 function loadProgress(){
   let raw={};try{raw=JSON.parse(localStorage.getItem(SAVE_KEY)||"{}")||{};}catch(e){}
@@ -143,8 +161,8 @@ function loadProgress(){
     const i=Number(key);
     if(Number.isInteger(i)&&i>=0&&i<specs.length&&owned.includes(i)&&validPaint(id))paintColors[i]=id;
   }
-  const paidEntries=Array.isArray(raw.paidEntries)?raw.paidEntries.filter(x=>typeof x==="string"&&/^[01]:[1-3]$/.test(x)):[];
-  if(oldSaves)for(const k of cleared)if(/^[01]:[1-3]$/.test(k)&&!paidEntries.includes(k))paidEntries.push(k);
+  const paidEntries=Array.isArray(raw.paidEntries)?raw.paidEntries.filter(x=>typeof x==="string"&&/^[0-4]:[1-3]$/.test(x)):[];
+  if(oldSaves)for(const k of cleared)if(/^[0-4]:[1-3]$/.test(k)&&!paidEntries.includes(k))paidEntries.push(k);
   return {credits:Number.isFinite(credit)?clamp(Math.floor(credit),0,100000000):0,
     engine:lvl("engine"),armor:lvl("armor"),nitro:lvl("nitro"),track:zone,zone,race,
     ownedCars:[...new Set(owned)],selectedCar:owned.includes(car)?car:0,weapon,paintColors,
@@ -156,12 +174,18 @@ function costOf(k){return upgrades[k].base*(1+progress[k]);}
 
 function raceKey(z,r){return z+":"+r;}
 function hasTransport(k){return progress.transports.includes(k);}
-function zoneUnlocked(z){return z===0||(z===1&&progress.cleared.includes(raceKey(0,3))&&hasTransport("boat"));}
+function zoneUnlocked(z){
+  if(z===0)return true;
+  if(!ZONES[z]||ZONES[z].status!=="ready")return false;
+  if(z===1)return hasTransport("boat")&&progress.cleared.includes(raceKey(0,3));
+  // One purchased plane serves the three intercontinental legs.
+  return hasTransport("plane")&&progress.cleared.includes(raceKey(z-1,3));
+}
 function raceQualified(z,r){
   return !!ZONES[z]&&ZONES[z].status==="ready"&&zoneUnlocked(z)&&
     (r===0||progress.cleared.includes(raceKey(z,r-1)));
 }
-function travelAllowed(z,r){return (z!==0||r===0||hasTransport("trailer"))&&(z!==1||hasTransport("boat"));}
+function travelAllowed(z,r){return (z!==0||r===0||hasTransport("trailer"))&&(z!==1||hasTransport("boat"))&&(z<2||hasTransport("plane"));}
 function raceAccessible(z,r){return raceQualified(z,r)&&travelAllowed(z,r);}
 function entryFee(z,r){return (ENTRY_FEES[z]&&ENTRY_FEES[z][r])||0;}
 function entryPaid(z,r){return entryFee(z,r)===0||progress.paidEntries.includes(raceKey(z,r));}
@@ -173,7 +197,9 @@ function buyTransport(key){
   if(key==="boat"&&(!hasTransport("trailer")||!progress.cleared.includes(raceKey(0,3)))){
     $("garageFeedback").textContent="BATS LE BOUQUETIN AVANT DE PRENDRE LE BATEAU.";return;
   }
-  if(key==="plane"){ $("garageFeedback").textContent="L'AVION SERA DISPONIBLE LORS DE L'OUVERTURE DU GRAND NORD.";return; }
+  if(key==="plane"&&(!hasTransport("boat")||!progress.cleared.includes(raceKey(1,3)))){
+    $("garageFeedback").textContent="BATS SIRÈNE DU CAP AVANT D'ACHETER L'AVION.";return;
+  }
   const t=TRANSPORTS[key];
   if(progress.credits<t.price){$("garageFeedback").textContent="CRÉDITS INSUFFISANTS POUR "+t.label;return;}
   progress.credits-=t.price;progress.transports.push(key);
@@ -323,7 +349,7 @@ function refreshCareerDisplays(){
   $("briefWeapon").textContent=WEAPONS[selectedWeapon].name;
   const fee=entryFee(trackId,raceIndex),paid=entryPaid(trackId,raceIndex);
   const travelInstruction=!travelAllowed(trackId,raceIndex)?
-    (trackId===0?"Remorque requise.":"Bateau requis."):
+    (trackId===0?"Remorque requise.":trackId===1?"Bateau requis.":"Avion requis."):
     !raceQualified(trackId,raceIndex)?"Termine la course précédente.":
     !paid?"Inscription : "+fee+" CR":"Prêt à partir.";
   $("travelInstruction").textContent=travelInstruction;
@@ -344,8 +370,11 @@ function redrawCareer(){
   $("zoneSubtitle").textContent=zone.name+" · "+zone.region;
   $("careerProgress").textContent=progress.cleared.length+" / 20 ÉPREUVES";
   $("zoneStatus0").textContent=progress.cleared.includes(raceKey(0,3))?"Terminé":"Ouvert";
-  $("zoneStatus1").textContent=zoneUnlocked(1)?"Ouvert":
-    progress.cleared.includes(raceKey(0,3))?"Bateau requis":"Verrouillé";
+  for(let z=1;z<ZONES.length;z++){
+    const ready=zoneUnlocked(z),wonPrevious=progress.cleared.includes(raceKey(z-1,3));
+    const needed=z===1?"Bateau":"Avion";
+    $("zoneStatus"+z).textContent=ready?"Ouvert":wonPrevious?needed+" requis":"Verrouillé";
+  }
   document.querySelectorAll("[data-zone]").forEach(btn=>{
     const z=Number(btn.dataset.zone),available=z<ZONES.length&&ZONES[z].status==="ready"&&zoneUnlocked(z);
     btn.disabled=!available;
@@ -378,10 +407,11 @@ function redrawCareer(){
   $("transportStatus").textContent=progress.transports.length+" / 3";
   document.querySelectorAll("[data-transport]").forEach(btn=>{
     const key=btn.dataset.transport,t=TRANSPORTS[key],owned=hasTransport(key);
-    const ready=key==="trailer"||(key==="boat"&&hasTransport("trailer")&&progress.cleared.includes(raceKey(0,3)));
-    btn.disabled=owned||key==="plane"||!ready||progress.credits<t.price;
+    const ready=key==="trailer"||(key==="boat"&&hasTransport("trailer")&&progress.cleared.includes(raceKey(0,3)))||
+      (key==="plane"&&hasTransport("boat")&&progress.cleared.includes(raceKey(1,3)));
+    btn.disabled=owned||!ready||progress.credits<t.price;
     btn.classList.toggle("transport-owned",owned);
-    $(key+"Cost").textContent=owned?"ACQUIS ✓":key==="plane"?"BIENTÔT":t.price.toLocaleString("fr-FR")+" CR";
+    $(key+"Cost").textContent=owned?"ACQUIS ✓":t.price.toLocaleString("fr-FR")+" CR";
   });
   const accessible=raceAccessible(trackId,raceIndex),fee=entryFee(trackId,raceIndex);
   const paid=entryPaid(trackId,raceIndex);
@@ -1346,7 +1376,7 @@ function endRace(destroyed=false){
   let detail=destroyed?"Tu conserves les lingots et tes primes de destruction.":qualified?
     boss?"BOSS VAINCU · "+activeZone().boss+" !": "Résultat validé ! Prépare le transport et les droits de la prochaine course.":
     boss?"Termine premier pour décrocher le titre régional.":"Termine dans les trois premiers pour progresser.";
-  if(qualified&&boss&&trackId===0)detail+=" Achète le BATEAU pour rejoindre la côte.";
+  if(qualified&&boss&&trackId<ZONES.length-1)detail+=" "+(trackId===0?"Achète le BATEAU pour rejoindre la côte.":trackId===1?"Achète l’AVION pour rejoindre le Grand Nord.":"Prochaine région débloquée : "+ZONES[trackId+1].name+".");
   $("dialogDetail").textContent=detail;
   $("resultStats").innerHTML='<div class="result-grid">'+
     '<div><span>CLASSEMENT</span><b>'+rank+' / 4</b></div>'+
@@ -1356,7 +1386,7 @@ function endRace(destroyed=false){
     '<div><span>1re QUALIF.</span><b>+'+firstTimeBonus+'</b></div>'+
     '<div><span>TOTAL GAGNÉ</span><b>+'+prize+' CR</b></div></div>';
   $("resumeBtn").classList.add("hidden");$("againBtn").classList.remove("hidden");
-  const hasNext=qualified&&(raceIndex<3||(trackId===0&&boss));
+  const hasNext=qualified&&(raceIndex<3||(boss&&trackId<ZONES.length-1));
   $("nextBtn").classList.toggle("hidden",!hasNext);
   $("nextBtn").innerHTML='ÉPREUVE SUIVANTE / LOGISTIQUE <span>↗</span>';
   $("raceOverlay").classList.remove("hidden");
@@ -1444,8 +1474,8 @@ $("nextBtn").addEventListener("click",()=>{
   if(state!=="finish")return;
   if(raceIndex<3&&progress.cleared.includes(raceKey(trackId,raceIndex))){
     rebuildTrack(trackId,raceIndex+1);
-  }else if(trackId===0&&raceIndex===3&&progress.cleared.includes(raceKey(0,3))){
-    rebuildTrack(1,0);
+  }else if(raceIndex===3&&trackId<ZONES.length-1&&progress.cleared.includes(raceKey(trackId,3))){
+    rebuildTrack(trackId+1,0);
   }else return;
   progress.zone=trackId;progress.track=trackId;progress.race=raceIndex;saveProgress();
   redrawCareer();
