@@ -832,6 +832,11 @@ function respawnDestroyedVehicle(){
 }
 function fallFromCourse(nearest,reason){
   if(player.invulnerable>0)return false;
+  // A fatal fall counts as vehicle destruction: exactly +3 s, never +2 s plus +3 s.
+  if(player.hp<=17/player.style.armor){
+    player.hp=0;
+    return respawnDestroyedVehicle();
+  }
   const checkpoint=trackAt(nearest.s-170);
   player.x=checkpoint.x;player.y=checkpoint.y;
   player.angle=Math.atan2(checkpoint.dy,checkpoint.dx);
@@ -844,7 +849,6 @@ function fallFromCourse(nearest,reason){
   shockCooldown=.8;
   spawnFX(checkpoint.x,checkpoint.y,"#f39964",18);
   setToast(reason+" · +2 S");
-  if(player.hp<=0)respawnDestroyedVehicle();
   return true;
 }
 function updateCourseHazardForPlayer(nearest){
@@ -917,11 +921,11 @@ function updatePlayer(dt){
     const dx=player.x-closest.x,dy=player.y-closest.y,len=Math.max(1,closest.dist);
     player.x=closest.x+dx/len*(ROAD_HALF-17);
     player.y=closest.y+dy/len*(ROAD_HALF-17);
-    if(Math.abs(player.speed)>90&&shockCooldown<=0){spawnFX(player.x,player.y,"#f8bc68",9);player.hp=Math.max(0,player.hp-4/player.style.armor);shockCooldown=.5;}
+    if(Math.abs(player.speed)>90&&shockCooldown<=0&&player.invulnerable<=0){spawnFX(player.x,player.y,"#f8bc68",9);player.hp=Math.max(0,player.hp-4/player.style.armor);shockCooldown=.5;}
     player.speed*=.81;
   }
   for(const ai of ais){
-    if(!ai.destroyed&&hypot(player.x-ai.x,player.y-ai.y)<44){
+    if(!ai.destroyed&&player.invulnerable<=0&&hypot(player.x-ai.x,player.y-ai.y)<44){
       const angle=Math.atan2(player.y-ai.y,player.x-ai.x);
       player.x+=Math.cos(angle)*150*dt;player.y+=Math.sin(angle)*150*dt;
       player.speed*=.97;
