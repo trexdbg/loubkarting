@@ -59,6 +59,71 @@
         {type:"oil",at:.89,length:66,lane:0,width:85}
       ]
     }
+,
+    {
+      name:"BAIE D'AZUR",tagline:"Jetées battues par les marées",signature:"Le saut au-dessus de la jetée",
+      features:[{type:"water",at:0.12,length:135,lane:0,width:185},{type:"sand",at:0.26,length:135,lane:-25,width:125},{type:"bridge",at:0.44,length:155,width:61},{type:"ramp",at:0.68,length:50,lane:-42,width:92},{type:"gap",at:0.7,length:70,lane:-42,width:108},{type:"water",at:0.87,length:120,lane:30,width:130}]
+    },
+    {
+      name:"CORNICHE DES EMBRUNS",tagline:"Corniche glissante et rochers marins",signature:"Le virage de la vague",
+      features:[{type:"oil",at:0.13,length:60,lane:45,width:85},{type:"sand",at:0.32,length:165,lane:0,width:195},{type:"rock",at:0.54,length:33,lane:-44,width:47},{type:"bridge",at:0.66,length:145,width:64},{type:"water",at:0.85,length:165,lane:0,width:180}]
+    },
+    {
+      name:"CAP SOLAIRE",tagline:"Plage, rampe de jetée et passage étroit",signature:"La rampe des surfeurs",
+      features:[{type:"sand",at:0.14,length:160,lane:0,width:190},{type:"water",at:0.33,length:115,lane:32,width:155},{type:"ramp",at:0.5,length:52,lane:0,width:208},{type:"gap",at:0.52,length:70,lane:0,width:218},{type:"bridge",at:0.7,length:170,width:56},{type:"oil",at:0.88,length:72,lane:-30,width:90}]
+    },
+    {
+      name:"COURONNE DES MARÉES",tagline:"Finale littorale sous les embruns",signature:"Le double pont dans les vagues",
+      features:[{type:"water",at:0.11,length:175,lane:0,width:210},{type:"bridge",at:0.26,length:165,width:58},{type:"water",at:0.39,length:170,lane:0,width:190},{type:"ramp",at:0.52,length:51,lane:0,width:205},{type:"gap",at:0.54,length:75,lane:0,width:217},{type:"bridge",at:0.74,length:170,width:58},{type:"oil",at:0.89,length:65,lane:45,width:85}]
+    },
+    {
+      name:"SENTIER BLANC",tagline:"Verglas, roches gelées et passerelle",signature:"Le pont de givre",
+      features:[{type:"ice",at:0.12,length:230,lane:0,width:210},{type:"rock",at:0.27,length:40,lane:43,width:52},{type:"ice",at:0.43,length:160,lane:-20,width:175},{type:"bridge",at:0.61,length:180,width:59},{type:"ice",at:0.81,length:185,lane:0,width:210}]
+    },
+    {
+      name:"LAC GELÉ",tagline:"Lac traversé sur une fine couche de glace",signature:"Le grand saut de glace",
+      features:[{type:"ice",at:0.12,length:260,lane:0,width:220},{type:"ice",at:0.3,length:210,lane:0,width:215},{type:"ramp",at:0.47,length:48,lane:0,width:212},{type:"gap",at:0.49,length:66,lane:0,width:218},{type:"ice",at:0.61,length:195,lane:0,width:220},{type:"rock",at:0.77,length:40,lane:-45,width:50},{type:"ice",at:0.89,length:140,lane:40,width:125}]
+    },
+    {
+      name:"COL DU NORD",tagline:"Épingles gelées et souffle polaire",signature:"Le grand pont de neige",
+      features:[{type:"ice",at:0.14,length:200,lane:0,width:205},{type:"ice",at:0.33,length:175,lane:-35,width:145},{type:"bridge",at:0.47,length:175,width:55},{type:"rock",at:0.63,length:38,lane:44,width:48},{type:"ramp",at:0.76,length:50,lane:-38,width:90},{type:"gap",at:0.78,length:64,lane:-38,width:120}]
+    },
+    {
+      name:"TEMPÊTE ROYALE",tagline:"Finale polaire : glace et précipices",signature:"La traversée blanche du Blizzard",
+      features:[{type:"ice",at:0.11,length:210,lane:0,width:215},{type:"ice",at:0.31,length:180,lane:0,width:200},{type:"bridge",at:0.49,length:185,width:52},{type:"ice",at:0.64,length:155,lane:10,width:185},{type:"ramp",at:0.77,length:49,lane:0,width:215},{type:"gap",at:0.79,length:70,lane:0,width:218},{type:"rock",at:0.91,length:33,lane:-40,width:50}]
+    },
+    {
+      name:"DUNES ROUGES",tagline:"Sable profond et rochers affleurants",signature:"Le bond par-dessus la dune",
+      features:[{type:"sand",at:0.11,length:240,lane:0,width:210},{type:"sand",at:0.3,length:175,lane:35,width:145},{type:"rock",at:0.43,length:42,lane:-45,width:54},{type:"ramp",at:0.55,length:55,lane:0,width:215},{type:"gap",at:0.57,length:68,lane:0,width:218},{type:"sand",at:0.73,length:205,lane:0,width:215},{type:"sand",at:0.88,length:130,lane:-30,width:155}]
+    },
+    {
+      name:"OASIS MIRAGE",tagline:"Sables mouvants au bord d'une oasis",signature:"La traversée de l'oasis",
+      features:[{type:"sand",at:0.14,length:190,lane:0,width:195},{type:"water",at:0.27,length:125,lane:40,width:115},{type:"sand",at:0.44,length:220,lane:0,width:210},{type:"rock",at:0.59,length:41,lane:-42,width:48},{type:"bridge",at:0.72,length:180,width:61},{type:"sand",at:0.87,length:150,lane:0,width:190}]
+    },
+    {
+      name:"GORGE DES SABLES",tagline:"Falaise désertique et gorge profonde",signature:"Le canyon sans garde-fou",
+      features:[{type:"sand",at:0.12,length:190,lane:0,width:205},{type:"bridge",at:0.26,length:180,width:54},{type:"ramp",at:0.46,length:47,lane:0,width:211},{type:"gap",at:0.48,length:75,lane:0,width:218},{type:"rock",at:0.63,length:41,lane:43,width:52},{type:"sand",at:0.81,length:210,lane:-15,width:175}]
+    },
+    {
+      name:"SOLEIL NOIR",tagline:"Finale du désert dans la tempête",signature:"Le saut dans la tempête rouge",
+      features:[{type:"sand",at:0.13,length:240,lane:0,width:213},{type:"sand",at:0.34,length:210,lane:0,width:190},{type:"bridge",at:0.5,length:175,width:53},{type:"sand",at:0.65,length:150,lane:-32,width:145},{type:"ramp",at:0.77,length:48,lane:0,width:211},{type:"gap",at:0.79,length:71,lane:0,width:218},{type:"rock",at:0.91,length:38,lane:-41,width:51}]
+    },
+    {
+      name:"ROUTE CANOPÉE",tagline:"Boue et troncs sous la canopée",signature:"Le tronc couché du Jaguar",
+      features:[{type:"mud",at:0.13,length:200,lane:0,width:205},{type:"log",at:0.27,length:34,lane:-40,width:52},{type:"mud",at:0.41,length:170,lane:30,width:155},{type:"log",at:0.58,length:37,lane:45,width:53},{type:"mud",at:0.71,length:170,lane:0,width:210},{type:"bridge",at:0.85,length:178,width:60}]
+    },
+    {
+      name:"FLEUVE VERT",tagline:"Gués, ponts en bois et rivière",signature:"Le saut de la rivière",
+      features:[{type:"water",at:0.18,length:145,lane:0,width:195},{type:"bridge",at:0.3,length:168,width:57},{type:"mud",at:0.49,length:200,lane:0,width:213},{type:"ramp",at:0.61,length:53,lane:0,width:208},{type:"gap",at:0.63,length:68,lane:0,width:218},{type:"log",at:0.84,length:37,lane:-38,width:53}]
+    },
+    {
+      name:"PISTE TROPICALE",tagline:"Ornières, pluie et embuscades",signature:"Le tunnel vert",
+      features:[{type:"mud",at:0.11,length:210,lane:0,width:210},{type:"log",at:0.28,length:40,lane:43,width:50},{type:"mud",at:0.42,length:170,lane:-33,width:145},{type:"log",at:0.57,length:36,lane:-42,width:51},{type:"mud",at:0.71,length:160,lane:0,width:215},{type:"water",at:0.83,length:125,lane:35,width:143},{type:"bridge",at:0.92,length:140,width:58}]
+    },
+    {
+      name:"ROI DE LA JUNGLE",tagline:"Finale humide sur les ponts de la forêt",signature:"Le grand saut au-dessus du fleuve",
+      features:[{type:"mud",at:0.11,length:180,lane:0,width:205},{type:"log",at:0.25,length:38,lane:-40,width:51},{type:"bridge",at:0.39,length:168,width:57},{type:"water",at:0.56,length:145,lane:0,width:210},{type:"ramp",at:0.7,length:49,lane:0,width:212},{type:"gap",at:0.72,length:77,lane:0,width:218},{type:"log",at:0.89,length:40,lane:44,width:50}]
+    }
   ];
   function wrapDistance(a,b,total) {
     let delta=a-b;
@@ -67,7 +132,7 @@
     return delta;
   }
   function build(zone,race,total,at) {
-    const definition=zone===0?catalog[race]:null;
+    const definition=catalog[zone*4+race]||null;
     return {
       name:definition?definition.name:"",
       tagline:definition?definition.tagline:"",
@@ -78,7 +143,7 @@
     };
   }
   function inspect(design,s,lane,time,total) {
-    const result={bridge:null,gap:null,oil:null,ice:null,ramp:null,rock:null,cart:null};
+    const result={bridge:null,gap:null,oil:null,ice:null,ramp:null,rock:null,cart:null,water:null,sand:null,mud:null,log:null};
     for(const f of design.features){
       if(Math.abs(wrapDistance(s,f.s,total))>f.length/2)continue;
       if(f.type==="bridge"){result.bridge=f;continue;}
@@ -111,6 +176,16 @@
           ctx.beginPath();ctx.moveTo(l.x,l.y);ctx.lineTo(r.x,r.y);
           ctx.strokeStyle="#e4aa61";ctx.lineWidth=4;ctx.stroke();
         }
+      }else if(f.type==="water"||f.type==="sand"||f.type==="mud"){
+        const fill={water:"#6dbbe3aa",sand:"#c59b5399",mud:"#483e2caa"}[f.type];
+        const border={water:"#b7f5fa",sand:"#edcf8b",mud:"#94714b"}[f.type];
+        quadrilateral(f,(f.lane||0)-f.width/2,(f.lane||0)+f.width/2,fill,1,border);
+      }else if(f.type==="log"){
+        const p=at(f.s),sp=project(p.x+p.nx*(f.lane||0),p.y+p.ny*(f.lane||0),15);
+        ctx.save();ctx.translate(sp.x,sp.y);
+        ctx.rotate(.24);ctx.fillStyle="#593b25";ctx.fillRect(-26,-9,52,18);
+        ctx.fillStyle="#97714b";ctx.fillRect(-25,-9,50,6);
+        ctx.fillStyle="#c5a177";ctx.beginPath();ctx.ellipse(24,0,6,9,0,0,TAU);ctx.fill();ctx.restore();
       }else if(f.type==="oil"){
         quadrilateral(f,(f.lane||0)-f.width/2,(f.lane||0)+f.width/2,"#0b101acc",1,"#424c68");
       }else if(f.type==="ice"){

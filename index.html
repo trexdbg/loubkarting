@@ -86,12 +86,12 @@
     <path d="M330 103L340 102L345 113L335 118Z"/>
   </g>
   <path class="earth-route" d="M422 132Q565 30 709 297" fill="none" stroke="#edd580" stroke-width="2.5" stroke-dasharray="6 9" opacity=".8"/>
-  <path class="earth-route future" d="M709 297Q455 75 168 136M168 136Q304 122 415 282M415 282Q307 375 264 298" fill="none" stroke="#dce8b3" stroke-width="1.5" stroke-dasharray="3 11" opacity=".4"/>
+  <path class="earth-route" d="M709 297Q455 75 168 136M168 136Q304 122 415 282M415 282Q307 375 264 298" fill="none" stroke="#dce8b3" stroke-width="1.5" stroke-dasharray="3 11" opacity=".4"/>
   <g class="map-pin alps"><circle cx="422" cy="132" r="17" fill="#f4d67a" opacity=".17"/><circle cx="422" cy="132" r="8" fill="#f4d67a" stroke="#fff4bb" stroke-width="2"/><text x="435" y="125">ALPES</text></g>
   <g class="map-pin coast"><circle cx="709" cy="297" r="17" fill="#f4d67a" opacity=".17"/><circle cx="709" cy="297" r="8" fill="#f4d67a" stroke="#fff4bb" stroke-width="2"/><text x="621" y="288">LITTORAL</text></g>
-  <g class="map-pin future"><circle cx="168" cy="136" r="5" fill="#acc4cc"/><text x="102" y="124">NORD</text></g>
-  <g class="map-pin future"><circle cx="415" cy="282" r="5" fill="#acc4cc"/><text x="442" y="289">SAHARA</text></g>
-  <g class="map-pin future"><circle cx="264" cy="298" r="5" fill="#acc4cc"/><text x="189" y="293">AMAZONIE</text></g>
+  <g class="map-pin north"><circle cx="168" cy="136" r="13" fill="#c2edfc" opacity=".17"/><circle cx="168" cy="136" r="6" fill="#a9e9fb"/><text x="102" y="124">NORD</text></g>
+  <g class="map-pin desert"><circle cx="415" cy="282" r="13" fill="#e9b46a" opacity=".17"/><circle cx="415" cy="282" r="6" fill="#efb66d"/><text x="442" y="289">SAHARA</text></g>
+  <g class="map-pin jungle"><circle cx="264" cy="298" r="13" fill="#8bd991" opacity=".17"/><circle cx="264" cy="298" r="6" fill="#8be29b"/><text x="189" y="293">AMAZONIE</text></g>
 </svg></div>
                 <div class="region-info"><span class="option-label">LOCALISATION ACTUELLE</span><h3 id="worldRegionTitle">ALPES</h3><div id="worldRegionInfo">EUROPE · MONTAGNE</div><p id="worldBossInfo">BOSS : LE BOUQUETIN</p><button class="route-link" data-go="race">PRÉPARER L'ÉPREUVE ↗</button></div>
               </div>
@@ -99,7 +99,10 @@
               <div class="zone-select" role="group" aria-label="Région du championnat">
             <button class="zone-card active" data-zone="0"><span class="zone-emoji">⛰</span><span><strong>Alpes</strong><small>Montagne</small></span><em id="zoneStatus0">DISPONIBLE</em></button>
             <button class="zone-card" data-zone="1"><span class="zone-emoji">◈</span><span><strong>Littoral</strong><small>Plage</small></span><em id="zoneStatus1">À DÉBLOQUER</em></button>
-            <span class="future-regions">À venir : Neige · Désert · Forêt · Grands Prix</span>
+            <button class="zone-card" data-zone="2"><span class="zone-emoji">❄</span><span><strong>Grand Nord</strong><small>Neige</small></span><em id="zoneStatus2">VERROUILLÉ</em></button>
+            <button class="zone-card" data-zone="3"><span class="zone-emoji">☀</span><span><strong>Sahara</strong><small>Désert</small></span><em id="zoneStatus3">VERROUILLÉ</em></button>
+            <button class="zone-card" data-zone="4"><span class="zone-emoji">♣</span><span><strong>Amazonie</strong><small>Forêt</small></span><em id="zoneStatus4">VERROUILLÉ</em></button>
+            <span class="future-regions">À venir : Grands Prix mondiaux</span>
           </div>
               <div class="section-head race-heading"><span class="option-label">Courses</span><span class="race-subtitle" id="zoneSubtitle">ALPES · EUROPE</span></div>
               <div class="race-select" role="group" aria-label="Épreuve de la zone">
@@ -162,7 +165,7 @@
               <div class="transport-grid">
               <button class="transport-card" data-transport="trailer"><span class="transport-icon">▰</span><span><strong>REMORQUE</strong><small>REJOINDRE LES AUTRES CIRCUITS ALPINS</small></span><b id="trailerCost">320 CR</b></button>
               <button class="transport-card" data-transport="boat"><span class="transport-icon">⛵</span><span><strong>BATEAU</strong><small>TRAVERSER VERS LE LITTORAL</small></span><b id="boatCost">1 600 CR</b></button>
-              <button class="transport-card" data-transport="plane"><span class="transport-icon">✈</span><span><strong>AVION</strong><small>VOYAGES INTERCONTINENTAUX · À VENIR</small></span><b id="planeCost">5 000 CR</b></button>
+              <button class="transport-card" data-transport="plane"><span class="transport-icon">✈</span><span><strong>AVION</strong><small>GRAND NORD · SAHARA · AMAZONIE</small></span><b id="planeCost">5 000 CR</b></button>
             </div>
             <div class="race-fee">
               <div><span class="option-label">Inscription</span><strong id="entryStatus">GRATUIT · PREMIÈRE COURSE</strong></div>

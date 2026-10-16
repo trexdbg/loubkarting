@@ -1,5 +1,5 @@
 # LOUBKARTING — Game Design Document / Earth Tour
-**Version du concept : 0.7** · Jeu solo isométrique pour le navigateur · GitHub Pages
+**Version du concept : 0.8** · Jeu solo isométrique pour le navigateur · GitHub Pages
 
 ## Interface et navigation (v0.6)
 
@@ -7,11 +7,11 @@
 
 Quatre onglets toujours visibles :
 - **Course** : prochaine épreuve, boss, voiture, arme, accès, difficulté et bouton de départ.
-- **Monde** : atlas, deux régions actuellement jouables, quatre courses par région et état de déblocage. Les régions futures sont résumées sur une seule ligne.
+- **Monde** : atlas des cinq régions maintenant jouables, quatre courses par région, état de déblocage et avenir des Grands Prix.
 - **Voitures** : voir un modèle, comparer trois caractéristiques, acheter ou équiper.
 - **Atelier** : améliorer les performances et choisir une arme.
 
-**Transport** est un écran secondaire, ouvert via le Monde ou le statut « Accès » de la course. Il présente les achats nécessaires (remorque, bateau, avion prévu) et les droits d'inscription. Le solde est visible à tout moment.
+**Transport** est un écran secondaire, ouvert via le Monde ou le statut « Accès » de la course. Il présente les achats nécessaires (remorque, bateau, avion intercontinental) et les droits d'inscription. Le solde est visible à tout moment.
 
 Principes d'ergonomie : un seul appel à l'action dominant par écran ; labels courts ; états de blocage clairs avec la condition utile ; pas de décor ou de paragraphe explicatif qui repousse la fonction ; pas d'achat involontaire par simple sélection du modèle ; navigation à quatre onglets utilisable au clavier et sur mobile. Conservation des voitures dessinées en perspective dans le concessionnaire.
 
@@ -35,9 +35,9 @@ Cinq grandes régions, quatre courses chacune. **Le boss est le leader permanent
 |---|---|---|---:|---|---|
 | 01 · Alpes | Europe | Montagne, cols, lacets | 4 | Le Bouquetin | **Jouable** |
 | 02 · Littoral | Océanie | Plage, corniche et mer | 4 | Sirène du Cap | **Jouable après le boss des Alpes et achat du bateau** |
-| 03 · Grand Nord | Amérique du Nord | Neige, verglas, pins | 4 | Le Blizzard | Planifié |
-| 04 · Sahara | Afrique | Dunes, canyons, oasis | 4 | Le Scorpion | Planifié |
-| 05 · Amazonie | Amérique du Sud | Forêt, boue, pluie, ponts | 4 | Le Jaguar | Planifié |
+| 03 · Grand Nord | Amérique du Nord | Neige, verglas, pins | 4 | Le Blizzard | **Jouable après Sirène du Cap et avion** |
+| 04 · Sahara | Afrique | Dunes, canyons, oasis | 4 | Le Scorpion | **Jouable après Le Blizzard** |
+| 05 · Amazonie | Amérique du Sud | Forêt, boue, pluie, ponts | 4 | Le Jaguar | **Jouable après Le Scorpion** |
 | 06 · World Grand Prix | International | Circuits automobiles de prestige | **10** | Champion mondial | Planifié, monoplace obligatoire |
 
 ### Alpes — 4 épreuves jouables
@@ -57,7 +57,7 @@ Les obstacles sont édités **par course** dans `course-challenges.js`, avec une
 - **Roche / wagonnet** : choc physique avec perte de vitesse, de blindage et effet visuel. Le wagonnet change de voie au cours du temps.
 - **Boss** : adversaire des quatre courses, avec blindage et vitesse supérieurs ; lorsqu'il est à proximité il essaie aussi de fermer la voie du joueur.
 
-**Règles de qualité des 20 futurs circuits :** silhouette unique, moment signature, choix risque/récompense, lecture immédiate des pièges, rival le plus dangereux identifiable. Les biomes suivants (Littoral, Grand Nord, Sahara, Amazonie) reprendront le moteur de pièges mais avec leurs propres matériaux et scénarios. La version 0.7 implémente spécifiquement les quatre Alpes ; les autres biomes ne sont pas annoncés comme terminés.
+**Règles de qualité des 20 circuits de carrière :** silhouette unique, moment signature, choix risque/récompense, lecture immédiate des pièges, rival le plus dangereux identifiable. Le Littoral, le Grand Nord, le Sahara et l'Amazonie utilisent désormais le moteur de pièges avec leurs propres matériaux et leurs scénarios. Le rendu reste en Canvas isométrique, encore susceptible de retouches visuelles.
 
 ### Animations de chute et équité entre les pilotes
 
@@ -71,7 +71,27 @@ Le joueur conserve le barème : **+2 secondes** pour une chute non létale (et p
 3. **Cap Solaire** : virages à contretemps.
 4. **Couronne des Marées** : finale contre **Sirène du Cap**.
 
-Chaque épreuve jouable dispose actuellement d'un **tracé fermé distinct**, d'une variation d'environnement cohérente avec le biome et d'un meilleur temps séparé. Les décors restent provisoires, dessinés par le moteur Canvas.
+Chaque épreuve jouable dispose d'un **tracé fermé distinct**, d'une variation d'environnement cohérente et d'un meilleur temps séparé. **Nouveaux pièges littoraux** : eau, sable, jetées, passages étroits et rampes de saut. Les trois autres régions possèdent aussi des décors et des obstacles physiques spécifiques.
+
+### Grand Nord — 4 courses
+1. Sentier Blanc : verglas, rochers et pont de givre.
+2. Lac Gelé : longue zone glissante et saut au-dessus d'une faille.
+3. Col du Nord : route gelée, pont étroit et raccourci risqué.
+4. Tempête Royale : finale contre **Le Blizzard**, glace, pont, saut et rochers.
+
+### Sahara — 4 courses
+1. Dunes Rouges : passages dans le sable et saut par-dessus une cassure.
+2. Oasis Mirage : sable profond, oasis et pont étroit.
+3. Gorge des Sables : pont de canyon et saut obligatoire.
+4. Soleil Noir : finale contre **Le Scorpion**, tempête de sable, pont et saut.
+
+### Amazonie — 4 courses
+1. Route Canopée : boue et troncs couchés.
+2. Fleuve Vert : gués, pont de bois et saut au-dessus de la rivière.
+3. Piste Tropicale : boue, troncs et ornières.
+4. Roi de la Jungle : finale contre **Le Jaguar**, boue, fleuve et saut.
+
+L'eau réduit la vitesse et l'adhérence ; la glace provoque des dérives, le sable ralentit, la boue ralentit et fait glisser, les troncs endommagent. Ces effets s'appliquent aussi aux IA.
 
 ### World Grand Prix — dix étapes futures
 La dernière compétition n'est **pas un sixième continent** : c'est le championnat mondial, réunissant des circuits de style Grand Prix dans différentes régions.
@@ -107,9 +127,9 @@ La progression est à la fois **sportive** et **financière** :
 |---|---:|---|
 | **Remorque** | 320 CR | Accès aux courses alpines 2–4 après qualification |
 | **Bateau** | 1 600 CR | Accès à la zone Littoral, après la victoire sur Le Bouquetin |
-| **Avion** | 5 000 CR prévu | Futures destinations intercontinentales, actuellement non disponible |
+| **Avion** | 5 000 CR | Trois voyages intercontinentaux, après victoire contre Sirène du Cap |
 
-Droits d'inscription (paiement une seule fois) : **Alpes** : 0 / 120 / 240 / 360 CR ; **Littoral** : 0 / 200 / 340 / 480 CR. Les transports sont des jalons de carrière et non des véhicules pilotables en course.
+Droits d'inscription (paiement une seule fois) : **Alpes** : 0 / 120 / 240 / 360 CR ; **Littoral** : 0 / 200 / 340 / 480 CR ; **Grand Nord** : 0 / 260 / 440 / 650 CR ; **Sahara** : 0 / 310 / 520 / 750 CR ; **Amazonie** : 0 / 360 / 620 / 850 CR. Les transports sont des jalons de carrière et non des véhicules pilotables en course.
 
 ### Récompenses et récupération de lingots
 
@@ -166,8 +186,8 @@ Les adversaires IA disposent, dans cette version, d’un projectile guidé simpl
 
 ## État d'implémentation
 
-### Disponible dans v0.4
-- Deux régions réellement jouables, huit épreuves à tracés distincts, deux boss.
+### Disponible dans v0.8
+- Cinq régions jouables, vingt épreuves à tracés distincts, cinq boss.
 - Cinq voitures (achat, sélection, visuels différenciés), trois modules offensifs.
 - Courses 3 tours, trois IA dont un boss permanent, collisions, nitro, dégâts et élimination des véhicules.
 - Lingots collectables, primes de destruction, revenus détaillés, remorque et bateau achetables, droits d’inscription par course, crédits et déblocages sauvegardés.
