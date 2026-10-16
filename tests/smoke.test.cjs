@@ -405,7 +405,7 @@ test("destroyed player respawns in the same race with three-second penalty",()=>
   const before=h.el("timer").textContent;
   p.hp=0;
   const start=h.win.__test.state();
-  h.advance(1);
+  h.advance(8);
   assert.equal(start,"race");
   assert.equal(h.win.__test.state(),"race","Destruction must not end the race");
   assert.equal(p.hp,100,"Respawn restores all armor");
