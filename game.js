@@ -34,7 +34,10 @@ const WORLD_GP = [
 const WEAPONS = {
   dart:{name:"DARD IONIQUE",cost:1,cooldown:.42},
   pulse:{name:"ONDE EMP",cost:2,cooldown:2.5},
-  mine:{name:"PIÈGE MAGNÉTIQUE",cost:1,cooldown:1.1}
+  mine:{name:"PIÈGE MAGNÉTIQUE",cost:1,cooldown:1.1},
+  seeker:{name:"MISSILE TRAQUEUR",cost:2,cooldown:1.15,damage:39,turn:5.5,ttl:2.2},
+  blast:{name:"ROQUETTE NOVA",cost:3,cooldown:1.7,damage:46,radius:125,ttl:1.25},
+  heavy:{name:"MISSILE TITAN",cost:3,cooldown:1.9,damage:85,radius:65,ttl:1.1}
 };
 let selectedWeapon="dart";
 const rivals = [
@@ -807,17 +810,20 @@ function resetRace(){
   player=makeCar(300,5,carWithPaint(selected),specs[selected].name,true);
   const lanes=[-34,35,0],starts=[500,430,365];
   const multipliers={easy:.80,normal:1,hard:1.12};
-  const rates=[254,270,313],difficultyRate=(multipliers[difficulty]||1)*(1+raceIndex*.015);
+  const rates=[262,278,321],difficultyRate=(multipliers[difficulty]||1)*(1+raceIndex*.019+trackId*.055);
   const region=activeZone();
   ais=[...rivals,{name:region.boss,color:region.bossColor||"#f3b968",dark:"#583c37",accent:"#fff0ca",bodyType:"gt"}].map((r,i)=>{
     const boss=i===2;
-    const a=makeCar(starts[i],lanes[i],r,r.name);
+    const tier=clamp(Math.floor((trackId*4+raceIndex+(boss?2:0))/2),0,specs.length-1);
+    const chassis=specs[tier];
+    const a=makeCar(starts[i],lanes[i],{...chassis,color:r.color,dark:r.dark,accent:r.accent},r.name);
+    a.carTier=tier;
     a.isBoss=boss;
-    a.hp=boss?180:115;
+    a.hp=(boss?180:115)+tier*(boss?12:7);
     a.maxHp=a.hp;a.knockouts=0;
-    a.cruise=(rates[i]+raceIndex*(boss?6:4))*difficultyRate;
+    a.cruise=(rates[i]+raceIndex*(boss?6:4)+tier*5)*difficultyRate;
     a.phase=i*1.8;
-    a.attackTimer=(boss?1.2:3.3)+rnd()*(boss?1.4:2.8);
+    a.attackTimer=(boss?1.2:2.9)+rnd()*(boss?1.4:2.5);
     a.speed=a.cruise;
     return a;
   });
@@ -1038,7 +1044,11 @@ function updateAI(dt){
       const playerLane=(player.x-pt.x)*pt.nx+(player.y-pt.y)*pt.ny;
       a.lane+= (clamp(playerLane,-31,31)-a.lane)*Math.min(1,dt*1.4);
     }
-    const slow=nearby.ice?.77:nearby.oil?.84:1;
+    if((nearby.rock||nearby.cart||nearby.oil||nearby.ice||nearby.bridge)&&a.stun<=0){
+      const safeLane=nearby.bridge?0:(a.lane>0?-22:22);
+      a.lane+=(safeLane-a.lane)*Math.min(1,dt*(a.isBoss?1.1:.65));
+    }
+    const slow=nearby.ice?.79:nearby.oil?.86:1;
     const pace=a.cruise*(a.stun>0?.52:1)*slow*(1+Math.sin(elapsed*.34+a.phase)*.023);
     a.speed=pace;a.progress+=pace*dt;
     const p=trackAt(a.progress),lane=a.lane+Math.sin(elapsed*.5+a.phase)*9;
@@ -1067,8 +1077,8 @@ function updateAI(dt){
     a.boosting=a.stun<=0&&Math.sin(elapsed*.34+a.phase)>0.97;
     if(a.progress>=FINISH+TRACK_LENGTH*LAPS){a.finished=true;if(finishOrder===null)finishOrder=a.name;}
     if(a.attackTimer<=0&&hypot(player.x-a.x,player.y-a.y)<(a.isBoss?560:420)&&state==="race"){
-      if(rnd()<(a.isBoss?.92:.63))shoot(a);
-      a.attackTimer=(a.isBoss?2.7:4.4)+rnd()*(a.isBoss?1.4:3.4);
+      if(rnd()<(a.isBoss?.93:.72))shoot(a);
+      a.attackTimer=(a.isBoss?2.6:4.0)+rnd()*(a.isBoss?1.4:3.0);
     }
   }
 }
@@ -1084,13 +1094,14 @@ function targetFor(owner){
 }
 function shoot(owner){
   if(owner.fireCooldown>0||owner.fall)return;
-  const weapon=owner.isPlayer?WEAPONS[selectedWeapon]:WEAPONS.dart;
+  const type=owner.isPlayer?selectedWeapon:(owner.isBoss&&trackId>0&&rnd()<.18?"blast":"dart");
+  const weapon=WEAPONS[type];
   if(owner.isPlayer&&owner.ammo<weapon.cost){
     owner.fireCooldown=.4;setToast("MUNITIONS INSUFFISANTES");return;
   }
   owner.fireCooldown=owner.isPlayer?weapon.cooldown:1.3;
   if(owner.isPlayer){owner.ammo-=weapon.cost;sound.effect("fire");}
-  if(owner.isPlayer&&selectedWeapon==="pulse"){
+  if(owner.isPlayer&&type==="pulse"){
     let hits=0;
     for(const ai of ais)if(!ai.finished&&!ai.destroyed&&!ai.fall&&ai.invulnerable<=0&&hypot(owner.x-ai.x,owner.y-ai.y)<215){
       damageOpponent(ai,28,2.65);ai.hitFlash=.34;spawnFX(ai.x,ai.y,"#8fefff",13);hits++;
@@ -1099,7 +1110,7 @@ function shoot(owner){
     setToast(hits?"ONDE EMP · "+hits+" PILOTE(S) TOUCHÉ(S)":"ONDE EMP · ZONE DÉGAGÉE");
     return;
   }
-  if(owner.isPlayer&&selectedWeapon==="mine"){
+  if(owner.isPlayer&&type==="mine"){
     const x=owner.x-Math.cos(owner.angle)*55,y=owner.y-Math.sin(owner.angle)*55;
     mines.push({x,y,ttl:16,phase:rnd()*TAU});
     if(mines.length>8)mines.shift();
@@ -1107,7 +1118,9 @@ function shoot(owner){
     return;
   }
   const t=targetFor(owner),angle=t?Math.atan2(t.y-owner.y,t.x-owner.x):owner.angle;
-  rockets.push({x:owner.x+Math.cos(angle)*38,y:owner.y+Math.sin(angle)*38,angle,ttl:1.35,isPlayer:owner.isPlayer,owner,target:t});
+  rockets.push({x:owner.x+Math.cos(angle)*38,y:owner.y+Math.sin(angle)*38,angle,
+    ttl:weapon.ttl||1.35,isPlayer:owner.isPlayer,owner,target:(type==="seeker"||type==="dart")?t:null,
+    type,damage:weapon.damage||44,radius:weapon.radius||0,turn:weapon.turn||(type==="dart"?2.2:0)});
 }
 function rotateToward(a,b,max){
   let d=mod(b-a+Math.PI,TAU)-Math.PI;
@@ -1131,28 +1144,40 @@ function damageOpponent(ai,amount,stun){
   ai.hitFlash=.25;ai.stun=Math.max(ai.stun,stun);
   if(ai.hp<=0)destroyOpponent(ai);
 }
+function explodeRocket(r,hit){
+  const targets=r.isPlayer?ais:[player];
+  const radius=r.radius||0;
+  const x=hit?hit.x:r.x,y=hit?hit.y:r.y;
+  spawnFX(x,y,r.type==="seeker"?"#6ff6e8":radius?"#ffb75f":"#f8dc69",radius?38:24);
+  for(const c of targets){
+    if(c===r.owner||c.finished||c.destroyed||c.fall||c.invulnerable>0)continue;
+    const d=hypot(x-c.x,y-c.y);
+    if((radius&&d>radius)||(!radius&&c!==hit))continue;
+    const falloff=radius?Math.max(.35,1-d/radius*.65):1;
+    c.hitFlash=.3;
+    if(c.isPlayer){
+      const amount=(r.isPlayer?r.damage:(r.owner.isBoss?30:23)*(r.type==="blast"?1.15:1))*falloff;
+      c.hp=Math.max(0,c.hp-amount/c.style.armor);
+      c.speed*=.78;setToast("TOUCHÉ !");sound.effect("hit");
+    }else damageOpponent(c,r.damage*falloff,radius?2.2:1.9);
+  }
+}
 function updateRockets(dt){
   for(let i=rockets.length-1;i>=0;i--){
     const r=rockets[i];r.ttl-=dt;
-    if(r.target&&!r.target.finished&&!r.target.destroyed&&r.target.hp>0){
+    if(r.turn&&r.target&&!r.target.finished&&!r.target.destroyed&&!r.target.fall&&r.target.hp>0){
       const desired=Math.atan2(r.target.y-r.y,r.target.x-r.x);
-      r.angle=rotateToward(r.angle,desired,3.2*dt);
+      r.angle=rotateToward(r.angle,desired,r.turn*dt);
     }
     const mx=Math.cos(r.angle),my=Math.sin(r.angle);
-    r.x+=mx*670*dt;r.y+=my*670*dt;
+    r.x+=mx*(r.type==="heavy"?540:r.type==="seeker"?750:670)*dt;
+    r.y+=my*(r.type==="heavy"?540:r.type==="seeker"?750:670)*dt;
     let hit=null;
     for(const c of r.isPlayer?ais:[player]){
       if(c===r.owner||c.finished||c.destroyed||c.fall||c.invulnerable>0)continue;
-      if(hypot(r.x-c.x,r.y-c.y)<40){hit=c;break;}
+      if(hypot(r.x-c.x,r.y-c.y)<(r.type==="heavy"?48:40)){hit=c;break;}
     }
-    if(hit){
-      spawnFX(hit.x,hit.y,r.isPlayer?"#f8dc69":"#f77d65",24);
-      hit.hitFlash=.24;
-      if(hit.isPlayer){
-        hit.hp=Math.max(0,hit.hp-(r.owner.isBoss?30:23)/hit.style.armor);
-        hit.speed*=.72;setToast("TOUCHÉ !");sound.effect("hit");
-      }else damageOpponent(hit,44,1.9);
-    }
+    if(hit||(r.ttl<=0&&r.radius))explodeRocket(r,hit);
     if(hit||r.ttl<=0)rockets.splice(i,1);
   }
 }
