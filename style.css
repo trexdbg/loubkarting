@@ -578,3 +578,21 @@ html,body,#gameShell{touch-action:pan-y}
   #menu .dealer-buy-btn{width:100%;min-width:0}
   #menu .dealer-checkout-copy strong{font-size:24px}
 }
+
+
+/* Original atlas illustration */
+#menu .continent-art{min-height:205px}
+#menu .earth-svg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:.98}
+#menu .earth-svg .map-pin text{font:900 15px 'Barlow Condensed',Impact,sans-serif;letter-spacing:1.6px;fill:#f3e3ac;paint-order:stroke;stroke:#102b31;stroke-width:4px}
+#menu .earth-svg .map-pin.future text{fill:#a1c1bd;font-size:13px}
+#menu .earth-svg .map-pin.alps circle:first-child{animation:lk-pin-pulse 2.6s ease-in-out infinite;transform-origin:422px 132px}
+#menu[data-region="coast"] .earth-svg .map-pin.coast circle:first-child{animation:lk-pin-pulse 2.6s ease-in-out infinite;transform-origin:709px 297px}
+#menu[data-region="mountain"] .earth-svg .map-pin.coast{opacity:.45}
+#menu[data-region="coast"] .earth-svg .map-pin.alps{opacity:.45}
+#menu[data-region="coast"] .earth-svg .map-pin.alps circle:first-child{animation:none}
+@keyframes lk-pin-pulse{0%,100%{transform:scale(.83);opacity:.16}50%{transform:scale(1.55);opacity:.48}}
+#menu .earth-svg .earth-coastlines{filter:drop-shadow(0 0 5px #719a8b2f)}
+#menu .career-nav,#menu .nav-tab{touch-action:pan-x}
+#menu .career-page{touch-action:pan-y}
+@media(max-width:760px){#menu .continent-art{min-height:170px}}
+@media(prefers-reduced-motion:reduce){#menu .earth-svg .map-pin circle:first-child{animation:none!important}}
