@@ -45,52 +45,26 @@
             <span class="career-logo-icon">LK<span>★</span></span>
             <div><strong>LOUBKARTING</strong><small>EARTH TOUR / SAISON 01</small></div>
           </div>
-          <div class="sidebar-chapter">PILOTE / MENU PRINCIPAL</div>
-          <nav class="career-nav">
-            <button class="nav-tab active" data-screen="home"><span class="nav-picto">⌂</span><span>QG PILOTE</span><small>01</small></button>
-            <button class="nav-tab" data-screen="world"><span class="nav-picto">◎</span><span>CARTE DU MONDE</span><small>02</small></button>
-            <button class="nav-tab" data-screen="dealer"><span class="nav-picto">▱</span><span>CONCESSIONNAIRE</span><small>03</small></button>
-            <button class="nav-tab" data-screen="garage"><span class="nav-picto">⚒</span><span>ATELIER</span><small>04</small></button>
-            <button class="nav-tab" data-screen="travel"><span class="nav-picto">✈</span><span>TRANSPORTS</span><small>05</small></button>
-            <button class="nav-tab" data-screen="race"><span class="nav-picto">⚑</span><span>PROCHAINE COURSE</span><small>06</small></button>
+          <div class="sidebar-chapter">CARRIÈRE</div>
+          <nav class="career-nav" aria-label="Navigation">
+            <button class="nav-tab active" data-screen="race"><span class="nav-picto">⚑</span><span>Course</span></button>
+            <button class="nav-tab" data-screen="world"><span class="nav-picto">◎</span><span>Monde</span></button>
+            <button class="nav-tab" data-screen="dealer"><span class="nav-picto">▱</span><span>Voitures</span></button>
+            <button class="nav-tab" data-screen="garage"><span class="nav-picto">⚒</span><span>Atelier</span></button>
           </nav>
-          <div class="sidebar-bottom"><span>PILOTE ACTIF</span><b id="sidebarCar">CITADINE 91</b><span>COMPÉTITION</span><b id="sidebarZone">ALPES · EUROPE</b><small>Sauvegarde automatique</small></div>
+          <div class="sidebar-bottom"><span>VOITURE</span><b id="sidebarCar">CITADINE 91</b><span>RÉGION</span><b id="sidebarZone">ALPES</b></div>
         </aside>
 
         <div class="career-workspace">
           <div class="career-bar">
-            <button id="backBtn" class="career-back hidden" aria-label="Retour au QG">← RETOUR</button>
-            <div class="bar-location"><span class="live-dot"></span><span id="screenEyebrow">QUARTIER GÉNÉRAL</span><small id="screenIndex">01 / 06</small></div>
-            <div class="career-wallet"><span>SOLDE DU PILOTE</span><strong><span id="credits">0</span> <em>CR</em></strong></div>
+            <button id="backBtn" class="career-back hidden" aria-label="Retour à la course">← Retour</button>
+            <div class="bar-location"><span class="live-dot"></span><span id="screenEyebrow">COURSE</span><small id="screenIndex" class="hidden">01 / 04</small></div>
+            <div class="career-wallet"><span>CRÉDITS</span><strong><span id="credits">0</span> <em>CR</em></strong></div>
           </div>
 
           <div class="career-page" id="careerPage">
-            <section id="screen-home" class="career-screen active-screen" aria-label="Quartier général">
-              <div class="hero-welcome">
-                <div class="hero-shine"></div>
-                <div class="hero-content">
-                  <div class="eyebrow">CARREER MODE <span class="separation">/</span> EARTH TOUR</div>
-                  <h1>THE WORLD<br><span>IS YOUR TRACK.</span></h1>
-                  <p>De la petite citadine française aux bolides de Grand Prix. Cinq régions, des rivaux impitoyables et un patron à défier dans chacune d'elles.</p>
-                  <button class="hero-primary" data-go="race">POURSUIVRE MA CARRIÈRE <span>↗</span></button>
-                </div>
-                <div class="hero-vehicle" id="heroVehicle" data-car-style="city" aria-hidden="true"><div class="hero-car-body"><span class="hero-windshield"></span><span class="hero-glint"></span></div><span class="hero-wheel front"></span><span class="hero-wheel back"></span><span class="hero-shadow"></span></div>
-                <div class="hero-bottom">NO SPONSORS. NO SHORTCUTS. JUST THE ROAD.</div>
-              </div>
-              <div class="overview-header"><span class="option-label">TON ÉCURIE / STATUT ACTUEL</span><span id="hubProgress" class="career-progress">0 / 20 ÉPREUVES</span></div>
-              <div class="overview-grid">
-                <button class="overview-tile" data-go="world"><span class="overview-symbol">◎</span><small>DESTINATION</small><strong id="hubZoneName">ALPES</strong><span id="hubRaceName">COL DES BRUMES</span><b>EXPLORER LA CARTE ↗</b></button>
-                <button class="overview-tile" data-go="dealer"><span class="overview-symbol">▱</span><small>VÉHICULE ACTIF</small><strong id="hubCarName">CITADINE 91</strong><span id="hubCarStats">CITADINE FRANÇAISE</span><b>VISITER LE CONCESSIONNAIRE ↗</b></button>
-                <button class="overview-tile" data-go="travel"><span class="overview-symbol">✈</span><small>LOGISTIQUE</small><strong id="hubTransport">AUCUN TRANSPORT</strong><span id="hubNextStatus">PREMIÈRE COURSE GRATUITE</span><b>PRÉPARER LE VOYAGE ↗</b></button>
-              </div>
-              <div class="hub-shortcuts">
-                <button data-go="garage">⚒ &nbsp; AMÉLIORER LE BOLIDE <span>↗</span></button>
-                <button data-go="world">◎ &nbsp; DÉCOUVRIR LES RÉGIONS <span>↗</span></button>
-              </div>
-            </section>
-
             <section id="screen-world" class="career-screen hidden" aria-label="Carte du monde">
-              <div class="screen-heading"><div><span class="eyebrow">02 / EXPLORATION MONDIALE</span><h2>CHOISIR UNE <span>DESTINATION.</span></h2><p>Chaque région est un championnat de quatre épreuves. Le boss est présent dans chaque course.</p></div><div class="screen-ornament">◎</div></div>
+              <div class="screen-heading"><h2>Monde</h2><span id="careerProgress" class="career-progress">0 / 20</span></div>
               <div class="map-region-preview">
                 <div class="continent-art" aria-hidden="true"><svg class="earth-svg" viewBox="0 0 800 425" role="img" aria-label="Carte stylisée des cinq régions du championnat" xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -118,20 +92,17 @@
   <g class="map-pin future"><circle cx="168" cy="136" r="5" fill="#acc4cc"/><text x="102" y="124">NORD</text></g>
   <g class="map-pin future"><circle cx="415" cy="282" r="5" fill="#acc4cc"/><text x="442" y="289">SAHARA</text></g>
   <g class="map-pin future"><circle cx="264" cy="298" r="5" fill="#acc4cc"/><text x="189" y="293">AMAZONIE</text></g>
-</svg><div class="world-coordinates">EARTH / SECTOR 01<br>43°N · 7°E</div></div>
+</svg></div>
                 <div class="region-info"><span class="option-label">LOCALISATION ACTUELLE</span><h3 id="worldRegionTitle">ALPES</h3><div id="worldRegionInfo">EUROPE · MONTAGNE</div><p id="worldBossInfo">BOSS : LE BOUQUETIN</p><button class="route-link" data-go="race">PRÉPARER L'ÉPREUVE ↗</button></div>
               </div>
-              <div class="section-head"><span class="option-label">RÉGIONS & CONTINENTS</span><span id="careerProgress" class="career-progress">0 / 20 ÉPREUVES</span></div>
+              <div class="section-head"><span class="option-label">Régions</span></div>
               <div class="zone-select" role="group" aria-label="Région du championnat">
             <button class="zone-card active" data-zone="0"><span class="zone-emoji">⛰</span><span><strong>01 · ALPES</strong><small>EUROPE · MONTAGNE</small></span><em id="zoneStatus0">DISPONIBLE</em></button>
             <button class="zone-card" data-zone="1"><span class="zone-emoji">◈</span><span><strong>02 · LITTORAL</strong><small>OCÉANIE · PLAGE</small></span><em id="zoneStatus1">À DÉBLOQUER</em></button>
-            <button class="zone-card" data-zone="2"><span class="zone-emoji">❄</span><span><strong>03 · GRAND NORD</strong><small>AMÉRIQUE · NEIGE</small></span><em>À VENIR</em></button>
-            <button class="zone-card" data-zone="3"><span class="zone-emoji">✷</span><span><strong>04 · SAHARA</strong><small>AFRIQUE · DÉSERT</small></span><em>À VENIR</em></button>
-            <button class="zone-card" data-zone="4"><span class="zone-emoji">♣</span><span><strong>05 · AMAZONIE</strong><small>AMÉRIQUE DU SUD · FORÊT</small></span><em>À VENIR</em></button>
-            <button class="zone-card world-final" data-zone="5"><span class="zone-emoji">🏁</span><span><strong>06 · WORLD GRAND PRIX</strong><small>10 GP · MONOPLACE OBLIGATOIRE</small></span><em>À VENIR</em></button>
+            <span class="future-regions">À venir : Neige · Désert · Forêt · Grands Prix</span>
           </div>
-              <p class="world-calendar">PROJET WORLD GRAND PRIX · 10 ÉPREUVES : RIVIERA, ARDENNES, LOMBARDIA, SUZUKA SPIRIT, SILVER COAST, BRAZIL HEIGHTS, EIFEL RING, LONE STAR, DESERT TWILIGHT, GRAND FINAL. <strong>MONOPLACE REQUISE.</strong></p>
-              <div class="section-head race-heading"><span class="option-label">LES 4 ÉPREUVES DE LA ZONE</span><span class="race-subtitle" id="zoneSubtitle">ALPES · EUROPE</span></div>
+          </div>
+              <div class="section-head race-heading"><span class="option-label">Courses</span><span class="race-subtitle" id="zoneSubtitle">ALPES · EUROPE</span></div>
               <div class="race-select" role="group" aria-label="Épreuve de la zone">
             <button class="race-card active" data-race="0"><b>01</b><span><strong id="raceName0">COL DES BRUMES</strong><small id="raceStatus0">OUVERT</small></span></button>
             <button class="race-card" data-race="1"><b>02</b><span><strong id="raceName1">ÉPINGLE DES CIMES</strong><small id="raceStatus1">VERROUILLÉ</small></span></button>
@@ -139,18 +110,18 @@
             <button class="race-card boss-race" data-race="3"><b>★</b><span><strong id="raceName3">ASCENSION ROYALE</strong><small id="raceStatus3">BOSS · LE BOUQUETIN</small></span></button>
           </div>
               <div class="career-message" id="careerMessage" aria-live="polite"></div>
-              <div class="bottom-action-row"><button data-go="travel" class="secondary-action">TRANSPORTS ET INSCRIPTIONS ↗</button><button class="primary-action" data-go="race">CONTINUER VERS LA COURSE →</button></div>
+              <div class="bottom-action-row"><button data-go="travel" class="secondary-action">Transport et inscription</button><button class="primary-action" data-go="race">Course →</button></div>
             </section>
 
             <section id="screen-dealer" class="career-screen hidden" aria-label="Concessionnaire automobile">
-              <div class="screen-heading"><div><span class="eyebrow">03 / SHOWROOM AUTOMOBILE</span><h2>LE <span>CONCESSIONNAIRE.</span></h2><p>Commence petit. Achète des voitures marquantes et construis ton écurie.</p></div><span id="ownedCount" class="career-progress">1 / 5 VOITURES</span></div>
+              <div class="screen-heading"><h2>Voitures</h2><span id="ownedCount" class="career-progress">1 / 5</span></div>
               <div class="showroom-stage">
                 <div class="showroom-light"></div>
                 <div class="showroom-car" id="showroomCar" data-car-style="city" aria-hidden="true"><span class="sc-wheel w1"></span><span class="sc-wheel w2"></span><span class="sc-wing"></span><span class="sc-windshield"></span><span class="sc-light"></span></div>
-                <div class="showroom-caption"><small>VÉHICULE / SÉLECTION</small><strong id="showroomCarName">CITADINE 91</strong><span id="showroomCarClass">URBAINE · 1991</span></div>
+                <div class="showroom-caption"><small>Modèle</small><strong id="showroomCarName">CITADINE 91</strong><span id="showroomCarClass">URBAINE · 1991</span></div>
                 <div class="showroom-specs"><div><span>VITESSE</span><b id="showroomSpeed">335</b><i><span id="showroomSpeedBar"></span></i></div><div><span>ACCÉLÉRATION</span><b id="showroomAccel">286</b><i><span id="showroomAccelBar"></span></i></div><div><span>AGILITÉ</span><b id="showroomGrip">2.74</b><i><span id="showroomGripBar"></span></i></div></div>
               </div>
-              <div class="section-head"><span class="option-label">LE PARC AUTOMOBILE · ACHAT / SÉLECTION</span><span class="dealer-hint">TOUCHE UN MODÈLE POUR LE DÉCOUVRIR, PUIS CONFIRME L'ACHAT</span></div>
+              <div class="section-head"><span class="option-label">Choisir un modèle</span><span class="dealer-hint"></span></div>
               <div class="car-select" role="group" aria-label="Choix et achat du véhicule">
           <button class="car-card active" data-car="0"><span class="car-preview hatch"><i></i></span><strong>CITADINE 91</strong><small>FRANÇAISE · URBAINE</small><em id="carCost0">POSSÉDÉE</em></button>
           <button class="car-card" data-car="1"><span class="car-preview rs"><i></i></span><strong>RS ÉCLIPSE</strong><small>HOT HATCH · SPORT</small><em id="carCost1">900 CR</em></button>
@@ -159,14 +130,14 @@
           <button class="car-card" data-car="4"><span class="car-preview formula"><i></i></span><strong>APEX FORMULA</strong><small>MONOPLACE · FINALE</small><em id="carCost4">13 000 CR</em></button>
         </div>
         <p class="selection-note" id="carDetails">CITADINE 91 · légère, modeste, mais capable de tout.</p>
-              <div class="dealer-checkout"><div class="dealer-checkout-copy"><small>VÉHICULE EXPOSÉ</small><strong id="dealerCheckoutName">CITADINE 91</strong><span id="dealerCheckoutNote">Prête pour la course.</span></div><button id="dealerBuyBtn" class="dealer-buy-btn">DÉJÀ SÉLECTIONNÉE ✓</button></div>
-              <div class="bottom-action-row"><button data-go="garage" class="secondary-action">ATELIER MÉCANIQUE ↗</button><button class="primary-action" data-go="race">PRÉPARER LA COURSE →</button></div>
+              <div class="dealer-checkout"><div class="dealer-checkout-copy"><small></small><strong id="dealerCheckoutName">CITADINE 91</strong><span id="dealerCheckoutNote">Prête pour la course.</span></div><button id="dealerBuyBtn" class="dealer-buy-btn">DÉJÀ SÉLECTIONNÉE ✓</button></div>
+              <div class="bottom-action-row"><button data-go="garage" class="secondary-action">Atelier</button><button class="primary-action" data-go="race">Course →</button></div>
             </section>
 
             <section id="screen-garage" class="career-screen hidden" aria-label="Atelier du garage">
-              <div class="screen-heading"><div><span class="eyebrow">04 / MECHANICAL DIVISION</span><h2>TON <span>ATELIER.</span></h2><p>Prépare une machine capable de résister aux combats de chaque région.</p></div><div class="screen-ornament">⚒</div></div>
-              <div class="workshop-banner"><div class="workshop-tools">⚙</div><div><small>MÉCANIQUE / PRÉPARATION</small><strong id="workshopCarName">CITADINE 91</strong><span>Les améliorations sont conservées dans ta carrière.</span></div><button data-go="dealer" class="route-link">CHANGER DE VOITURE ↗</button></div>
-              <div class="workshop-section-title"><span>01</span><div><h3>PRÉPARATION MÉCANIQUE</h3><p>Moteur, renforts et suralimentation</p></div></div>
+              <div class="screen-heading"><h2>Atelier</h2></div>
+              <div class="workshop-banner"><div class="workshop-tools">⚙</div><div><small></small><strong id="workshopCarName">CITADINE 91</strong><span></span></div><button data-go="dealer" class="route-link">Changer de voiture</button></div>
+              <div class="workshop-section-title"><span>01</span><div><h3>Améliorations</h3></div></div>
               <section class="garage" aria-label="Garage et améliorations">
                 <div class="upgrade-grid">
             <button class="upgrade-card" data-upgrade="engine"><span class="upgrade-icon">↗</span><strong>MOTEUR</strong><small id="engineLevel">NIV. 0 / 3</small><span class="upgrade-price" id="engineCost">200 CR</span></button>
@@ -175,53 +146,52 @@
           </div>
                 <div class="garage-feedback" id="garageFeedback" aria-live="polite"></div>
               </section>
-              <div class="workshop-section-title"><span>02</span><div><h3>MODULES OFFENSIFS</h3><p>Une arme équipée pour chaque course. Choisis ta tactique.</p></div></div>
+              <div class="workshop-section-title"><span>02</span><div><h3>Armes</h3></div></div>
               <div class="weapon-select" role="group" aria-label="Choix de l'arme">
           <button class="weapon-card active" data-weapon="dart"><span>➤</span><strong>DARD IONIQUE</strong><small>Guidage / 1 mun.</small></button>
           <button class="weapon-card" data-weapon="pulse"><span>◎</span><strong>ONDE EMP</strong><small>Zone / 2 mun.</small></button>
           <button class="weapon-card" data-weapon="mine"><span>⬢</span><strong>PIÈGE MAGNÉTIQUE</strong><small>Mine / 1 mun.</small></button>
         </div>
-              <div class="bottom-action-row"><button data-go="dealer" class="secondary-action">ALLER AU CONCESSIONNAIRE ↗</button><button class="primary-action" data-go="race">VALIDER ET CONTINUER →</button></div>
+              <div class="bottom-action-row"><button data-go="dealer" class="secondary-action">Voitures</button><button class="primary-action" data-go="race">Course →</button></div>
             </section>
 
             <section id="screen-travel" class="career-screen hidden" aria-label="Compagnie de transport">
-              <div class="screen-heading"><div><span class="eyebrow">05 / WORLD LOGISTICS</span><h2>LA <span>LOGISTIQUE.</span></h2><p>Il faut transporter les voitures, traverser les océans et payer les inscriptions. Chaque voyage compte.</p></div><span id="transportStatus" class="career-progress">0 / 3 TRANSPORTS</span></div>
-              <div class="travel-banner"><div class="travel-landscape"><div class="travel-hill"></div><div class="travel-road"></div><div class="travel-truck"></div></div><div class="travel-text"><small>LE MONDE NE S'OUVRE PAS GRATUITEMENT</small><strong>MOVE YOUR<br>RACING TEAM.</strong><p>Remorque → Bateau → Avion</p></div></div>
-              <div class="section-head"><span class="option-label">TRANSPORTS À ACHETER</span></div>
+              <div class="screen-heading"><h2>Transport</h2><span id="transportStatus" class="career-progress">0 / 3</span></div>
+              <div class="section-head"><span class="option-label">Transport à acheter</span></div>
               <div class="transport-grid">
               <button class="transport-card" data-transport="trailer"><span class="transport-icon">▰</span><span><strong>REMORQUE</strong><small>REJOINDRE LES AUTRES CIRCUITS ALPINS</small></span><b id="trailerCost">320 CR</b></button>
               <button class="transport-card" data-transport="boat"><span class="transport-icon">⛵</span><span><strong>BATEAU</strong><small>TRAVERSER VERS LE LITTORAL</small></span><b id="boatCost">1 600 CR</b></button>
               <button class="transport-card" data-transport="plane"><span class="transport-icon">✈</span><span><strong>AVION</strong><small>VOYAGES INTERCONTINENTAUX · À VENIR</small></span><b id="planeCost">5 000 CR</b></button>
             </div>
             <div class="race-fee">
-              <div><span class="option-label">DROIT D'INSCRIPTION</span><strong id="entryStatus">GRATUIT · PREMIÈRE COURSE</strong></div>
+              <div><span class="option-label">Inscription</span><strong id="entryStatus">GRATUIT · PREMIÈRE COURSE</strong></div>
               <button id="unlockRaceBtn" class="fee-btn hidden">ACHETER L'ACCÈS</button>
             </div>
-              <div class="travel-notice"><span>INFO VOYAGE</span><p id="travelInstruction">Les courses suivantes exigent un moyen de transport et une inscription.</p></div>
-              <div class="bottom-action-row"><button data-go="world" class="secondary-action">CONSULTER LA CARTE ↗</button><button class="primary-action" data-go="race">VÉRIFIER LA COURSE →</button></div>
+              <div class="travel-notice"><span></span><p id="travelInstruction">Les courses suivantes exigent un moyen de transport et une inscription.</p></div>
+              <div class="bottom-action-row"><button data-go="world" class="secondary-action">Monde</button><button class="primary-action" data-go="race">Course →</button></div>
             </section>
 
             <section id="screen-race" class="career-screen hidden" aria-label="Préparation de la course">
-              <div class="screen-heading"><div><span class="eyebrow">06 / PADDOCK · AVANT COURSE</span><h2>PRÊT POUR <span>LE DÉPART ?</span></h2><p>Confirme ton bolide, le terrain, ton arme et ton inscription avant de rejoindre la piste.</p></div><div class="screen-ornament">⚑</div></div>
+              <div class="screen-heading"><h2>Prochaine course</h2><button class="secondary-action" data-go="world">Changer de course</button></div>
               <div class="race-briefing">
                 <div class="briefing-scene" aria-hidden="true"><div class="briefing-mountain"></div><span class="briefing-race-no" id="briefRaceNo">01 / 04</span></div>
-                <div class="briefing-description"><small>COMPÉTITION EN COURS</small><h3 id="briefRegion">ALPES</h3><h4 id="briefRace">COL DES BRUMES</h4><p id="briefBoss">LE BOUQUETIN PARTICIPE À LA COURSE</p></div>
+                <div class="briefing-description"><small></small><h3 id="briefRegion">ALPES</h3><h4 id="briefRace">COL DES BRUMES</h4><p id="briefBoss">LE BOUQUETIN PARTICIPE À LA COURSE</p></div>
               </div>
               <div class="briefing-list">
-                <button data-go="dealer"><span>01 · VÉHICULE</span><strong id="briefCar">CITADINE 91</strong><em>CHANGER ↗</em></button>
-                <button data-go="garage"><span>02 · ARMEMENT</span><strong id="briefWeapon">DARD IONIQUE</strong><em>ÉQUIPER ↗</em></button>
-                <button data-go="travel"><span>03 · INSCRIPTION</span><strong id="briefAccess">GRATUIT · PREMIÈRE COURSE</strong><em id="briefAccessAction">VOIR ↗</em></button>
+                <button data-go="dealer"><span>Voiture</span><strong id="briefCar">CITADINE 91</strong><em>Modifier →</em></button>
+                <button data-go="garage"><span>Arme</span><strong id="briefWeapon">DARD IONIQUE</strong><em>Modifier →</em></button>
+                <button data-go="travel"><span>Accès</span><strong id="briefAccess">GRATUIT · PREMIÈRE COURSE</strong><em id="briefAccessAction">Voir →</em></button>
               </div>
               <div class="race-finalize">
-                <div class="option-row"><label for="difficulty">NIVEAU DES ADVERSAIRES</label><select id="difficulty"><option value="easy">ROOKIE</option><option selected value="normal">RACER</option><option value="hard">LEGEND</option></select></div>
+                <div class="option-row"><label for="difficulty">Difficulté</label><select id="difficulty"><option value="easy">ROOKIE</option><option selected value="normal">RACER</option><option value="hard">LEGEND</option></select></div>
                 <div class="race-record">MEILLEUR TEMPS <strong id="bestTime">--:--.-</strong></div>
-                <button id="startBtn" class="start-btn">LANCER L’ÉPREUVE <span>↗</span></button>
+                <button id="startBtn" class="start-btn">Prendre le départ <span>↗</span></button>
                 <p class="launch-error" id="launchMessage"></p>
-                <button class="secondary-action race-return" data-go="world">← CHOISIR UNE AUTRE COURSE</button>
+                
               </div>
             </section>
           </div>
-          <div class="career-foot"><span>LOUBKARTING / EARTH TOUR — SOLO CHAMPIONSHIP</span><span>↑↓ NAVIGUER • ENTRÉE DÉPART • ECHAP RETOUR</span></div>
+          
         </div>
       </div>
     </section>
