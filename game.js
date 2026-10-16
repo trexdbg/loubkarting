@@ -180,12 +180,12 @@ function buyRaceEntry(){
   $("careerMessage").textContent="INSCRIPTION PAYÉE · BONNE COURSE !";
 }
 // The career runs as six real navigable views instead of one scrolling dashboard.
-const CAREER_SCREENS=["home","world","dealer","garage","travel","race"];
+const CAREER_SCREENS=["race","world","dealer","garage","travel"];
+const PRIMARY_SCREENS=["race","world","dealer","garage"];
 const SCREEN_TITLES={
-  home:"QUARTIER GÉNÉRAL",world:"CARTE DU MONDE",dealer:"CONCESSIONNAIRE",
-  garage:"ATELIER MÉCANIQUE",travel:"TRANSPORTS & LOGISTIQUE",race:"PADDOCK / DÉPART"
+  race:"Course",world:"Monde",dealer:"Voitures",garage:"Atelier",travel:"Transport"
 };
-let currentScreen="home",screenHistory=[],showroomPreview=progress.selectedCar;
+let currentScreen="race",screenHistory=[],showroomPreview=progress.selectedCar;
 function openCareerScreen(name,back=false){
   if(!CAREER_SCREENS.includes(name))return;
   if(!back&&currentScreen!==name&&state==="menu")screenHistory.push(currentScreen);
@@ -203,14 +203,14 @@ function openCareerScreen(name,back=false){
     btn.setAttribute("aria-current",btn.dataset.screen===name?"page":"false");
   });
   $("screenEyebrow").textContent=SCREEN_TITLES[name];
-  $("screenIndex").textContent=String(CAREER_SCREENS.indexOf(name)+1).padStart(2,"0")+" / 06";
-  $("backBtn").classList.toggle("hidden",name==="home");
+  $("screenIndex").textContent=String(PRIMARY_SCREENS.indexOf(name)+1).padStart(2,"0")+" / 04";
+  $("backBtn").classList.toggle("hidden",name==="race");
   $("careerPage").scrollTop=0;
   refreshCareerDisplays();
 }
 function goBackCareer(){
   const prev=screenHistory.pop();
-  openCareerScreen(prev||"home",true);
+  openCareerScreen(prev&&CAREER_SCREENS.includes(prev)?prev:"race",true);
 }
 function previewDealerCar(index){
   if(!Number.isInteger(index)||index<0||index>=specs.length)return;
@@ -228,34 +228,25 @@ function previewDealerCar(index){
   document.querySelectorAll("[data-car]").forEach(btn=>btn.classList.toggle("previewed",Number(btn.dataset.car)===index));
   const owned=progress.ownedCars.includes(index),active=index===selected;
   $("dealerCheckoutName").textContent=spec.name;
-  $("dealerCheckoutNote").textContent=owned?active?"CETTE VOITURE EST PRÊTE AU DÉPART.":"VÉHICULE DÉJÀ ACHETÉ, PRÊT À ÊTRE ÉQUIPÉ.":
-    "ACHAT DÉFINITIF · "+spec.price.toLocaleString("fr-FR")+" CR";
+  $("dealerCheckoutNote").textContent=owned?active?"Équipée":"Déjà achetée":
+    spec.price.toLocaleString("fr-FR")+" CR";
   $("dealerBuyBtn").disabled=active||(!owned&&progress.credits<spec.price);
-  $("dealerBuyBtn").textContent=active?"DÉJÀ SÉLECTIONNÉE ✓":
-    owned?"ÉQUIPER CETTE VOITURE":"ACHETER · "+spec.price.toLocaleString("fr-FR")+" CR";
+  $("dealerBuyBtn").textContent=active?"Équipée ✓":
+    owned?"Équiper":"Acheter · "+spec.price.toLocaleString("fr-FR")+" CR";
 
 }
 function refreshCareerDisplays(){
   const zone=activeZone(),car=specs[selected],isAccessible=raceAccessible(trackId,raceIndex);
-  $("hubProgress").textContent=progress.cleared.length+" / 20 ÉPREUVES";
-  $("hubZoneName").textContent=zone.name;
-  $("hubRaceName").textContent=zone.races[raceIndex];
-  $("hubCarName").textContent=car.name;
-  $("hubCarStats").textContent=car.summary;
-  $("hubTransport").textContent=hasTransport("boat")?"BATEAU DISPONIBLE":hasTransport("trailer")?"REMORQUE DISPONIBLE":"TRANSPORT À ACQUÉRIR";
-  $("hubNextStatus").textContent=raceUnlocked(trackId,raceIndex)?"DÉPART AUTORISÉ":
-    !isAccessible?"TRANSPORT OU RÉSULTAT REQUIS":"INSCRIPTION À PAYER";
   $("sidebarCar").textContent=car.name;
-  $("heroVehicle").dataset.carStyle=car.bodyType;
   $("sidebarZone").textContent=zone.name+" · "+zone.region;
   $("worldRegionTitle").textContent=zone.name;
   $("worldRegionInfo").textContent=zone.region;
-  $("worldBossInfo").textContent="RIVAL PRINCIPAL : "+zone.boss+" / 4 COURSES";
+  $("worldBossInfo").textContent="Boss : "+zone.boss;
   $("workshopCarName").textContent=car.name;
   $("briefRaceNo").textContent=String(raceIndex+1).padStart(2,"0")+" / 04";
   $("briefRegion").textContent=zone.name;
   $("briefRace").textContent=zone.races[raceIndex];
-  $("briefBoss").textContent="BOSS RÉGIONAL : "+zone.boss+" · 3 RIVAUX SUR LA PISTE";
+  $("briefBoss").textContent="Boss : "+zone.boss;
   $("briefCar").textContent=car.name;
   $("briefWeapon").textContent=WEAPONS[selectedWeapon].name;
   const fee=entryFee(trackId,raceIndex),paid=entryPaid(trackId,raceIndex);
@@ -265,12 +256,13 @@ function refreshCareerDisplays(){
     !paid?"DROIT D'INSCRIPTION À RÉGLER : "+fee+" CR. CE PAIEMENT EST DÉFINITIF.":
     "TRANSPORT ET INSCRIPTION VALIDÉS. TU PEUX REJOINDRE LE PADDOCK.";
   $("travelInstruction").textContent=travelInstruction;
-  $("briefAccess").textContent=raceUnlocked(trackId,raceIndex)?"ACCÈS CONFIRMÉ":
-    !isAccessible?"TRANSPORT / QUALIFICATION REQUIS":fee+" CR À RÉGLER";
-  $("briefAccessAction").textContent=raceUnlocked(trackId,raceIndex)?"VALIDÉ ✓":"RÉGLER ↗";
-  $("launchMessage").textContent=raceUnlocked(trackId,raceIndex)?
-    "TROIS ADVERSAIRES, DONT "+zone.boss+". GAGNE DES CRÉDITS ET DES LINGOTS !":
-    "ACCÈS BLOQUÉ : VA DANS TRANSPORTS POUR FINANCER TON DÉPART.";
+  $("briefAccess").textContent=raceUnlocked(trackId,raceIndex)?"Prêt":
+    !isAccessible?"Bloqué":fee+" CR";
+  $("briefAccessAction").textContent=raceUnlocked(trackId,raceIndex)?"✓":"Voir →";
+  $("launchMessage").textContent=raceUnlocked(trackId,raceIndex)?"":
+    !raceQualified(trackId,raceIndex)?"Termine la course précédente.":
+    !travelAllowed(trackId,raceIndex)?"Transport requis → Monde":
+    "Inscription à payer → Transport";
   const carPreview=Number.isInteger(showroomPreview)?showroomPreview:selected;
   previewDealerCar(carPreview);
 }
@@ -279,9 +271,9 @@ function redrawCareer(){
   const zone=activeZone();
   $("zoneSubtitle").textContent=zone.name+" · "+zone.region;
   $("careerProgress").textContent=progress.cleared.length+" / 20 ÉPREUVES";
-  $("zoneStatus0").textContent=progress.cleared.includes(raceKey(0,3))?"BOSS VAINCU":"OUVERT";
-  $("zoneStatus1").textContent=zoneUnlocked(1)?"OUVERT":
-    progress.cleared.includes(raceKey(0,3))?"BATEAU REQUIS":"BOSS ALPES REQUIS";
+  $("zoneStatus0").textContent=progress.cleared.includes(raceKey(0,3))?"Terminé":"Ouvert";
+  $("zoneStatus1").textContent=zoneUnlocked(1)?"Ouvert":
+    progress.cleared.includes(raceKey(0,3))?"Bateau requis":"Verrouillé";
   document.querySelectorAll("[data-zone]").forEach(btn=>{
     const z=Number(btn.dataset.zone),available=z<ZONES.length&&ZONES[z].status==="ready"&&zoneUnlocked(z);
     btn.disabled=!available;
@@ -295,9 +287,9 @@ function redrawCareer(){
     const finished=progress.cleared.includes(raceKey(trackId,r));
     $("raceName"+r).textContent=zone.races[r];
     const fee=entryFee(trackId,r);
-    $("raceStatus"+r).textContent=finished?"TERMINÉ ✓":
-      !qualified?"VERROUILLÉ":!travel?"REMORQUE REQUISE":
-      !entryPaid(trackId,r)?fee+" CR · INSCRIPTION":"OUVERT · "+(r===3?"FINALE":"BOSS PRÉSENT");
+    $("raceStatus"+r).textContent=finished?"Terminé ✓":
+      !qualified?"Verrouillé":!travel?"Transport requis":
+      !entryPaid(trackId,r)?fee+" CR":"Ouvert";
     btn.disabled=!available;btn.classList.toggle("active",r===raceIndex);btn.classList.toggle("locked",!available);
   });
   $("ownedCount").textContent=progress.ownedCars.length+" / 5";
@@ -308,10 +300,10 @@ function redrawCareer(){
     btn.classList.toggle("affordable",!owned&&progress.credits>=specs[c].price);
     $("carCost"+c).textContent=owned?(c===selected?"SÉLECTIONNÉE":"POSSÉDÉE"):specs[c].price.toLocaleString("fr-FR")+" CR";
   });
-  $("carDetails").textContent=specs[selected].name+" · "+specs[selected].summary;
+  $("carDetails").textContent=specs[selected].summary;
   document.querySelectorAll("[data-weapon]").forEach(btn=>btn.classList.toggle("active",btn.dataset.weapon===selectedWeapon));
   $("hudWeapon").textContent=WEAPONS[selectedWeapon].name;
-  $("transportStatus").textContent=progress.transports.length+" / 3 TRANSPORTS";
+  $("transportStatus").textContent=progress.transports.length+" / 3";
   document.querySelectorAll("[data-transport]").forEach(btn=>{
     const key=btn.dataset.transport,t=TRANSPORTS[key],owned=hasTransport(key);
     const ready=key==="trailer"||(key==="boat"&&hasTransport("trailer")&&progress.cleared.includes(raceKey(0,3)));
@@ -321,16 +313,16 @@ function redrawCareer(){
   });
   const accessible=raceAccessible(trackId,raceIndex),fee=entryFee(trackId,raceIndex);
   const paid=entryPaid(trackId,raceIndex);
-  $("entryStatus").textContent=!accessible?"TRANSPORT OU RÉSULTAT REQUIS":
-    fee===0?"ACCÈS GRATUIT":paid?"INSCRIPTION VALIDÉE ✓":fee+" CR À PAYER";
+  $("entryStatus").textContent=!accessible?"Non accessible":
+    fee===0?"Gratuit":paid?"Payée ✓":fee+" CR";
   $("unlockRaceBtn").classList.toggle("hidden",!accessible||paid);
   $("unlockRaceBtn").disabled=progress.credits<fee;
-  $("unlockRaceBtn").textContent="PAYER "+fee+" CR";
+  $("unlockRaceBtn").textContent="Payer "+fee+" CR";
   $("startBtn").disabled=!raceUnlocked(trackId,raceIndex)||!progress.ownedCars.includes(selected);
-  $("careerMessage").textContent=!accessible?"REMPLIS LES CONDITIONS OU ACHÈTE UN TRANSPORT":
-    !paid?"ACHÈTE TON INSCRIPTION POUR PRENDRE LE DÉPART":
-    raceIndex===3?"FINALE · TERMINE 1ER DEVANT "+zone.boss:
-    "BOSS : "+zone.boss+" · PODIUM POUR DÉBLOQUER LA SUITE";
+  $("careerMessage").textContent=!accessible?"Transport ou qualification requis":
+    !paid?"Inscription : "+fee+" CR":
+    raceIndex===3?"Finale : termine premier":
+    "Podium pour avancer";
   refreshCareerDisplays();
 }
 function buyOrSelectCar(index){
@@ -748,7 +740,7 @@ function setMenu(){
   $("countdown").classList.add("hidden");$("hud").classList.add("hidden");$("controlsHint").classList.remove("hidden");
   $("pauseBtn").style.visibility="hidden";$("nextBtn").classList.add("hidden");
   keys.clear();touch.clear();updateBest();refreshGarage();redrawCareer();
-  screenHistory=[];openCareerScreen("home",true);
+  screenHistory=[];openCareerScreen("race",true);
 }
 function beginRace(){
   if(!raceUnlocked(trackId,raceIndex)||!progress.ownedCars.includes(selected))return;
@@ -1049,10 +1041,10 @@ document.addEventListener("keydown",e=>{
   if(keyMap[e.code]){e.preventDefault();keys.add(keyMap[e.code]);}
   if(e.repeat)return;
   if(e.code==="KeyP"||e.code==="Escape"){
-    e.preventDefault();if(state==="menu"&&currentScreen!=="home")goBackCareer();else pause();
+    e.preventDefault();if(state==="menu"&&currentScreen!=="race")goBackCareer();else pause();
   }
   if(e.code==="KeyR"&&state!=="menu"){e.preventDefault();beginRace();}
-  if(e.code==="Enter"&&state==="menu"){e.preventDefault();if(currentScreen==="race")beginRace();else openCareerScreen("race");}
+  if(e.code==="Enter"&&state==="menu"&&currentScreen==="race"){e.preventDefault();beginRace();}
 });
 document.addEventListener("keyup",e=>{if(keyMap[e.code]){e.preventDefault();keys.delete(keyMap[e.code]);}});
 window.addEventListener("blur",()=>{keys.clear();touch.clear();if(state==="race")pause();});
