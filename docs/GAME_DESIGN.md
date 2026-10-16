@@ -1,5 +1,5 @@
 # LOUBKARTING — Game Design Document / Earth Tour
-**Version du concept : 0.6** · Jeu solo isométrique pour le navigateur · GitHub Pages
+**Version du concept : 0.7** · Jeu solo isométrique pour le navigateur · GitHub Pages
 
 ## Interface et navigation (v0.6)
 
@@ -41,10 +41,23 @@ Cinq grandes régions, quatre courses chacune. **Le boss est le leader permanent
 | 06 · World Grand Prix | International | Circuits automobiles de prestige | **10** | Champion mondial | Planifié, monoplace obligatoire |
 
 ### Alpes — 4 épreuves jouables
-1. **Col des Brumes** : première course, apprentissage.
-2. **Épingle des Cimes** : enchaînements techniques.
-3. **Crête du Tonnerre** : alternance de longues courbes et virages serrés.
-4. **Ascension Royale** : combat final contre **Le Bouquetin**.
+1. **Les Gorges Rouges** : route de falaise, huile, pont, rocher, saut optionnel.
+2. **Le Pont du Chaos** : deux ponts étroits, huile et saut obligatoire.
+3. **La Mine Noire** : huile, roches, deux wagonnets mobiles et saut latéral.
+4. **Le Sommet des Titans** : verglas, rochers, grand saut, pont final et duel avec **Le Bouquetin**.
+
+### Grammaire des obstacles alpins (v0.7)
+
+Les obstacles sont édités **par course** dans `course-challenges.js`, avec une position normalisée (`at`, fraction de la longueur de piste), une longueur, une largeur et une voie (`lane`). Leur position réelle dépend du tracé. Ce sont des scénarios déterministes et reproductibles.
+
+- **Pont** : le bitume est réduit de 106 à ~53–63 unités de demi-largeur. Une voiture trop près du bord chute et réapparaît 170 unités plus tôt : -17 PV / blindage et +2 s de pénalité.
+- **Rampe** : déclenche un saut balistique si vitesse > 85. La voiture est réellement projetée en hauteur dans la perspective isométrique, puis revient au sol.
+- **Fosse** : section manquante, partielle (raccourci risqué) ou totale (saut obligatoire). Un véhicule trop bas chute. Les IA apprennent une séquence de saut simplifiée.
+- **Huile / verglas** : réduction de l'adhérence et inertie du braquage; l'IA réduit son allure.
+- **Roche / wagonnet** : choc physique avec perte de vitesse, de blindage et effet visuel. Le wagonnet change de voie au cours du temps.
+- **Boss** : adversaire des quatre courses, avec blindage et vitesse supérieurs ; lorsqu'il est à proximité il essaie aussi de fermer la voie du joueur.
+
+**Règles de qualité des 20 futurs circuits :** silhouette unique, moment signature, choix risque/récompense, lecture immédiate des pièges, rival le plus dangereux identifiable. Les biomes suivants (Littoral, Grand Nord, Sahara, Amazonie) reprendront le moteur de pièges mais avec leurs propres matériaux et scénarios. La version 0.7 implémente spécifiquement les quatre Alpes ; les autres biomes ne sont pas annoncés comme terminés.
 
 ### Littoral — 4 épreuves jouables
 1. **Baie d'Azur** : grandes courbes en bord de mer.
