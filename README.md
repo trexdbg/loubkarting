@@ -1,4 +1,4 @@
-# 🏁 LOUBKARTING — Earth Tour (v0.7 — circuits mythiques)
+# 🏁 LOUBKARTING — Earth Tour (v0.8 — cinq régions)
 
 Un jeu **solo de course-combat isométrique sur Terre**, avec garage, armes et carrière. Jeu indépendant en HTML/CSS/Canvas JavaScript, hébergeable sur **GitHub Pages**.
 
@@ -37,13 +37,28 @@ Lorsque le joueur ou un rival passe à côté d'un pont, rate un saut ou atterri
 
 ### Carte du circuit avant le départ
 
-Sur l'écran **Course**, le briefing affiche une carte du véritable tracé sélectionné, mise à jour automatiquement lors du choix d'une autre épreuve. Elle comprend la ligne de départ, le sens de circulation et les passages dangereux (ponts, rampes, trous, huile, glace, rochers, wagonnets). Le Littoral affiche aussi le tracé réel de ses quatre courses, sans signaler d'obstacles qui n'ont pas encore été conçus. La carte est responsive et ne nécessite aucune image ou dépendance supplémentaire.
+Sur l'écran **Course**, le briefing affiche une carte du véritable tracé sélectionné, mise à jour automatiquement lors du choix d'une autre épreuve. Elle comprend la ligne de départ, le sens de circulation et les passages dangereux (ponts, rampes, trous, huile, glace, rochers, wagonnets). Le Littoral et les trois autres continents affichent eux aussi leur véritable tracé et leurs obstacles à présent conçus. La carte est responsive et ne nécessite aucune image ou dépendance supplémentaire.
+
+## Dangers du World Tour
+
+| Région | Surfaces et pièges signatures | Pilotage |
+|---|---|---|
+| Littoral | Eau, sable, ponts sur jetées | L'eau ralentit, les vagues réduisent le grip |
+| Grand Nord | Glace, ponts gelés, rochers et sauts | Forte inertie et trajectoires délicates |
+| Sahara | Sable profond, dunes, fosses, rochers | Vitesse réduite dans le sable |
+| Amazonie | Boue, gués, troncs couchés, ponts de bois | Boue glissante et collisions avec les troncs |
+
+Le comportement des trois voitures IA prend en compte les surfaces, les sauts et les chutes. Les tracés et obstacles sont déclaratifs ; la carte d'avant-course en affiche les emplacements.
 
 ## Jouable dès maintenant
 
 - **Montagne · Alpes (Europe) : quatre courses à obstacles réels** : Les Gorges Rouges, Le Pont du Chaos, La Mine Noire et **Le Sommet des Titans (boss : Le Bouquetin)**.
 - **Plage · Littoral (Océanie) : quatre courses** : Baie d'Azur, Corniche des Embruns, Cap Solaire et **Couronne des Marées (boss : Sirène du Cap)**.
-- **Huit tracés distincts**, deux décors thématiques en version prototype (rochers et conifères ; littoral, océan et palmiers).
+- **Vingt tracés distincts**, répartis dans **cinq mondes jouables**, avec relief et ambiance propres à chaque biome (montagne, côte, neige, désert, jungle).
+- **Grand Nord** : Sentier Blanc, Lac Gelé, Col du Nord et Tempête Royale — boss : **Le Blizzard**.
+- **Sahara** : Dunes Rouges, Oasis Mirage, Gorge des Sables et Soleil Noir — boss : **Le Scorpion**.
+- **Amazonie** : Route Canopée, Fleuve Vert, Piste Tropicale et Roi de la Jungle — boss : **Le Jaguar**.
+- Le **Littoral** reçoit également de vrais dangers : jetées étroites, marées, eau, plages de sable et sauts.
 - **Cinq voitures originales**, à acheter progressivement :
   1. Citadine 91 — petite française, **gratuite**.
   2. RS Éclipse — sportive compacte, **900 CR**.
@@ -53,7 +68,7 @@ Sur l'écran **Course**, le briefing affiche une carte du véritable tracé sél
 - **Trois armes au choix** : Dard ionique (guidé), Onde EMP (de zone), Piège magnétique (mine).
 - **Trois adversaires IA, dont le boss régional présent aux quatre départs** (plus rapide, agressif et résistant). Missiles, collisions, destruction réelle des rivaux, réparation, nitro, blindage, difficulté, classement sur quatre voitures et records par épreuve.
 - **Des lingots originaux à ramasser sur la piste (40 ou 65 CR)**, une **prime de 240 CR par voiture adverse détruite**, un gain de classement et un bonus de première qualification. Trois améliorations (moteur, blindage, nitro) jusqu’au niveau 3.
-- **Carrière à péages** : qualification sur le podium, puis **transport et inscription à payer** avant la course suivante. La remorque est nécessaire dès la 2e course des Alpes ; le bateau est nécessaire pour rejoindre le Littoral après avoir battu le boss. Le bouton « Épreuve suivante » conduit au garage/logistique tant que le trajet ou l’inscription n’est pas payé.
+- **Carrière à péages** : podium sur les trois premières courses, victoire obligatoire contre le boss régional dans la quatrième. Remorque pour la deuxième course des Alpes, bateau pour le Littoral, puis **avion à 5 000 CR** après avoir battu Sirène du Cap. L'avion dessert ensuite le Grand Nord, le Sahara et l'Amazonie ; chaque région exige la victoire contre le boss de la précédente. Inscriptions achetables individuellement.
 - **10 peintures de carrosserie**, couleur d'origine comprise : choix à l'achat, changement gratuit à l'atelier, aperçu 3D et sauvegarde par voiture.
 - Sauvegardes locales du garage, des armes sélectionnées, des crédits et de la progression. Aucun compte requis.
 
@@ -65,7 +80,7 @@ Sur l'écran **Course**, le briefing affiche une carte du véritable tracé sél
 | Inscription Alpes 2 / 3 / 4 | 120 / 240 / 360 CR | Paiement **une seule fois** par épreuve |
 | Bateau | 1 600 CR | Débloque le Littoral une fois le boss des Alpes vaincu |
 | Inscription Littoral 2 / 3 / 4 | 200 / 340 / 480 CR | Paiement **une seule fois** par épreuve |
-| Avion | 5 000 CR envisagés | **Non disponible**, prévu pour les futures régions |
+| Avion | 5 000 CR | Après Sirène du Cap, déverrouille les destinations intercontinentales |
 
 La première course de chaque région est gratuite une fois le voyage payé. Les transports et droits sont sauvegardés. Les anciennes carrières sont migrées pour ne pas faire payer à nouveau les épreuves déjà obtenues.
 
@@ -88,9 +103,8 @@ Les textes redondants, titres géants, étapes fictives et actions dupliquées o
 
 ## Prévu, mais pas encore jouable
 
-- **Neige · Grand Nord (Amérique du Nord)** — quatre courses + boss.
-- **Désert · Sahara (Afrique)** — quatre courses + boss.
-- **Forêt · Amazonie (Amérique du Sud)** — quatre courses + boss.
+- **Grand Nord, Sahara et Amazonie** : désormais jouables, avec quatre courses chacune, IA et boss dédiés, marquage des dangers avant le départ.
+- **À venir** : les dix Grands Prix du championnat mondial.
 - **World Grand Prix** : dix GP rappelant *l'esprit* des grands classiques automobiles (Riviera, Ardennes, Lombardia et autres), sur **tracés originaux**. La **Apex Formula** sera nécessaire pour y entrer.
 
 **Objectif final : 5 régions × 4 courses + 10 Grands Prix = 30 courses.**
