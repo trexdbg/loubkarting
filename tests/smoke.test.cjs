@@ -201,6 +201,17 @@ test("gold bars and destroying an opponent award credits on finishing",()=>{
   assert.equal(h.win.__test.progress().credits,730+h.win.__test.goldEarned()+240);
 });
 
+test("race results return to the actual mechanical workshop",()=>{
+  const h=harness();
+  h.groups["[data-screen]"][5].events.click();
+  h.start();h.winInstant();
+  h.el("menuBtn").events.click();
+  assert.equal(h.win.__test.state(),"menu");
+  assert.equal(h.win.__test.screen(),"garage");
+  assert.equal(h.el("screen-garage").classList.contains("active-screen"),true);
+  h.groups["[data-screen]"][0].events.click();
+  assert.equal(h.win.__test.screen(),"home");
+});
 test("after a race the next-step transition opens the travel screen if payment is due",()=>{
   const h=harness();h.start();h.winInstant();
   h.el("nextBtn").events.click();
