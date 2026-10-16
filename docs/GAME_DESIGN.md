@@ -110,15 +110,15 @@ Droits d'inscription (paiement une seule fois) : **Alpes** : 0 / 120 / 240 / 360
 | Source | Récompense |
 |---|---:|
 | Classement : 1er / 2e / 3e / 4e | 450 / 360 / 290 / 230 CR |
-| Joueur éliminé | 75 CR |
+| Joueur détruit | Retour immédiat en piste, +3 s au chrono (aucune élimination) |
 | Premier podium dans une nouvelle épreuve normale | +280 CR |
 | Première victoire contre le boss régional dans la finale | +850 CR |
 | Lingot d'or ramassé sur le circuit | +40 ou +65 CR |
 | **Voiture adverse détruite** | **+240 CR** |
 
-Les lingots ont une représentation originale en perspective isométrique dorée avec l'inscription **CR**. Ils peuvent être ramassés pendant le pilotage et leur valeur s'affiche en direct. Il ne s'agit pas de sprites extraits de *Rock N' Roll Racing*. Le bilan détaillé de course additionne classement, bonus de première qualification, lingots ramassés et voitures détruites ; le total est ajouté au portefeuille à l'arrivée, même en cas d'élimination du joueur.
+Les lingots ont une représentation originale en perspective isométrique dorée avec l'inscription **CR**. Ils peuvent être ramassés pendant le pilotage et leur valeur s'affiche en direct. Il ne s'agit pas de sprites extraits de *Rock N' Roll Racing*. Le bilan détaillé de course additionne classement, bonus de première qualification, lingots ramassés et voitures détruites ; le total est ajouté au portefeuille à l'arrivée, même après une ou plusieurs réapparitions du joueur.
 
-Les voitures rivales ont des points de blindage : les dards ioniques, impulsions EMP et mines magnétiques infligent des dégâts. Une voiture détruite quitte le classement actif pour l'épreuve en cours. Le boss a une jauge de résistance supérieure et subit moins de dégâts ; il reste néanmoins destructible.
+Le véhicule du joueur réapparaît automatiquement à 100 % de blindage quand ses PV tombent à zéro (dégâts, collisions, armes ou chute mortelle). Le moteur trouve une position centrale sûre proche de la destruction, conserve les tours et les gains, ajoute 3 secondes au chrono, donne une courte immunité et affiche la pénalité dans les résultats. Les chutes non mortelles conservent leur propre malus de 2 secondes ; une chute mortelle ne cumule pas les deux malus. Les voitures rivales ont des points de blindage : les dards ioniques, impulsions EMP et mines magnétiques infligent des dégâts. Une voiture détruite quitte le classement actif pour l'épreuve en cours. Le boss a une jauge de résistance supérieure et subit moins de dégâts ; il reste néanmoins destructible.
 
 Pour des raisons de jouabilité, le jeu sauvegarde les crédits, transports et inscriptions achetés, voitures, améliorations et qualifications dans le navigateur. Les anciennes sauvegardes v0.3 sont migrées pour préserver les parcours déjà validés.
 
