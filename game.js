@@ -1209,7 +1209,12 @@ function update(dt){
     cam.y+=(ty-cam.y)*Math.min(1,dt*4.8);
   }
 }
-function position(){return 1+ais.filter(a=>!a.destroyed&&a.progress>player.progress).length;}
+// Once a rival has crossed the finish line, they stay ahead in the results.
+// Comparing raw distance alone would incorrectly put a late player in first place,
+// because finished AI cars stop advancing while the player's distance overshoots.
+function position(){
+  return 1+ais.filter(a=>a.finished||(!a.destroyed&&a.progress>player.progress)).length;
+}
 function formatTime(s){
   const m=Math.floor(s/60),sec=Math.floor(s%60),tenth=Math.floor(s*10)%10;
   return String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0")+"."+tenth;
@@ -1251,7 +1256,7 @@ function endRace(destroyed=false){
   if(qualified&&!wasCleared)progress.cleared.push(raceKey(trackId,raceIndex));
   saveProgress();
   $("dialogEyebrow").textContent=destroyed?"TON BOLIDE EST HORS COURSE":boss?"DUEL CONTRE LE BOSS":"ÉPREUVE TERMINÉE";
-  $("dialogTitle").textContent=destroyed?"ÉLIMINÉ !":victory?"VICTOIRE !":"ARRIVÉE !";
+  $("dialogTitle").textContent=destroyed?"ÉLIMINÉ !":victory?"VICTOIRE !":rank===2?"2E PLACE !":rank===3?"3E PLACE !":"4E PLACE !";
   let detail=destroyed?"Tu conserves les lingots et tes primes de destruction.":qualified?
     boss?"BOSS VAINCU · "+activeZone().boss+" !": "Résultat validé ! Prépare le transport et les droits de la prochaine course.":
     boss?"Termine premier pour décrocher le titre régional.":"Termine dans les trois premiers pour progresser.";
