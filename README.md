@@ -1,4 +1,4 @@
-# 🏁 LOUBKARTING — Earth Tour (v0.5)
+# 🏁 LOUBKARTING — Earth Tour (v0.6)
 
 Un jeu **solo de course-combat isométrique sur Terre**, avec garage, armes et carrière. Jeu indépendant en HTML/CSS/Canvas JavaScript, hébergeable sur **GitHub Pages**.
 
@@ -51,22 +51,18 @@ La première course de chaque région est gratuite une fois le voyage payé. Les
 
 Les véhicules détruits quittent la piste pour cette course. Le boss possède davantage de blindage et tire plus souvent, mais peut aussi être éliminé.
 
-## Interface immersive : six écrans indépendants (v0.5)
+## Interface de carrière : simple et directe (v0.6)
 
-La carrière n'est **plus un menu géant**. On navigue désormais dans six espaces distincts, avec une barre de navigation permanente et un retour au QG :
+La carrière s'ouvre **directement sur la prochaine course**. Quatre onglets principaux suffisent :
 
-| Écran | Usage |
-|---|---|
-| **01 · Quartier général** | Accueil, résumé de la carrière, du bolide actif et du voyage à financer |
-| **02 · Carte du monde** | Atlas terrestre original, continents, régions et choix des quatre courses |
-| **03 · Concessionnaire** | Présentation grand format des cinq modèles, caractéristiques de performance et **bouton explicite d'achat ou d'équipement** |
-| **04 · Atelier mécanique** | Moteur, blindage, nitro et choix des trois modules offensifs |
-| **05 · Transports** | Remorque, bateau, avion prévu plus tard, ainsi que les frais de voyage et d'inscription |
-| **06 · Paddock de course** | Parcours et boss, voiture/arme équipées, droit d'accès, difficulté, chrono et lancement de l'épreuve |
+- **Course** : circuit et boss, voiture et arme choisies, difficulté, droit d'accès et départ.
+- **Monde** : carte, régions, quatre courses par région. Les destinations non jouables sont indiquées sur une seule ligne.
+- **Voitures** : présentation, performances, achat explicite et sélection des cinq bolides.
+- **Atelier** : améliorations mécaniques et choix de l'arme.
 
-Chaque espace a son propre environnement visuel (showroom, atelier, atlas géographique, transport routier, paddock) et des raccourcis cohérents. La navigation est adaptée au mobile : onglets horizontaux sur petit écran, écran vertical indépendant et actions tactiles. Le retour d'une course ouvre désormais l'atelier ; « épreuve suivante » mène à la préparation ou au transport si un paiement reste nécessaire.
+**Transport et inscription** ne sont pas un onglet permanent. Cet écran s'ouvre depuis « Monde » ou « Accès » lorsqu'il est nécessaire pour débloquer un départ. Le solde de crédits reste visible dans l'en-tête. Après une course, « Retour au garage » ouvre l'atelier, et « Épreuve suivante » conduit au paiement ou au départ suivant.
 
-Le concessionnaire ne débite pas automatiquement les crédits lorsqu'on examine un bolide. **Choisir une vignette montre la voiture ; un bouton séparé confirme l'achat.** Les transactions, le choix de voiture, l'armement et les progrès restent sauvegardés.
+Les textes redondants, titres géants, étapes fictives et actions dupliquées ont été réduits. L'interface est responsive, avec une navigation à quatre onglets sur mobile. Les voitures gardent leurs prévisualisations originales, sans calcul de rendu 3D sur les écrans où elles sont invisibles.
 
 ## Prévu, mais pas encore jouable
 
