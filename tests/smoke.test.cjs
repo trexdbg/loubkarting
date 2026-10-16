@@ -9,7 +9,7 @@ const challenges=fs.readFileSync(path.join(__dirname,"..","course-challenges.js"
 const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
 const noop=()=>{};
 const debugSource=source.replace("resetRace();setMenu();requestAnimationFrame(frame);",
-"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,screen:()=>currentScreen,mines:()=>mines,pickups:()=>pickups,goldEarned:()=>raceGold,knockouts:()=>raceKOs,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace,course:()=>courseChallenge,updatePlayer,updateAI,courseHazardAt};\nresetRace();setMenu();requestAnimationFrame(frame);");
+"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,screen:()=>currentScreen,mines:()=>mines,pickups:()=>pickups,goldEarned:()=>raceGold,knockouts:()=>raceKOs,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace,course:()=>courseChallenge,updatePlayer,updateAI,courseHazardAt,elapsed:()=>elapsed,updateRockets,rockets:()=>rockets};\nresetRace();setMenu();requestAnimationFrame(frame);");
 assert.notEqual(debugSource,source,"Debug instrumentation anchor should exist.");
 
 function harness(initial={}){
@@ -415,4 +415,45 @@ test("destroyed player respawns in the same race with three-second penalty",()=>
   const t=h.el("timer").textContent;
   assert.notEqual(t,before);
   assert.ok(Number(t.slice(3))>=3,"Timer includes the three-second penalty");
+});
+
+test("a lethal bridge fall charges only three seconds, and the race keeps going",()=>{
+  const h=harness();h.start();
+  const bridge=h.win.__test.course().features.find(f=>f.type==="bridge");
+  const at=h.win.__test.at(bridge.s),p=h.win.__test.player();
+  p.x=at.x+at.nx*86;p.y=at.y+at.ny*86;p.hp=1;p.speed=90;
+  const before=h.win.__test.elapsed();
+  h.win.__test.updatePlayer(.016);
+  assert.equal(h.win.__test.state(),"race");
+  assert.equal(p.hp,100);
+  assert.equal(h.win.__test.elapsed()-before,3,"Fatal falls must not accumulate the ordinary 2 s");
+  assert.match(h.el("eventToast").textContent,/\\+3 S/);
+});
+test("a non-lethal bridge fall still has the original two-second penalty",()=>{
+  const h=harness();h.start();
+  const bridge=h.win.__test.course().features.find(f=>f.type==="bridge");
+  const at=h.win.__test.at(bridge.s),p=h.win.__test.player();
+  p.x=at.x+at.nx*86;p.y=at.y+at.ny*86;p.hp=90;p.speed=90;
+  const before=h.win.__test.elapsed();
+  h.win.__test.updatePlayer(.016);
+  assert.equal(h.win.__test.state(),"race");
+  assert.ok(p.hp>0&&p.hp<90);
+  assert.equal(h.win.__test.elapsed()-before,2);
+});
+test("lethal rocket destroys and repairs the player without losing the race",()=>{
+  const h=harness();h.start();
+  const p=h.win.__test.player(),boss=h.win.__test.ais()[2];
+  p.hp=5;
+  h.win.__test.rockets().push({x:p.x-5,y:p.y,angle:0,ttl:1,owner:boss,target:null,isPlayer:false});
+  h.win.__test.updateRockets(.001);
+  assert.equal(p.hp,0);
+  const before=h.win.__test.elapsed();
+  h.advance(1);
+  assert.equal(h.win.__test.state(),"race");
+  assert.equal(p.hp,100);
+  assert.ok(h.win.__test.elapsed()>=before+3);
+  assert.ok(p.invulnerable>0);
+  h.win.__test.rockets().push({x:p.x-5,y:p.y,angle:0,ttl:1,owner:boss,target:null,isPlayer:false});
+  h.win.__test.updateRockets(.001);
+  assert.equal(p.hp,100,"Spawn immunity prevents immediate follow-up rocket damage");
 });
