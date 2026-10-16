@@ -74,7 +74,7 @@
                   <p>De la petite citadine française aux bolides de Grand Prix. Cinq régions, des rivaux impitoyables et un patron à défier dans chacune d'elles.</p>
                   <button class="hero-primary" data-go="race">POURSUIVRE MA CARRIÈRE <span>↗</span></button>
                 </div>
-                <div class="hero-vehicle" aria-hidden="true"><div class="hero-car-body"><span class="hero-windshield"></span><span class="hero-glint"></span></div><span class="hero-wheel front"></span><span class="hero-wheel back"></span><span class="hero-shadow"></span></div>
+                <div class="hero-vehicle" id="heroVehicle" data-car-style="city" aria-hidden="true"><div class="hero-car-body"><span class="hero-windshield"></span><span class="hero-glint"></span></div><span class="hero-wheel front"></span><span class="hero-wheel back"></span><span class="hero-shadow"></span></div>
                 <div class="hero-bottom">NO SPONSORS. NO SHORTCUTS. JUST THE ROAD.</div>
               </div>
               <div class="overview-header"><span class="option-label">TON ÉCURIE / STATUT ACTUEL</span><span id="hubProgress" class="career-progress">0 / 20 ÉPREUVES</span></div>
@@ -124,7 +124,7 @@
                 <div class="showroom-caption"><small>VÉHICULE / SÉLECTION</small><strong id="showroomCarName">CITADINE 91</strong><span id="showroomCarClass">URBAINE · 1991</span></div>
                 <div class="showroom-specs"><div><span>VITESSE</span><b id="showroomSpeed">335</b><i><span id="showroomSpeedBar"></span></i></div><div><span>ACCÉLÉRATION</span><b id="showroomAccel">286</b><i><span id="showroomAccelBar"></span></i></div><div><span>AGILITÉ</span><b id="showroomGrip">2.74</b><i><span id="showroomGripBar"></span></i></div></div>
               </div>
-              <div class="section-head"><span class="option-label">LE PARC AUTOMOBILE · ACHAT / SÉLECTION</span><span class="dealer-hint">APPUYER SUR UN VÉHICULE POUR L'ACHETER OU L'ÉQUIPER</span></div>
+              <div class="section-head"><span class="option-label">LE PARC AUTOMOBILE · ACHAT / SÉLECTION</span><span class="dealer-hint">TOUCHE UN MODÈLE POUR LE DÉCOUVRIR, PUIS CONFIRME L'ACHAT</span></div>
               <div class="car-select" role="group" aria-label="Choix et achat du véhicule">
           <button class="car-card active" data-car="0"><span class="car-preview hatch"><i></i></span><strong>CITADINE 91</strong><small>FRANÇAISE · URBAINE</small><em id="carCost0">POSSÉDÉE</em></button>
           <button class="car-card" data-car="1"><span class="car-preview rs"><i></i></span><strong>RS ÉCLIPSE</strong><small>HOT HATCH · SPORT</small><em id="carCost1">900 CR</em></button>
@@ -133,6 +133,7 @@
           <button class="car-card" data-car="4"><span class="car-preview formula"><i></i></span><strong>APEX FORMULA</strong><small>MONOPLACE · FINALE</small><em id="carCost4">13 000 CR</em></button>
         </div>
         <p class="selection-note" id="carDetails">CITADINE 91 · légère, modeste, mais capable de tout.</p>
+              <div class="dealer-checkout"><div class="dealer-checkout-copy"><small>VÉHICULE EXPOSÉ</small><strong id="dealerCheckoutName">CITADINE 91</strong><span id="dealerCheckoutNote">Prête pour la course.</span></div><button id="dealerBuyBtn" class="dealer-buy-btn">DÉJÀ SÉLECTIONNÉE ✓</button></div>
               <div class="bottom-action-row"><button data-go="garage" class="secondary-action">ATELIER MÉCANIQUE ↗</button><button class="primary-action" data-go="race">PRÉPARER LA COURSE →</button></div>
             </section>
 
