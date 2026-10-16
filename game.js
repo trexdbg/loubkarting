@@ -268,7 +268,7 @@ function openCareerScreen(name,back=false){
   currentScreen=name;
   const menu=$("menu");
   menu.dataset.screen=name;
-  menu.dataset.region=trackId===1?"coast":"mountain";
+  menu.dataset.region=["mountain","coast","snow","desert","jungle"][trackId];
   for(const id of CAREER_SCREENS){
     const screen=$("screen-"+id),visible=id===name;
     screen.classList.toggle("hidden",!visible);
