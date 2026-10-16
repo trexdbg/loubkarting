@@ -1105,7 +1105,7 @@ $("nextBtn").addEventListener("click",()=>{
   openCareerScreen(raceUnlocked(trackId,raceIndex)?"race":"travel");
 });
 $("resumeBtn").addEventListener("click",pause);
-$("menuBtn").addEventListener("click",()=>{resetRace();setMenu();});
+$("menuBtn").addEventListener("click",()=>{resetRace();setMenu();openCareerScreen("garage");});
 $("pauseBtn").addEventListener("click",pause);
 $("pauseBtn").style.visibility="hidden";
 
