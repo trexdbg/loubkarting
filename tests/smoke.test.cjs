@@ -31,7 +31,7 @@ function harness(initial={}){
     "[data-weapon]":group("weapon",["dart","pulse","mine"]),
     "[data-upgrade]":group("upgrade",["engine","armor","nitro"]),
     "[data-transport]":group("transport",["trailer","boat","plane"]),
-    "[data-screen]":group("screen",["home","world","dealer","garage","travel","race"]),
+    "[data-screen]":group("screen",["race","world","dealer","garage"]),
     "[data-go]":[...html.matchAll(/data-go="([^"]+)"/g)].map((match,i)=>{
       const node=el("go"+i);node.dataset.go=match[1];return node;
     }),
@@ -74,29 +74,30 @@ test("required game elements exist in HTML",()=>{
   const ids=[...new Set([...source.matchAll(/\$\("([^"]+)"\)/g)].map(m=>m[1]))];
   for(const id of ids)assert.ok(html.includes('id="'+id+'"'),"Missing #"+id);
   assert.equal((html.match(/data-car="\d"/g)||[]).length,5);
-  assert.equal((html.match(/data-zone="\d"/g)||[]).length,6);
+  assert.equal((html.match(/data-zone="\d"/g)||[]).length,2);
   assert.equal((html.match(/data-race="\d"/g)||[]).length,4);
 });
 
-test("the career is divided into six distinct accessible pages",()=>{
+test("race-first layout shows four primary tabs and hides inactive sections",()=>{
   const h=harness();
-  assert.equal(h.win.__test.screen(),"home");
-  assert.equal(h.el("screen-home").classList.contains("active-screen"),true);
-  for(const name of ["world","dealer","garage","travel","race"]){
-    assert.equal(h.el("screen-"+name).classList.contains("hidden"),true);
-    const button=h.groups["[data-screen]"].find(b=>b.dataset.screen===name);
-    button.events.click();
+  assert.equal(h.win.__test.screen(),"race");
+  assert.equal(h.el("screen-race").classList.contains("active-screen"),true);
+  const primary=["race","world","dealer","garage"];
+  assert.equal((html.match(/class="nav-tab[^"]*" data-screen="/g)||[]).length,4);
+  for(const name of ["world","dealer","garage"]){
+    const btn=h.groups["[data-screen]"].find(b=>b.dataset.screen===name);
+    assert.ok(btn);btn.events.click();
     assert.equal(h.win.__test.screen(),name);
     assert.equal(h.el("screen-"+name).classList.contains("active-screen"),true);
-    assert.equal(h.el("screen-home").classList.contains("hidden"),true);
-    assert.equal(button.attributes["aria-current"],"page");
-    assert.equal(h.el("screenEyebrow").textContent.length>0,true);
+    assert.equal(h.el("screen-race").classList.contains("hidden"),true);
+    assert.equal(btn.attributes["aria-current"],"page");
   }
   h.el("backBtn").events.click();
-  assert.equal(h.win.__test.screen(),"travel");
+  assert.equal(h.win.__test.screen(),"dealer");
+  assert.ok(!html.includes('data-screen="home"'));
+  assert.ok(!html.includes('data-screen="travel"'));
 });
-
-test("the home shortcuts lead to their dedicated destination screens",()=>{
+test("contextual links navigate without cluttering the main tabs",()=>{
   const h=harness();
   for(const target of ["world","dealer","garage","travel","race"]){
     const button=h.groups["[data-go]"].find(b=>b.dataset.go===target);
@@ -203,14 +204,14 @@ test("gold bars and destroying an opponent award credits on finishing",()=>{
 
 test("race results return to the actual mechanical workshop",()=>{
   const h=harness();
-  h.groups["[data-screen]"][5].events.click();
+  h.groups["[data-screen]"][0].events.click();
   h.start();h.winInstant();
   h.el("menuBtn").events.click();
   assert.equal(h.win.__test.state(),"menu");
   assert.equal(h.win.__test.screen(),"garage");
   assert.equal(h.el("screen-garage").classList.contains("active-screen"),true);
   h.groups["[data-screen]"][0].events.click();
-  assert.equal(h.win.__test.screen(),"home");
+  assert.equal(h.win.__test.screen(),"race");
 });
 test("after a race the next-step transition opens the travel screen if payment is due",()=>{
   const h=harness();h.start();h.winInstant();
@@ -261,7 +262,7 @@ test("dealership separates selection from an explicit purchase",()=>{
   assert.equal(h.win.__test.progress().credits,1100);
   assert.equal(h.el("dealerBuyBtn").disabled,true);
   h.groups["[data-car]"][0].events.click();
-  assert.match(h.el("dealerBuyBtn").textContent,/ÉQUIPER/);
+  assert.match(h.el("dealerBuyBtn").textContent,/Équiper/);
   h.el("dealerBuyBtn").events.click();
   assert.equal(h.win.__test.selected(),0);
   assert.equal(h.win.__test.progress().credits,1100);
