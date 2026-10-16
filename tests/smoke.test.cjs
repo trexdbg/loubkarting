@@ -508,7 +508,7 @@ test("an airborne player who leaves the road has a cinematic fall and returns",(
   h.win.__test.updatePlayer(.016);
   assert.ok(p.fall);
   assert.ok(h.el("eventToast").textContent.includes("HORS PISTE"));
-  assert.equal(h.win.__test.elapsed()-before,2);
+  assert.ok(Math.abs(h.win.__test.elapsed()-before-2)<1e-8);
   h.advance(85);
   assert.equal(p.fall,null);
   assert.equal(h.win.__test.state(),"race");
