@@ -20,7 +20,7 @@ const PAINTS=[{"id":"factory","name":"Origine","color":null},{"id":"red","name":
 function validPaint(id){return PAINTS.some(p=>p.id===id);}
 function shadePaint(hex){return "#"+[1,3,5].map((i,n)=>Math.round(parseInt(hex.slice(i,i+2),16)*.38+[15,19,30][n]*.62).toString(16).padStart(2,"0")).join("");}
 const ZONES = [
-  {name:"ALPES",region:"EUROPE / MONTAGNE",status:"ready",boss:"LE BOUQUETIN",bossColor:"#d9b067",races:["COL DES BRUMES","ÉPINGLE DES CIMES","CRÊTE DU TONNERRE","ASCENSION ROYALE"]},
+  {name:"ALPES",region:"EUROPE / MONTAGNE",status:"ready",boss:"LE BOUQUETIN",bossColor:"#d9b067",races:["LES GORGES ROUGES","LE PONT DU CHAOS","LA MINE NOIRE","LE SOMMET DES TITANS"]},
   {name:"LITTORAL",region:"OCÉANIE / PLAGE",status:"ready",boss:"SIRÈNE DU CAP",bossColor:"#79e5d8",races:["BAIE D'AZUR","CORNICHE DES EMBRUNS","CAP SOLAIRE","COURONNE DES MARÉES"]},
   {name:"GRAND NORD",region:"AMÉRIQUE DU NORD / NEIGE",status:"planned",boss:"LE BLIZZARD",races:["SENTIER BLANC","LAC GELÉ","COL DU NORD","TEMPÊTE ROYALE"]},
   {name:"SAHARA",region:"AFRIQUE / DÉSERT",status:"planned",boss:"LE SCORPION",races:["DUNES ROUGES","OASIS MIRAGE","GORGE DES SABLES","SOLEIL NOIR"]},
@@ -111,6 +111,7 @@ for(let i=0;i<380;i++){
   scenery.push({x,y,size:10+rnd()*22,kind:rnd(),phase:rnd()*TAU});
 }
 let pickups=[];
+let courseChallenge={name:"",tagline:"",signature:"",features:[]};
 for(let i=0;i<14;i++){
   const p=trackAt(235+i*TRACK_LENGTH/14),lane=(i%3-1)*47;
   pickups.push({x:p.x+p.nx*lane,y:p.y+p.ny*lane,kind:i%3===0?"repair":i%3===1?"ammo":"nitro",cooldown:0,phase:i*.57});
@@ -316,6 +317,7 @@ function refreshCareerDisplays(){
   $("briefRaceNo").textContent=String(raceIndex+1).padStart(2,"0")+" / 04";
   $("briefRegion").textContent=zone.name;
   $("briefRace").textContent=zone.races[raceIndex];
+  $("briefHazards").textContent=courseChallenge.tagline||"Virages, combats et dépassements.";
   $("briefBoss").textContent="Boss : "+zone.boss;
   $("briefCar").textContent=car.name;
   $("briefWeapon").textContent=WEAPONS[selectedWeapon].name;
@@ -460,6 +462,9 @@ function rebuildTrack(id,round=0){
     const p=trackAt(420+(i+.38)*TRACK_LENGTH/22),lane=((i*7)%5-2)*29;
     pickups.push({x:p.x+p.nx*lane,y:p.y+p.ny*lane,kind:"gold",value:i%5===0?65:40,cooldown:0,phase:i*.8});
   }
+  courseChallenge=window.LKCourseChallenges
+    ?window.LKCourseChallenges.build(trackId,raceIndex,TRACK_LENGTH,trackAt)
+    :{name:"",tagline:"",signature:"",features:[]};
 }
 rebuildTrack(zoneUnlocked(progress.zone)?progress.zone:0,progress.race);
 if(!raceAccessible(trackId,raceIndex))rebuildTrack(trackId,0);
@@ -622,6 +627,10 @@ function drawTrack(t){
   }
   ctx.restore();
 }
+function drawCourseChallenges(t){
+  if(!window.LKCourseChallenges)return;
+  window.LKCourseChallenges.draw(ctx,courseChallenge,trackAt,screen,t,ROAD_HALF);
+}
 function drawPickups(t){
   for(const p of pickups){
     if(p.cooldown>0)continue;
@@ -653,7 +662,7 @@ function drawPickups(t){
 }
 function bodyPoint(car,f,r,z=0){
   const fx=Math.cos(car.angle),fy=Math.sin(car.angle),rx=-fy,ry=fx;
-  return screen(car.x+fx*f+rx*r,car.y+fy*f+ry*r,z);
+  return screen(car.x+fx*f+rx*r,car.y+fy*f+ry*r,z+(car.airZ||0));
 }
 function carPolygon(car,coords,color){
   const pts=coords.map(p=>bodyPoint(car,p[0],p[1],p[2]||0));
@@ -664,6 +673,10 @@ function carPolygon(car,coords,color){
 function drawCar(car,t){
   const visual=window.LKVehicleRenderer;
   if(!visual)return;
+  if(car.airZ>3){
+    const shadow=screen(car.x,car.y,0);
+    ctx.fillStyle="#03071288";ctx.beginPath();ctx.ellipse(shadow.x,shadow.y,30*zoom,14*zoom,-.3,0,TAU);ctx.fill();
+  }
   visual.draw(ctx,{
     project:(f,r,z)=>bodyPoint(car,f,r,z),zoom,
     type:car.style.bodyType,color:car.style.color,dark:car.style.dark,accent:car.style.accent,
@@ -716,7 +729,7 @@ function drawParticles(){
 }
 function draw(t){
   cameraIso=iso(cam.x,cam.y);
-  drawBackdrop(t);drawTrack(t);drawPickups(t);
+  drawBackdrop(t);drawTrack(t);drawCourseChallenges(t);drawPickups(t);
   const toRender=[player,...ais].filter(c=>c&&!c.destroyed).sort((a,b)=>iso(a.x,a.y).y-iso(b.x,b.y).y);
   for(const car of toRender)drawCar(car,t);
   drawMines(t);drawRockets();drawParticles();
@@ -732,7 +745,7 @@ function makeCar(s,lane,style,name,isPlayer=false){
   const p=trackAt(s);
   const enhanced=isPlayer?{...style,speed:style.speed*(1+progress.engine*.065),accel:style.accel*(1+progress.engine*.025),armor:style.armor+progress.armor*.19}:style;
   return {x:p.x+p.nx*lane,y:p.y+p.ny*lane,angle:Math.atan2(p.dy,p.dx),speed:0,progress:s,lastRaw:mod(s,TRACK_LENGTH),
-    lane,style:enhanced,name,isPlayer,hp:100,maxNitro:isPlayer?100+progress.nitro*20:100,nitro:isPlayer?100+progress.nitro*20:100,ammo:5,fireCooldown:0,hitFlash:0,stun:0,boosting:false,finished:false};
+    lane,style:enhanced,name,isPlayer,hp:100,maxNitro:isPlayer?100+progress.nitro*20:100,nitro:isPlayer?100+progress.nitro*20:100,ammo:5,fireCooldown:0,hitFlash:0,stun:0,boosting:false,finished:false,airZ:0,airV:0,roadGrip:1,steerMomentum:0,hazardHits:Object.create(null),invulnerable:0};
 }
 function resetRace(){
   raceGold=0;raceKOs=0;
@@ -775,6 +788,71 @@ function beginRace(){
 function setToast(message){
   const el=$("eventToast");el.textContent=message;el.classList.add("visible");toastTimeout=1.6;
 }
+function courseHazardAt(s,lane){
+  return window.LKCourseChallenges
+    ?window.LKCourseChallenges.inspect(courseChallenge,s,lane,elapsed,TRACK_LENGTH)
+    :{bridge:null,gap:null,oil:null,ice:null,ramp:null,rock:null,cart:null};
+}
+function launchJump(car){
+  car.airZ=5;
+  car.airV=155+Math.max(0,car.speed)*.23;
+  spawnFX(car.x,car.y,"#ffcb6b",11);
+  if(car.isPlayer)setToast("SAUT !");
+}
+function advanceJump(car,dt){
+  if(car.airZ<=0&&car.airV<=0)return;
+  car.airV-=480*dt;
+  car.airZ=Math.max(0,car.airZ+car.airV*dt);
+  if(car.airZ===0){
+    car.airV=0;
+    if(car.isPlayer)spawnFX(car.x,car.y,"#f8d99b",5);
+  }
+}
+function fallFromCourse(nearest,reason){
+  if(player.invulnerable>0)return false;
+  const checkpoint=trackAt(nearest.s-170);
+  player.x=checkpoint.x;player.y=checkpoint.y;
+  player.angle=Math.atan2(checkpoint.dy,checkpoint.dx);
+  player.lastRaw=checkpoint.s;
+  player.progress=Math.max(0,player.progress-170);
+  player.speed=85;player.airZ=0;player.airV=0;player.steerMomentum=0;
+  player.hp=Math.max(0,player.hp-17/player.style.armor);
+  player.invulnerable=1.4;
+  elapsed+=2;
+  shockCooldown=.8;
+  spawnFX(checkpoint.x,checkpoint.y,"#f39964",18);
+  setToast(reason+" · +2 S");
+  if(player.hp<=0)endRace(true);
+  return true;
+}
+function updateCourseHazardForPlayer(nearest){
+  const p=trackAt(nearest.s);
+  const lane=(player.x-p.x)*p.nx+(player.y-p.y)*p.ny;
+  const hazard=courseHazardAt(nearest.s,lane);
+  player.roadGrip=hazard.oil?.34:hazard.ice?.46:1;
+  if(hazard.ramp&&player.airZ===0&&player.speed>85
+    &&elapsed-(player.hazardHits[hazard.ramp.id]??-100)>2){
+    player.hazardHits[hazard.ramp.id]=elapsed;
+    launchJump(player);
+  }
+  if(hazard.bridge&&Math.abs(lane)>hazard.bridge.width-12&&player.airZ<12){
+    return fallFromCourse(nearest,"CHUTE DU PONT");
+  }
+  if(hazard.gap&&player.airZ<17){
+    return fallFromCourse(nearest,"SAUT MANQUÉ");
+  }
+  for(const obstacle of [hazard.rock,hazard.cart]){
+    if(!obstacle||player.airZ>36||player.invulnerable>0)continue;
+    if(elapsed-(player.hazardHits[obstacle.id]??-100)<1.35)continue;
+    player.hazardHits[obstacle.id]=elapsed;
+    player.speed*=.46;
+    player.hp=Math.max(0,player.hp-11/player.style.armor);
+    player.steerMomentum+=(lane>0?-.6:.6);
+    spawnFX(player.x,player.y,"#fba663",14);
+    setToast(obstacle.type==="cart"?"CHOC WAGONNET !":"CHOC ROCHER !");
+  }
+  return false;
+}
 function updateProgress(){
   const n=closestTrack(player.x,player.y);
   let delta=n.s-player.lastRaw;
@@ -790,6 +868,8 @@ function updatePlayer(dt){
   const gas=pressed("gas"),brake=pressed("brake"),left=pressed("left"),right=pressed("right"),nitro=pressed("nitro");
   player.fireCooldown=Math.max(0,player.fireCooldown-dt);
   player.hitFlash=Math.max(0,player.hitFlash-dt);
+  player.invulnerable=Math.max(0,player.invulnerable-dt);
+  advanceJump(player,dt);
   if(gas)player.speed+=player.style.accel*dt;
   else if(player.speed>0)player.speed=Math.max(0,player.speed-125*dt);
   else if(player.speed<0)player.speed=Math.min(0,player.speed+110*dt);
@@ -801,15 +881,17 @@ function updatePlayer(dt){
   }else{player.nitro=Math.min(player.maxNitro,player.nitro+(7+progress.nitro*2)*dt);}
   player.speed=clamp(player.speed,-95,maxSpeed);
   const steer=(right?1:0)-(left?1:0);
-  if(steer!==0&&Math.abs(player.speed)>12){
-    const turn=player.style.steering*(.38+.67*Math.min(1,Math.abs(player.speed)/270));
-    player.angle+=steer*turn*dt*(player.speed<0?-1:1);
-    if(Math.abs(player.speed)>260)player.speed*=1-.06*dt;
-  }
+  const turn=player.style.steering*(.38+.67*Math.min(1,Math.abs(player.speed)/270));
+  const steerTarget=Math.abs(player.speed)>12?steer*turn*(player.speed<0?-1:1):0;
+  // Ice/oil reduce grip and retain steering momentum after the wheel is centered.
+  player.steerMomentum+=(steerTarget-player.steerMomentum)*Math.min(1,dt*(player.roadGrip<1?2.2:16));
+  player.angle+=player.steerMomentum*dt*(player.airZ>0?.62:1);
+  if(steer!==0&&Math.abs(player.speed)>260)player.speed*=1-.06*dt;
   player.x+=Math.cos(player.angle)*player.speed*dt;
   player.y+=Math.sin(player.angle)*player.speed*dt;
   const closest=updateProgress();
-  if(closest.dist>ROAD_HALF-17){
+  if(updateCourseHazardForPlayer(closest))return;
+  if(closest.dist>ROAD_HALF-17&&player.airZ<12){
     const dx=player.x-closest.x,dy=player.y-closest.y,len=Math.max(1,closest.dist);
     player.x=closest.x+dx/len*(ROAD_HALF-17);
     player.y=closest.y+dy/len*(ROAD_HALF-17);
@@ -832,10 +914,36 @@ function updateAI(dt){
     if(a.finished||a.destroyed)continue;
     a.hitFlash=Math.max(0,a.hitFlash-dt);a.stun=Math.max(0,a.stun-dt);
     a.attackTimer-=dt;
-    const pace=a.cruise*(a.stun>0?.52:1)*(1+Math.sin(elapsed*.34+a.phase)*.023);
+    const current=trackAt(a.progress);
+    const nearby=courseHazardAt(current.s,a.lane);
+    // The boss tries to close the racing line when the player approaches.
+    if(a.isBoss&&Math.abs(a.progress-player.progress)<220&&Math.abs(player.speed)>75){
+      const playerTrack=closestTrack(player.x,player.y),pt=trackAt(playerTrack.s);
+      const playerLane=(player.x-pt.x)*pt.nx+(player.y-pt.y)*pt.ny;
+      a.lane+= (clamp(playerLane,-31,31)-a.lane)*Math.min(1,dt*1.4);
+    }
+    const slow=nearby.ice?.77:nearby.oil?.84:1;
+    const pace=a.cruise*(a.stun>0?.52:1)*slow*(1+Math.sin(elapsed*.34+a.phase)*.023);
     a.speed=pace;a.progress+=pace*dt;
     const p=trackAt(a.progress),lane=a.lane+Math.sin(elapsed*.5+a.phase)*9;
-    a.x=p.x+p.nx*lane;a.y=p.y+p.ny*lane;a.angle=Math.atan2(p.dy,p.dx);
+    const hazard=courseHazardAt(p.s,lane);
+    if(hazard.ramp&&a.airZ===0&&a.airV===0
+      &&elapsed-(a.hazardHits[hazard.ramp.id]??-100)>2){
+      a.hazardHits[hazard.ramp.id]=elapsed;
+      launchJump(a);
+    }
+    advanceJump(a,dt);
+    if(hazard.gap&&a.airZ<17){
+      a.progress=Math.max(0,a.progress-150);
+      a.stun=1.5;a.hp=Math.max(1,a.hp-12);a.airZ=0;a.airV=0;
+    }
+    for(const obstacle of [hazard.rock,hazard.cart]){
+      if(obstacle&&a.airZ<32&&elapsed-(a.hazardHits[obstacle.id]??-100)>1.5){
+        a.hazardHits[obstacle.id]=elapsed;a.stun=.85;a.hp=Math.max(1,a.hp-9);
+      }
+    }
+    const next=trackAt(a.progress);
+    a.x=next.x+next.nx*lane;a.y=next.y+next.ny*lane;a.angle=Math.atan2(next.dy,next.dx);
     a.boosting=a.stun<=0&&Math.sin(elapsed*.34+a.phase)>0.97;
     if(a.progress>=FINISH+TRACK_LENGTH*LAPS){a.finished=true;if(finishOrder===null)finishOrder=a.name;}
     if(a.attackTimer<=0&&hypot(player.x-a.x,player.y-a.y)<(a.isBoss?560:420)&&state==="race"){
@@ -994,6 +1102,11 @@ function drawMinimap(){
   mctx.beginPath();points.forEach((p,i)=>{const s=conv(p.x,p.y);i?mctx.lineTo(s.x,s.y):mctx.moveTo(s.x,s.y);});
   mctx.closePath();mctx.strokeStyle="#536778";mctx.lineWidth=10;mctx.lineJoin="round";mctx.stroke();
   mctx.strokeStyle="#d0cfc1";mctx.lineWidth=2;mctx.stroke();
+  for(const obstacle of courseChallenge.features){
+    const p=conv(obstacle.center.x,obstacle.center.y);
+    mctx.fillStyle=obstacle.type==="bridge"?"#e8b26a":obstacle.type==="ramp"?"#7cf3ae":obstacle.type==="gap"?"#ed6654":"#8bc9eb";
+    mctx.fillRect(p.x-2.3,p.y-2.3,4.6,4.6);
+  }
   for(const ai of ais.filter(a=>!a.destroyed)){const s=conv(ai.x,ai.y);mctx.fillStyle=ai.style.color;mctx.beginPath();mctx.arc(s.x,s.y,4,0,TAU);mctx.fill();}
   if(player){const s=conv(player.x,player.y);mctx.fillStyle="#fbe763";mctx.beginPath();mctx.arc(s.x,s.y,5.7,0,TAU);mctx.fill();mctx.strokeStyle="#0a0a0a";mctx.lineWidth=1;mctx.stroke();}
   mctx.fillStyle="#d0dcec";mctx.font="bold 10px Arial";mctx.fillText("CIRCUIT "+String(trackId+1).padStart(2,"0"),8,12);
