@@ -541,6 +541,89 @@ function lineWorld(ax,ay,bx,by,color,width=2){
   const a=screen(ax,ay),b=screen(bx,by);
   ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();
 }
+function drawBiomeScenery(item,p,size){
+  // Distinct silhouettes and materials for each world, all procedural and deterministic.
+  const shadow="#020c1580";
+  ctx.fillStyle=shadow;ctx.beginPath();ctx.ellipse(p.x+5,p.y+5,size*.83,size*.33,-.2,0,TAU);ctx.fill();
+  if(trackId===2){
+    // Icy boulders, snow-loaded fir trees and frozen pines.
+    if(item.kind<.38){
+      ctx.fillStyle="#7394a4";ctx.beginPath();ctx.moveTo(p.x-size,p.y);
+      ctx.lineTo(p.x-size*.43,p.y-size*.48);ctx.lineTo(p.x+size*.30,p.y-size*.48);
+      ctx.lineTo(p.x+size*.88,p.y-size*.04);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#c1eaf2";ctx.beginPath();ctx.moveTo(p.x-size*.43,p.y-size*.48);
+      ctx.lineTo(p.x+size*.3,p.y-size*.48);ctx.lineTo(p.x+size*.03,p.y-size*.81);ctx.closePath();ctx.fill();
+    }else{
+      ctx.fillStyle="#3b5766";ctx.fillRect(p.x-size*.11,p.y-size*.91,size*.22,size*.92);
+      for(let i=0;i<3;i++){
+        const h=size*(.45+i*.36),half=size*(.58-i*.12);
+        ctx.fillStyle=i%2?"#d9eff5":"#7faab1";
+        ctx.beginPath();ctx.moveTo(p.x,p.y-size*(1.85-i*.22));
+        ctx.lineTo(p.x-half,p.y-h*.53);ctx.lineTo(p.x+half,p.y-h*.53);
+        ctx.closePath();ctx.fill();
+      }
+    }
+  }else if(trackId===3){
+    // Sand dunes, wind-carved stone needles and sparse desert plants.
+    if(item.kind<.54){
+      ctx.fillStyle="#b77a43";ctx.beginPath();ctx.moveTo(p.x-size*1.2,p.y+size*.2);
+      ctx.quadraticCurveTo(p.x-size*.4,p.y-size*.98,p.x+size*.1,p.y-size*.48);
+      ctx.quadraticCurveTo(p.x+size*.55,p.y-size*.12,p.x+size*1.15,p.y+size*.2);
+      ctx.closePath();ctx.fill();
+      ctx.strokeStyle="#f4c280";ctx.lineWidth=2;ctx.beginPath();
+      ctx.moveTo(p.x-size*.84,p.y-size*.04);
+      ctx.quadraticCurveTo(p.x-size*.35,p.y-size*.76,p.x+size*.09,p.y-size*.43);ctx.stroke();
+    }else if(item.kind<.80){
+      ctx.fillStyle="#754b33";ctx.beginPath();ctx.moveTo(p.x-size*.36,p.y);
+      ctx.lineTo(p.x-size*.27,p.y-size*1.2);
+      ctx.lineTo(p.x+size*.07,p.y-size*1.65);
+      ctx.lineTo(p.x+size*.44,p.y);ctx.closePath();ctx.fill();
+      ctx.fillStyle="#df9860";ctx.beginPath();ctx.moveTo(p.x-size*.27,p.y-size*1.2);
+      ctx.lineTo(p.x+size*.07,p.y-size*1.65);ctx.lineTo(p.x+size*.18,p.y-size*.7);ctx.closePath();ctx.fill();
+    }else{
+      ctx.strokeStyle="#53715a";ctx.lineCap="round";ctx.lineWidth=Math.max(3,size*.20);
+      ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x,p.y-size*1.4);
+      ctx.moveTo(p.x,p.y-size*.7);ctx.lineTo(p.x-size*.36,p.y-size*.7);
+      ctx.lineTo(p.x-size*.36,p.y-size*1.05);
+      ctx.moveTo(p.x,p.y-size*.95);ctx.lineTo(p.x+size*.32,p.y-size*.95);
+      ctx.lineTo(p.x+size*.32,p.y-size*1.3);ctx.stroke();
+    }
+  }else if(trackId===4){
+    // Layered broadleaf jungle, buttress roots, dense canopy.
+    const tall=size*(1.35+.55*item.kind);
+    ctx.strokeStyle="#60452b";ctx.lineWidth=Math.max(4,size*.27);ctx.lineCap="round";
+    ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x+size*.14,p.y-tall);
+    ctx.moveTo(p.x,p.y-size*.18);ctx.lineTo(p.x-size*.34,p.y+size*.06);
+    ctx.moveTo(p.x,p.y-size*.18);ctx.lineTo(p.x+size*.41,p.y+size*.11);
+    ctx.stroke();
+    const foliage=["#2a6f42","#388b4e","#285f43","#569861"];
+    for(let i=0;i<5;i++){
+      const a=i*TAU/5+item.phase,fx=p.x+size*.14+Math.cos(a)*size*.54;
+      const fy=p.y-tall+Math.sin(a)*size*.30;
+      ctx.fillStyle=foliage[(i+(item.kind*17|0))%foliage.length];
+      ctx.beginPath();ctx.ellipse(fx,fy,size*.68,size*.43,.2,0,TAU);ctx.fill();
+    }
+    ctx.fillStyle="#75b56b";ctx.beginPath();ctx.ellipse(p.x+size*.1,p.y-tall-size*.13,size*.52,size*.30,0,0,TAU);ctx.fill();
+  }
+}
+function drawBiomeAtmosphere(t){
+  if(trackId===2){
+    ctx.fillStyle="#eaf7ff9a";
+    for(let i=0;i<65;i++){
+      const x=mod(i*107.7+t*(13+i%4*3),W),y=mod(i*63.1+t*(28+i%5*5),H);
+      ctx.beginPath();ctx.arc(x,y,(i%3+.5)*.8,0,TAU);ctx.fill();
+    }
+  }else if(trackId===3){
+    ctx.fillStyle="#e4a45d17";
+    for(let i=0;i<8;i++){
+      const y=mod(i*127+t*12,H);
+      ctx.fillRect(0,y,W,11);
+    }
+  }else if(trackId===4){
+    ctx.fillStyle="#81c99f10";
+    for(let i=0;i<7;i++)ctx.fillRect(0,mod(i*137+t*7,H),W,15);
+  }
+}
 function drawBackdrop(t){
   const grd=ctx.createLinearGradient(0,0,0,H);
   const sky=trackDefs[trackId].sky;grd.addColorStop(0,sky[0]);grd.addColorStop(.55,sky[1]);grd.addColorStop(1,sky[2]);
@@ -564,6 +647,7 @@ function drawBackdrop(t){
   for(const s of scenery){
     const p=screen(s.x,s.y),size=s.size*zoom;
     if(p.x<-70||p.x>W+70||p.y<-70||p.y>H+70)continue;
+    if(trackId>=2){drawBiomeScenery(s,p,size);continue;}
     ctx.fillStyle="#020a12aa";ctx.beginPath();ctx.ellipse(p.x+4,p.y+4,size*.7,size*.29,-.2,0,TAU);ctx.fill();
     if(s.kind<.64){
       ctx.fillStyle=trackId===0?(s.kind<.32?"#28475a":"#345d62"):(s.kind<.32?"#546d75":"#3b7085");
@@ -589,6 +673,7 @@ function drawBackdrop(t){
     }
     if(s.kind>.88){ctx.fillStyle="#9efeed88";ctx.fillRect(p.x-size*.1,p.y-size*1.25,2,4);}
   }
+  drawBiomeAtmosphere(t);
 }
 function traceEdge(offset){
   ctx.beginPath();
@@ -617,9 +702,16 @@ function drawTrack(t){
   ctx.save();
   roadRing(ROAD_HALF+32,"#071322");
   roadRing(ROAD_HALF+17,trackDefs[trackId].edge);
-  roadRing(ROAD_HALF+13,"#1a2834");
-  roadRing(ROAD_HALF,"#353e4b");
-  roadRing(ROAD_HALF-7,"#2b3542");
+  const surfaces=[
+    ["#1a2834","#353e4b","#2b3542"],
+    ["#223946","#4b6266","#354d53"],
+    ["#264454","#658696","#52717c"],
+    ["#583a2b","#917458","#776146"],
+    ["#1b3430","#40554a","#32483e"]
+  ][trackId];
+  roadRing(ROAD_HALF+13,surfaces[0]);
+  roadRing(ROAD_HALF,surfaces[1]);
+  roadRing(ROAD_HALF-7,surfaces[2]);
   // alternating kerbs
   for(let d=0,i=0;d<TRACK_LENGTH;d+=36,i++){
     const a=trackAt(d),b=trackAt(d+27),col=i%2?"#f1a461":"#dce5dd";
@@ -654,7 +746,7 @@ function drawTrack(t){
     const p=trackAt(FINISH+i*TRACK_LENGTH/14),x=p.x+p.nx*(ROAD_HALF+42),y=p.y+p.ny*(ROAD_HALF+42),sp=screen(x,y);
     ctx.strokeStyle="#44f7e1aa";ctx.lineWidth=2*zoom;
     ctx.beginPath();ctx.moveTo(sp.x,sp.y);ctx.lineTo(sp.x,sp.y-29*zoom);ctx.stroke();
-    ctx.fillStyle=i%2?"#ffe46c":(trackId===0?"#60e7e2":"#ffc783");ctx.beginPath();ctx.arc(sp.x,sp.y-31*zoom,3.5*zoom,0,TAU);ctx.fill();
+    ctx.fillStyle=i%2?"#ffe46c":(["#60e7e2","#ffc783","#b4e7fa","#ffba71","#9deda3"][trackId]);ctx.beginPath();ctx.arc(sp.x,sp.y-31*zoom,3.5*zoom,0,TAU);ctx.fill();
   }
   ctx.restore();
 }
@@ -839,13 +931,13 @@ function resetRace(){
   const multipliers={easy:.80,normal:1,hard:1.12};
   const rates=[254,270,313],difficultyRate=(multipliers[difficulty]||1)*(1+raceIndex*.015);
   const region=activeZone();
-  ais=[...rivals,{name:region.boss,color:region.bossColor||"#f3b968",dark:"#583c37",accent:"#fff0ca",bodyType:"gt"}].map((r,i)=>{
+  ais=[...rivals,{name:region.boss,color:region.bossColor||"#f3b968",dark:"#583c37",accent:"#fff0ca",bodyType:["gt","rs","rally","gt","rally"][trackId]}].map((r,i)=>{
     const boss=i===2;
     const a=makeCar(starts[i],lanes[i],r,r.name);
     a.isBoss=boss;
     a.hp=boss?180:115;
     a.maxHp=a.hp;a.knockouts=0;
-    a.cruise=(rates[i]+raceIndex*(boss?6:4))*difficultyRate;
+    a.cruise=(rates[i]+raceIndex*(boss?6:4))*difficultyRate*(boss?[1,1,1.015,1.025,1.03][trackId]:1);
     a.phase=i*1.8;
     a.attackTimer=(boss?1.2:3.3)+rnd()*(boss?1.4:2.8);
     a.speed=a.cruise;
