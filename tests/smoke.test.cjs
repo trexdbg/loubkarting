@@ -545,7 +545,7 @@ test("a rival who crossed first cannot be overtaken in the result by distance ov
   assert.match(h.el("resultStats").innerHTML,/2 \/ 4/);
   assert.equal(h.el("dialogTitle").textContent,"2E PLACE !");
   assert.match(h.el("resultStats").innerHTML,/360 CR/);
-  assert.equal(h.win.__test.progress().credits,640,"Second-place prize plus first podium bonus");
+  assert.equal(h.win.__test.progress().credits,640+h.win.__test.goldEarned(),"Second-place prize plus first podium bonus and gold collected");
 });
 
 test("the podium counts every AI that already finished even if it stopped moving",()=>{
@@ -557,7 +557,7 @@ test("the podium counts every AI that already finished even if it stopped moving
   h.win.__test.finish();
   assert.equal(h.el("dialogTitle").textContent,"4E PLACE !");
   assert.match(h.el("resultStats").innerHTML,/4 \/ 4/);
-  assert.equal(h.win.__test.progress().credits,230,"Fourth place gets no first qualification");
+  assert.equal(h.win.__test.progress().credits,230+h.win.__test.goldEarned(),"Fourth place gets no first qualification");
   assert.equal(h.win.__test.progress().cleared.includes("0:0"),false);
 });
 
