@@ -673,9 +673,44 @@ function carPolygon(car,coords,color){
 function drawCar(car,t){
   const visual=window.LKVehicleRenderer;
   if(!visual)return;
-  if(car.airZ>3){
+  if(car.airZ>3&&!car.fall){
     const shadow=screen(car.x,car.y,0);
     ctx.fillStyle="#03071288";ctx.beginPath();ctx.ellipse(shadow.x,shadow.y,30*zoom,14*zoom,-.3,0,TAU);ctx.fill();
+  }
+  // Respawn materialization: a bright ground ring and rising guide beams.
+  if(car.spawnPhase>0&&!car.fall){
+    const phase=clamp(car.spawnPhase/.55,0,1),origin=screen(car.x,car.y,0);
+    ctx.save();
+    ctx.globalAlpha=phase*.78;ctx.strokeStyle=car.isPlayer?"#a5fff4":"#79ddec";ctx.lineWidth=3*zoom;
+    ctx.beginPath();ctx.ellipse(origin.x,origin.y,(48-20*phase)*zoom,(22-9*phase)*zoom,-.23,0,TAU);ctx.stroke();
+    for(let i=-1;i<=1;i++){
+      const offset=i*22*zoom;
+      ctx.beginPath();ctx.moveTo(origin.x+offset,origin.y);
+      ctx.lineTo(origin.x+offset,origin.y-(35+35*phase)*zoom);
+      ctx.lineWidth=2*zoom;ctx.stroke();
+    }
+    ctx.restore();
+  }
+  // Spin, shrink and sink below the road when falling. Works with the existing
+  // polygonal vehicle meshes, including the heavyweight boss and the formula car.
+  ctx.save();
+  const pivot=screen(car.x,car.y,(car.airZ||0)+22);
+  if(car.fall){
+    const u=clamp(car.fall.t/car.fall.duration,0,1);
+    const scale=Math.max(.16,1-.82*u);
+    ctx.translate(pivot.x,pivot.y);
+    ctx.rotate((car.fall.side||1)*u*1.62);
+    ctx.scale(scale,scale);
+    ctx.translate(-pivot.x,-pivot.y);
+    ctx.globalAlpha=clamp((1-u)*2.8,0,1);
+  }else if(car.spawnPhase>0){
+    const u=1-clamp(car.spawnPhase/.55,0,1);
+    const scale=.64+.36*u;
+    ctx.translate(pivot.x,pivot.y);ctx.scale(scale,scale);ctx.translate(-pivot.x,-pivot.y);
+    ctx.globalAlpha=.30+.70*u;
+  }else if(car.airZ>3){
+    const tilt=Math.sin((t-car.jumpTime)*8)*.055;
+    ctx.translate(pivot.x,pivot.y);ctx.rotate(tilt);ctx.translate(-pivot.x,-pivot.y);
   }
   visual.draw(ctx,{
     project:(f,r,z)=>bodyPoint(car,f,r,z),zoom,
@@ -684,7 +719,6 @@ function drawCar(car,t){
   });
   const z=car.style.bodyType==="rally"?57:car.style.bodyType==="formula"?51:48;
   const label=bodyPoint(car,0,0,z);
-  ctx.save();
   ctx.font="800 "+Math.max(9,Math.round(11*zoom))+"px Inter,Arial";
   ctx.textAlign="center";ctx.shadowColor="#030712";ctx.shadowBlur=5;
   ctx.fillStyle=car.isPlayer?"#fff3a5":"#e0e5f4";
@@ -733,6 +767,23 @@ function draw(t){
   const toRender=[player,...ais].filter(c=>c&&!c.destroyed).sort((a,b)=>iso(a.x,a.y).y-iso(b.x,b.y).y);
   for(const car of toRender)drawCar(car,t);
   drawMines(t);drawRockets();drawParticles();
+  // Player-only brief motion streaks convey depth and impact without moving HUD.
+  if(player&&player.fall){
+    const u=player.fall.t/player.fall.duration;
+    const focus=screen(player.fall.startX,player.fall.startY,0);
+    ctx.save();
+    ctx.globalAlpha=.06+.12*Math.sin(u*Math.PI);
+    ctx.fillStyle="#d95443";ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle="#ffd18b";ctx.lineWidth=3*zoom;
+    for(let i=0;i<11;i++){
+      const a=i*TAU/11+t*.3,outer=90+u*160,inner=outer-46;
+      ctx.beginPath();
+      ctx.moveTo(focus.x+Math.cos(a)*inner*zoom,focus.y+Math.sin(a)*inner*.58*zoom);
+      ctx.lineTo(focus.x+Math.cos(a)*outer*zoom,focus.y+Math.sin(a)*outer*.58*zoom);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 }
 function spawnFX(x,y,color,count=12){
   for(let i=0;i<count;i++){
@@ -840,6 +891,7 @@ function updateVehicleFall(car,dt){
   car.y=fall.startY+Math.sin(fall.angle)*drift+Math.cos(fall.angle)*55*u;
   // A brief upward lurch followed by a steep fall gives visible depth in isometric view.
   car.airZ=fall.startZ+35*Math.sin(u*Math.PI)-310*u*u;
+  if(u<.76&&rnd()<dt*22)spawnFX(car.x,car.y,"#dda779",2);
   if(u<1)return true;
   const checkpoint=trackAt(fall.s-fall.rewind);
   car.progress=Math.max(0,car.progress-fall.rewind);
