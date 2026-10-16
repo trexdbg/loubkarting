@@ -16,6 +16,9 @@ const specs = [
   {name:"VORTEX V12",bodyType:"gt",price:6500,summary:"Supercar à moteur central, puissance brutale.",color:"#f6b450",dark:"#975027",accent:"#fef3c6",speed:442,accel:368,steering:2.35,armor:.93},
   {name:"APEX FORMULA",bodyType:"formula",price:13000,summary:"Monoplace radicale. Nécessaire pour la finale mondiale.",color:"#ebdcc0",dark:"#32557c",accent:"#4fe9e4",speed:485,accel:405,steering:2.89,armor:.76}
 ];
+const PAINTS=[{"id":"factory","name":"Origine","color":null},{"id":"red","name":"Rouge","color":"#ee515a"},{"id":"blue","name":"Bleu","color":"#4b93f1"},{"id":"turquoise","name":"Turquoise","color":"#39c6b8"},{"id":"green","name":"Vert","color":"#78c960"},{"id":"yellow","name":"Jaune","color":"#f5d14b"},{"id":"orange","name":"Orange","color":"#f19a42"},{"id":"purple","name":"Violet","color":"#9f80f0"},{"id":"white","name":"Blanc","color":"#eaeef0"},{"id":"black","name":"Noir","color":"#333a48"}];
+function validPaint(id){return PAINTS.some(p=>p.id===id);}
+function shadePaint(hex){return "#"+[1,3,5].map((i,n)=>Math.round(parseInt(hex.slice(i,i+2),16)*.38+[15,19,30][n]*.62).toString(16).padStart(2,"0")).join("");}
 const ZONES = [
   {name:"ALPES",region:"EUROPE / MONTAGNE",status:"ready",boss:"LE BOUQUETIN",bossColor:"#d9b067",races:["COL DES BRUMES","ÉPINGLE DES CIMES","CRÊTE DU TONNERRE","ASCENSION ROYALE"]},
   {name:"LITTORAL",region:"OCÉANIE / PLAGE",status:"ready",boss:"SIRÈNE DU CAP",bossColor:"#79e5d8",races:["BAIE D'AZUR","CORNICHE DES EMBRUNS","CAP SOLAIRE","COURONNE DES MARÉES"]},
@@ -133,11 +136,17 @@ function loadProgress(){
   const transports=Array.isArray(raw.transports)?raw.transports.filter(k=>Object.hasOwn(TRANSPORTS,k)):[];
   if(oldSaves&&cleared.some(k=>k.startsWith("0:")&&k!=="0:0")&&!transports.includes("trailer"))transports.push("trailer");
   if(oldSaves&&(cleared.some(k=>k.startsWith("1:"))||(zone===1&&cleared.includes("0:3")))&&!transports.includes("boat"))transports.push("boat");
+  const paintColors={};
+  const savedPaint=raw.paintColors&&typeof raw.paintColors==="object"&&!Array.isArray(raw.paintColors)?raw.paintColors:{};
+  for(const [key,id] of Object.entries(savedPaint)){
+    const i=Number(key);
+    if(Number.isInteger(i)&&i>=0&&i<specs.length&&owned.includes(i)&&validPaint(id))paintColors[i]=id;
+  }
   const paidEntries=Array.isArray(raw.paidEntries)?raw.paidEntries.filter(x=>typeof x==="string"&&/^[01]:[1-3]$/.test(x)):[];
   if(oldSaves)for(const k of cleared)if(/^[01]:[1-3]$/.test(k)&&!paidEntries.includes(k))paidEntries.push(k);
   return {credits:Number.isFinite(credit)?clamp(Math.floor(credit),0,100000000):0,
     engine:lvl("engine"),armor:lvl("armor"),nitro:lvl("nitro"),track:zone,zone,race,
-    ownedCars:[...new Set(owned)],selectedCar:owned.includes(car)?car:0,weapon,
+    ownedCars:[...new Set(owned)],selectedCar:owned.includes(car)?car:0,weapon,paintColors,
     cleared:[...new Set(cleared)],transports:[...new Set(transports)],paidEntries:[...new Set(paidEntries)]};
 }
 let progress=loadProgress();
@@ -187,6 +196,45 @@ const SCREEN_TITLES={
 };
 let currentScreen="race",screenHistory=[],showroomPreview=progress.selectedCar;
 let thumbsNeedRedraw=true,previewFrameDue=0;
+const draftPaint={};
+function currentPaint(index){
+  return progress.ownedCars.includes(index)?(progress.paintColors[index]||"factory"):(draftPaint[index]||"factory");
+}
+function carWithPaint(index){
+  const car=specs[index],paint=PAINTS.find(p=>p.id===currentPaint(index));
+  return paint&&paint.color?{...car,color:paint.color,dark:shadePaint(paint.color)}:car;
+}
+function updatePaintPicker(context,index){
+  const choice=currentPaint(index);
+  $(context+"PaintName").textContent=PAINTS.find(p=>p.id===choice)?.name||"Origine";
+  $(context+"PaintOptions").innerHTML=PAINTS.map(p=>
+    '<button type="button" class="paint-swatch'+(p.id===choice?' active':'')+(p.id==="factory"?' factory':'')+
+    '" data-paint="'+p.id+'" aria-label="'+p.name+'" aria-pressed="'+(p.id===choice)+
+    '" title="'+p.name+'"'+(p.color?' style="--paint-swatch:'+p.color+'"':'')+'></button>').join("");
+}
+function choosePaint(id,context){
+  if(!validPaint(id)||(context!=="dealer"&&context!=="garage"))return;
+  const index=context==="dealer"?showroomPreview:selected;
+  if(progress.ownedCars.includes(index)){
+    progress.paintColors[index]=id;
+    saveProgress();
+    if(player&&player.isPlayer&&index===selected){
+      const painted=carWithPaint(index);
+      player.style.color=painted.color;player.style.dark=painted.dark;
+    }
+  }else if(context==="dealer"){draftPaint[index]=id;}
+  else return;
+  thumbsNeedRedraw=true;
+  previewFrameDue=0;
+  if(context==="garage")$("garageFeedback").textContent="Peinture appliquée gratuitement";
+  refreshCareerDisplays();
+}
+function listenPaint(context){
+  $(context+"PaintOptions").addEventListener("click",e=>{
+    const button=e.target.closest("button[data-paint]");
+    if(button)choosePaint(button.dataset.paint,context);
+  });
+}
 function openCareerScreen(name,back=false){
   if(!CAREER_SCREENS.includes(name))return;
   if(!back&&currentScreen!==name&&state==="menu")screenHistory.push(currentScreen);
@@ -216,7 +264,7 @@ function goBackCareer(){
 function previewDealerCar(index){
   if(!Number.isInteger(index)||index<0||index>=specs.length)return;
   showroomPreview=index;
-  const spec=specs[index],hero=$("showroomCar");
+  const spec=carWithPaint(index),hero=$("showroomCar");
   hero.dataset.carStyle=spec.bodyType;
   $("showroomCarName").textContent=spec.name;
   $("showroomCarClass").textContent=spec.summary;
@@ -234,20 +282,25 @@ function previewDealerCar(index){
   $("dealerBuyBtn").disabled=active||(!owned&&progress.credits<spec.price);
   $("dealerBuyBtn").textContent=active?"Équipée ✓":
     owned?"Équiper":"Acheter · "+spec.price.toLocaleString("fr-FR")+" CR";
-
+  updatePaintPicker("dealer",index);
+  updatePaintPicker("garage",selected);
 }
 // Dedicated 3D-style vehicle presentation, independent from the racing camera.
 function drawCareerVehicles(time){
   if(state!=="menu"||time<previewFrameDue||!window.LKVehicleRenderer)return;
   previewFrameDue=time+.07;
   const artist=window.LKVehicleRenderer;
+  if(currentScreen==="garage"){
+    artist.preview($("garageCarCanvas"),carWithPaint(selected),{angle:-.51+Math.sin(time*.35)*.18,time});
+    return;
+  }
   if(currentScreen!=="dealer")return;
   const showcase=$("showroomCarCanvas");
-  if(showcase)artist.preview(showcase,specs[showroomPreview],{angle:-.53+Math.sin(time*.42)*.22,time});
+  if(showcase)artist.preview(showcase,carWithPaint(showroomPreview),{angle:-.53+Math.sin(time*.42)*.22,time});
   if(thumbsNeedRedraw){
     document.querySelectorAll("[data-car]").forEach(btn=>{
       const index=Number(btn.dataset.car),view=btn.querySelector("canvas.car-thumb");
-      if(view&&specs[index])artist.preview(view,specs[index],{tiny:true,angle:-.38});
+      if(view&&specs[index])artist.preview(view,carWithPaint(index),{tiny:true,angle:-.38});
     });
     thumbsNeedRedraw=false;
   }
@@ -351,10 +404,12 @@ function buyOrSelectCar(index){
       return;
     }
     progress.credits-=spec.price;progress.ownedCars.push(index);
+    progress.paintColors[index]=draftPaint[index]||"factory";
+    delete draftPaint[index];
     $("garageFeedback").textContent=spec.name+" achetée !";
   }else{$("garageFeedback").textContent=spec.name+" sélectionnée.";}
   selected=index;progress.selectedCar=index;saveProgress();refreshGarage();redrawCareer();
-  if(state==="menu")player=makeCar(300,0,specs[selected],"YOU",true);
+  if(state==="menu")player=makeCar(300,0,carWithPaint(selected),"YOU",true);
 }
 
 function refreshGarage(){
@@ -684,7 +739,7 @@ function resetRace(){
   rockets=[];mines=[];particles=[];elapsed=0;countdown=3.4;lastLap=1;shockCooldown=0;finishOrder=null;hudTicker=0;
   $("trackName").textContent=activeZone().name+" // "+activeZone().races[raceIndex]+" "+(isBoss()?"★ BOSS":"");
   pickups.forEach(p=>p.cooldown=0);
-  player=makeCar(300,5,specs[selected],specs[selected].name,true);
+  player=makeCar(300,5,carWithPaint(selected),specs[selected].name,true);
   const lanes=[-34,35,0],starts=[500,430,365];
   const multipliers={easy:.80,normal:1,hard:1.12};
   const rates=[254,270,313],difficultyRate=(multipliers[difficulty]||1)*(1+raceIndex*.015);
@@ -1028,6 +1083,7 @@ document.querySelectorAll("[data-go]").forEach(btn=>btn.addEventListener("click"
 $("backBtn").addEventListener("click",goBackCareer);
 document.querySelectorAll("[data-car]").forEach(btn=>btn.addEventListener("click",()=>previewDealerCar(Number(btn.dataset.car))));
 $("dealerBuyBtn").addEventListener("click",()=>buyOrSelectCar(showroomPreview));
+listenPaint("dealer");listenPaint("garage");
 document.querySelectorAll("[data-transport]").forEach(btn=>btn.addEventListener("click",()=>buyTransport(btn.dataset.transport)));
 $("unlockRaceBtn").addEventListener("click",buyRaceEntry);
 document.querySelectorAll("[data-upgrade]").forEach(btn=>btn.addEventListener("click",()=>buyUpgrade(btn.dataset.upgrade)));

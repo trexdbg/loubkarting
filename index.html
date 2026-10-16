@@ -120,7 +120,8 @@
                 <div class="showroom-caption"><small>Modèle</small><strong id="showroomCarName">CITADINE 91</strong><span id="showroomCarClass">URBAINE · 1991</span></div>
                 <div class="showroom-specs"><div><span>VITESSE</span><b id="showroomSpeed">335</b><i><span id="showroomSpeedBar"></span></i></div><div><span>ACCÉLÉRATION</span><b id="showroomAccel">286</b><i><span id="showroomAccelBar"></span></i></div><div><span>AGILITÉ</span><b id="showroomGrip">2.74</b><i><span id="showroomGripBar"></span></i></div></div>
               </div>
-              <div class="section-head"><span class="option-label">Choisir un modèle</span><span class="dealer-hint"></span></div>
+              <div class="paint-picker"><div class="paint-picker-title"><strong>Couleur</strong><span id="dealerPaintName">Origine</span></div><div class="paint-swatches" id="dealerPaintOptions" role="group" aria-label="Peintures disponibles"></div></div>
+               <div class="section-head"><span class="option-label">Choisir un modèle</span><span class="dealer-hint"></span></div>
               <div class="car-select" role="group" aria-label="Choix et achat du véhicule">
           <button class="car-card active" data-car="0"><canvas class="car-thumb" data-thumb="hatch" aria-hidden="true"></canvas><strong>CITADINE 91</strong><small>FRANÇAISE · URBAINE</small><em id="carCost0">POSSÉDÉE</em></button>
           <button class="car-card" data-car="1"><canvas class="car-thumb" data-thumb="rs" aria-hidden="true"></canvas><strong>RS ÉCLIPSE</strong><small>HOT HATCH · SPORT</small><em id="carCost1">900 CR</em></button>
@@ -136,7 +137,8 @@
             <section id="screen-garage" class="career-screen hidden" aria-label="Atelier du garage">
               <div class="screen-heading"><h2>Atelier</h2></div>
               <div class="workshop-banner"><div class="workshop-tools">⚙</div><div><small></small><strong id="workshopCarName">CITADINE 91</strong><span></span></div><button data-go="dealer" class="route-link">Changer de voiture</button></div>
-              <div class="workshop-section-title"><div><h3>Améliorations</h3></div></div>
+              <div class="garage-paint-panel"><canvas id="garageCarCanvas" aria-label="Aperçu 3D de la voiture"></canvas><div class="paint-picker"><div class="paint-picker-title"><strong>Couleur</strong><span id="garagePaintName">Origine</span></div><div class="paint-swatches" id="garagePaintOptions" role="group" aria-label="Peintures disponibles"></div></div></div>
+               <div class="workshop-section-title"><div><h3>Améliorations</h3></div></div>
               <section class="garage" aria-label="Garage et améliorations">
                 <div class="upgrade-grid">
             <button class="upgrade-card" data-upgrade="engine"><span class="upgrade-icon">↗</span><strong>MOTEUR</strong><small id="engineLevel">NIV. 0 / 3</small><span class="upgrade-price" id="engineCost">200 CR</span></button>

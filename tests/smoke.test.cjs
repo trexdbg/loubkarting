@@ -319,3 +319,32 @@ test("invalid save is repaired without crashing",()=>{
   assert.equal(bad.win.__test.weapon(),"dart");
   assert.doesNotThrow(()=>harness({loubkarting_progress_v2:"{broken"}));
 });
+
+test("paint selected before purchase persists and updates garage and races at no cost",()=>{
+  const h=harness({loubkarting_progress_v2:JSON.stringify({credits:2200,ownedCars:[0]})});
+  h.groups["[data-car]"][1].events.click();
+  h.el("dealerPaintOptions").events.click({target:{closest:()=>({dataset:{paint:"blue"}})}});
+  assert.equal(h.el("dealerPaintName").textContent,"Bleu");
+  assert.equal(h.win.__test.progress().paintColors[1],undefined);
+  h.el("dealerBuyBtn").events.click();
+  assert.equal(h.win.__test.progress().credits,1300);
+  assert.equal(h.win.__test.progress().paintColors[1],"blue");
+  assert.equal(h.win.__test.player().style.color,"#4b93f1");
+  h.el("garagePaintOptions").events.click({target:{closest:()=>({dataset:{paint:"green"}})}});
+  assert.equal(h.el("garagePaintName").textContent,"Vert");
+  assert.equal(h.win.__test.progress().paintColors[1],"green");
+  assert.equal(h.win.__test.player().style.color,"#78c960");
+  assert.equal(h.win.__test.progress().credits,1300);
+  const restored=harness(h.saved);
+  assert.equal(restored.win.__test.progress().paintColors[1],"green");
+  restored.start();
+  assert.equal(restored.win.__test.player().style.color,"#78c960");
+});
+test("factory paint can be restored and unknown saved paints are ignored",()=>{
+  const h=harness({loubkarting_progress_v2:JSON.stringify({ownedCars:[0],paintColors:{"0":"blue","1":"red","9":"black"}})});
+  assert.equal(h.win.__test.player().style.color,"#4b93f1");
+  assert.equal(h.win.__test.progress().paintColors[1],undefined);
+  h.el("garagePaintOptions").events.click({target:{closest:()=>({dataset:{paint:"factory"}})}});
+  assert.equal(h.win.__test.progress().paintColors[0],"factory");
+  assert.equal(h.win.__test.player().style.color,"#d8d9c6");
+});

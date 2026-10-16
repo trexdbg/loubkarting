@@ -33,6 +33,7 @@ Le moteur de rendu `vehicles.js` est **partagé entre la piste, le grand showroo
 - **Trois adversaires IA, dont le boss régional présent aux quatre départs** (plus rapide, agressif et résistant). Missiles, collisions, destruction réelle des rivaux, réparation, nitro, blindage, difficulté, classement sur quatre voitures et records par épreuve.
 - **Des lingots originaux à ramasser sur la piste (40 ou 65 CR)**, une **prime de 240 CR par voiture adverse détruite**, un gain de classement et un bonus de première qualification. Trois améliorations (moteur, blindage, nitro) jusqu’au niveau 3.
 - **Carrière à péages** : qualification sur le podium, puis **transport et inscription à payer** avant la course suivante. La remorque est nécessaire dès la 2e course des Alpes ; le bateau est nécessaire pour rejoindre le Littoral après avoir battu le boss. Le bouton « Épreuve suivante » conduit au garage/logistique tant que le trajet ou l’inscription n’est pas payé.
+- **10 peintures de carrosserie**, couleur d'origine comprise : choix à l'achat, changement gratuit à l'atelier, aperçu 3D et sauvegarde par voiture.
 - Sauvegardes locales du garage, des armes sélectionnées, des crédits et de la progression. Aucun compte requis.
 
 ## Économie, transport et inscription
