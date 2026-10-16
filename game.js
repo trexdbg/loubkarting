@@ -186,6 +186,7 @@ const SCREEN_TITLES={
   race:"Course",world:"Monde",dealer:"Voitures",garage:"Atelier",travel:"Transport"
 };
 let currentScreen="race",screenHistory=[],showroomPreview=progress.selectedCar;
+let thumbsNeedRedraw=true,previewFrameDue=0;
 function openCareerScreen(name,back=false){
   if(!CAREER_SCREENS.includes(name))return;
   if(!back&&currentScreen!==name&&state==="menu")screenHistory.push(currentScreen);
@@ -234,6 +235,21 @@ function previewDealerCar(index){
   $("dealerBuyBtn").textContent=active?"Équipée ✓":
     owned?"Équiper":"Acheter · "+spec.price.toLocaleString("fr-FR")+" CR";
 
+}
+// Dedicated 3D-style vehicle presentation, independent from the racing camera.
+function drawCareerVehicles(time){
+  if(state!=="menu"||time<previewFrameDue||!window.LKVehicleRenderer)return;
+  previewFrameDue=time+.07;
+  const artist=window.LKVehicleRenderer;
+  artist.preview($("heroCarCanvas"),specs[selected],{angle:-.47+Math.sin(time*.33)*.17,time});
+  artist.preview($("showroomCarCanvas"),specs[showroomPreview],{angle:-.53+Math.sin(time*.42)*.22,time});
+  if(thumbsNeedRedraw){
+    document.querySelectorAll("[data-car]").forEach(btn=>{
+      const index=Number(btn.dataset.car),view=btn.querySelector("canvas.car-thumb");
+      if(view&&specs[index])artist.preview(view,specs[index],{tiny:true,angle:-.38});
+    });
+    thumbsNeedRedraw=false;
+  }
 }
 function refreshCareerDisplays(){
   const zone=activeZone(),car=specs[selected],isAccessible=raceAccessible(trackId,raceIndex);
@@ -409,6 +425,7 @@ function resize(){
   ctx.setTransform(dpr,0,0,dpr,0,0);
   zoom=W<680?.85:W<1000?.91:.97;
   if(H<550)zoom*=.91;
+  thumbsNeedRedraw=true;
 }
 window.addEventListener("resize",resize);resize();
 function iso(x,y){return {x:(x-y)*.70710678,y:(x+y)*.397};}
@@ -588,71 +605,22 @@ function carPolygon(car,coords,color){
   ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.closePath();ctx.fillStyle=color;ctx.fill();
 }
 
-function drawFormulaCar(car,t){
-  ctx.save();
-  const ground=screen(car.x+5,car.y+7);
-  ctx.fillStyle="#010712a9";ctx.beginPath();ctx.ellipse(ground.x,ground.y,37*zoom,14*zoom,0,0,TAU);ctx.fill();
-  if(car.boosting&&Math.abs(car.speed)>80){
-    const p=bodyPoint(car,-42,0,7),q=bodyPoint(car,-72,0,7);
-    ctx.strokeStyle="#8af7ff";ctx.lineWidth=5*zoom;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
-  }
-  for(const f of [-24,24])for(const r of [-1,1])
-    carPolygon(car,[[f-10,r*20,5],[f+10,r*20,5],[f+10,r*30,5],[f-10,r*30,5]],"#060d16");
-  carPolygon(car,[[-37,-17,7],[-29,-17,7],[-29,17,7],[-37,17,7]],car.style.accent);
-  carPolygon(car,[[-35,-8,11],[-4,-10,12],[12,-7,13],[38,-4,9],[38,4,9],[12,7,13],[-4,10,12],[-35,8,11]],car.style.color);
-  carPolygon(car,[[-2,-9,17],[11,-8,17],[20,0,19],[11,8,17],[-2,9,17]],car.style.dark);
-  carPolygon(car,[[-8,-5,21],[4,-6,21],[10,0,23],[4,6,21],[-8,5,21]],"#0b1e2d");
-  carPolygon(car,[[27,-21,7],[34,-21,7],[34,21,7],[27,21,7]],car.style.accent);
-  carPolygon(car,[[-42,-21,19],[-35,-21,19],[-35,21,19],[-42,21,19]],car.style.dark);
-  if(car.hitFlash>0)carPolygon(car,[[-28,-14,22],[29,-14,22],[41,0,22],[29,14,22]],"#ffffffa0");
-  const label=bodyPoint(car,0,0,46);
-  ctx.fillStyle=car.isPlayer?"#fff5b0":"#dde6fa";
-  ctx.font="800 "+Math.max(9,Math.round(11*zoom))+"px Inter,Arial";
-  ctx.textAlign="center";ctx.fillText(car.isPlayer?"YOU":car.name,label.x,label.y);
-  ctx.restore();
-}
-
+// One shared procedural polygon mesh powers the track, the showroom and the thumbnails.
 function drawCar(car,t){
-  if(car.style.bodyType==="formula"){drawFormulaCar(car,t);return;}
-  const c=car.style,scale=zoom;
-  const shadow=screen(car.x+9,car.y+12);
-  ctx.save();ctx.fillStyle="#02060dc0";ctx.beginPath();ctx.ellipse(shadow.x,shadow.y,34*scale,13*scale,0,0,TAU);ctx.fill();
-  if(car.boosting&&Math.abs(car.speed)>50){
-    const p=bodyPoint(car,-38,0,5),q=bodyPoint(car,-64-Math.sin(t*27)*13,0,6);
-    ctx.strokeStyle="#50e9ff";ctx.lineWidth=9*scale;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.stroke();
-    ctx.strokeStyle="#f7edac";ctx.lineWidth=3*scale;ctx.stroke();
-  }
-  for(const fx of [-20,21])for(const side of [-1,1]){
-    carPolygon(car,[[fx-8,side*22,4],[fx+8,side*22,4],[fx+8,side*29,5],[fx-8,side*29,5]],"#0c1320");
-  }
-  carPolygon(car,[[-33,-19,9],[23,-19,9],[35,-11,9],[35,11,9],[23,19,9],[-33,19,9]],c.dark);
-  carPolygon(car,[[-27,-17,14],[18,-17,14],[28,-9,14],[28,9,14],[18,17,14],[-27,17,14]],c.color);
-  carPolygon(car,[[-13,-14,17],[6,-14,22],[11,-9,23],[11,9,23],[6,14,22],[-13,14,17]],"#15263a");
-  carPolygon(car,[[-13,-13,18],[-9,-13,24],[-9,13,24],[-13,13,18]],"#bbf1ef");
-  carPolygon(car,[[9,-10,23],[16,-8,18],[16,8,18],[9,10,23]],"#8fd0dd");
-  carPolygon(car,[[-31,-18,17],[-26,-18,17],[-26,18,17],[-31,18,17]],c.accent);
-  if(c.bodyType==="city"){
-    carPolygon(car,[[-18,-14,23],[2,-14,23],[2,14,23],[-18,14,23]],"#c9d1cd");
-    carPolygon(car,[[23,-18,15],[29,-12,15],[29,12,15],[23,18,15]],"#eef0d4");
-  }else if(c.bodyType==="rs"){
-    carPolygon(car,[[-30,-20,23],[-26,-20,23],[-26,20,23],[-30,20,23]],"#0f1926");
-    carPolygon(car,[[-20,-3,24],[27,-3,18],[27,3,18],[-20,3,24]],c.accent);
-  }else if(c.bodyType==="rally"){
-    carPolygon(car,[[-34,-24,26],[-26,-24,26],[-26,24,26],[-34,24,26]],"#122231");
-    carPolygon(car,[[15,-14,18],[28,-14,18],[28,-10,18],[15,-10,18]],c.accent);
-    carPolygon(car,[[15,10,18],[28,10,18],[28,14,18],[15,14,18]],c.accent);
-  }else if(c.bodyType==="gt"){
-    carPolygon(car,[[-38,-22,17],[-29,-22,19],[-29,22,19],[-38,22,17]],"#14202e");
-    carPolygon(car,[[18,-10,17],[36,-7,16],[42,0,14],[36,7,16],[18,10,17]],c.dark);
-    carPolygon(car,[[0,-3,26],[24,-3,17],[24,3,17],[0,3,26]],c.accent);
-  }
-  carPolygon(car,[[23,-15,16],[30,-10,16],[30,-5,16],[23,-9,16]],"#fff3c6");
-  carPolygon(car,[[23,9,16],[30,5,16],[30,10,16],[23,15,16]],"#fff3c6");
-  if(car.hitFlash>0)carPolygon(car,[[-30,-21,19],[24,-21,19],[32,0,19],[24,21,19],[-30,21,19]],"#ffffffaa");
-  const name=bodyPoint(car,0,0,40);
-  ctx.textAlign="center";ctx.font="800 "+Math.max(9,Math.round(11*zoom))+"px Inter,Arial";
-  ctx.shadowColor="#030712";ctx.shadowBlur=5;ctx.fillStyle=car.isPlayer?"#fff3a5":"#e0e5f4";
-  ctx.fillText(car.isPlayer?"YOU":car.name,name.x,name.y-2);
+  const visual=window.LKVehicleRenderer;
+  if(!visual)return;
+  visual.draw(ctx,{
+    project:(f,r,z)=>bodyPoint(car,f,r,z),zoom,
+    type:car.style.bodyType,color:car.style.color,dark:car.style.dark,accent:car.style.accent,
+    boosting:car.boosting&&Math.abs(car.speed)>60,hitFlash:car.hitFlash,time:t
+  });
+  const z=car.style.bodyType==="rally"?57:car.style.bodyType==="formula"?51:48;
+  const label=bodyPoint(car,0,0,z);
+  ctx.save();
+  ctx.font="800 "+Math.max(9,Math.round(11*zoom))+"px Inter,Arial";
+  ctx.textAlign="center";ctx.shadowColor="#030712";ctx.shadowBlur=5;
+  ctx.fillStyle=car.isPlayer?"#fff3a5":"#e0e5f4";
+  ctx.fillText(car.isPlayer?"YOU":car.name,label.x,label.y-3);
   ctx.restore();
 }
 function drawMines(t){
@@ -1147,7 +1115,7 @@ $("soundBtn").addEventListener("click",()=>sound.toggle());
 
 function frame(now){
   const dt=Math.min(.036,Math.max(0,(now-lastTime)/1000||0));lastTime=now;
-  update(dt);draw(now/1000);requestAnimationFrame(frame);
+  update(dt);draw(now/1000);drawCareerVehicles(now/1000);requestAnimationFrame(frame);
 }
 document.querySelectorAll("[data-car]").forEach(btn=>btn.classList.toggle("active",Number(btn.dataset.car)===selected));
 resetRace();setMenu();requestAnimationFrame(frame);
