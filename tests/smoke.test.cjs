@@ -723,3 +723,19 @@ test("new saves preserve old career status and world 0 race identifiers",()=>{
   assert.equal(h.win.__test.progress().cleared.length,4);
   assert.equal(h.win.__test.progress().paidEntries.length,3);
 });
+
+test("winning the coastal finale opens the Northern travel step without bypassing plane payment",()=>{
+  const cleared=Array.from({length:2},(_,z)=>Array.from({length:4},(_,i)=>z+":"+i)).flat();
+  const h=harness({loubkarting_progress_v2:JSON.stringify({credits:8000,transports:["trailer","boat"],paidEntries:cleared,cleared,zone:1,race:3})});
+  h.start();h.winInstant();
+  assert.equal(h.el("nextBtn").classList.contains("hidden"),false);
+  h.el("nextBtn").events.click();
+  assert.equal(h.win.__test.track(),2);
+  assert.equal(h.win.__test.race(),0);
+  assert.equal(h.win.__test.screen(),"travel");
+  assert.equal(h.el("startBtn").disabled,true,"Cannot launch without the plane");
+  assert.match(h.el("travelInstruction").textContent,/Avion/);
+  h.groups["[data-transport]"][2].events.click();
+  assert.equal(h.el("startBtn").disabled,false);
+  assert.equal(h.win.__test.raceUnlocked(2,0),true);
+});
