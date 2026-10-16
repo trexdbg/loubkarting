@@ -551,3 +551,30 @@ html,body,#gameShell{touch-action:pan-y}
   #menu .hero-primary{min-width:0;width:100%;font-size:17px}
 }
 @media(prefers-reduced-motion:reduce){#menu .career-screen{animation:none}#menu .showroom-car{transition:none}}
+
+
+/* Dealership purchase counter + ambient vehicle themes */
+#menu .dealer-checkout{margin-top:15px;display:flex;gap:18px;align-items:center;justify-content:space-between;padding:17px 20px;border:1px solid #ae9d5a80;background:linear-gradient(100deg,#2c2f30d9,#1a2a37e8);border-radius:4px}
+#menu .dealer-checkout-copy{display:flex;flex-direction:column;gap:3px}
+#menu .dealer-checkout-copy small{font-size:9px;letter-spacing:1.5px;color:#b3c2c9;font-weight:900}
+#menu .dealer-checkout-copy strong{font:900 28px 'Barlow Condensed',sans-serif;color:#ffe39b}
+#menu .dealer-checkout-copy span{font-size:10px;color:#9fbbc3;line-height:1.5}
+#menu .dealer-buy-btn{background:#f4d977;border:1px solid #f3d56d;border-radius:3px;padding:14px 21px;color:#16202a;font:900 19px 'Barlow Condensed',Impact,sans-serif;letter-spacing:.7px;min-width:215px}
+#menu .dealer-buy-btn:hover:not(:disabled){background:#ffe899}
+#menu .dealer-buy-btn:disabled{opacity:.52;cursor:not-allowed;background:#71808a;color:#dae0db;border-color:#647784}
+#menu .hero-vehicle[data-car-style="rs"] .hero-car-body{background:linear-gradient(160deg,#fa9583,#d3484c 60%,#803342 61%,#e07963)}
+#menu .hero-vehicle[data-car-style="rally"] .hero-car-body{background:linear-gradient(160deg,#7aefec,#2899ad 60%,#265477 61%,#69d9db)}
+#menu .hero-vehicle[data-car-style="gt"] .hero-car-body{background:linear-gradient(160deg,#fae4a2,#daa04b 60%,#98542c 61%,#eab96a)}
+#menu .hero-vehicle[data-car-style="formula"] .hero-car-body{inset:75px 10% 70px;border-radius:48%;border-bottom:3px solid #64718f;background:linear-gradient(130deg,#fff0d9,#95a1ba)}
+#menu .hero-vehicle[data-car-style="formula"] .hero-wheel{border-radius:15%;width:15%;height:42%;bottom:20%}
+#menu .hero-vehicle[data-car-style="formula"] .hero-car-body:before{border-width:2px;left:38%;width:20%;height:75%;top:-35%}
+#menu[data-region="coast"] .map-region-preview{background:linear-gradient(115deg,#1d6b7d,#1f4151 60%,#112533);border-color:#68bbbe96}
+#menu[data-region="coast"] .continent-art{background:repeating-linear-gradient(40deg,#1c7585 0px,#1c7585 24px,#2c8995 25px,#2c8995 26px)}
+#menu[data-region="coast"] .map-continent{color:#eed69a89}
+#menu[data-region="coast"] .briefing-scene{background:linear-gradient(#7ab4bb,#548a99 53%,#2a778b 54%,#2b667b)}
+#menu[data-region="coast"] .briefing-mountain{background:linear-gradient(#d6cf9a,#b7a36a);clip-path:polygon(0 80%,20% 65%,40% 75%,50% 50%,70% 70%,90% 45%,100% 65%,100% 100%,0 100%)}
+@media(max-width:760px){
+  #menu .dealer-checkout{padding:12px;flex-wrap:wrap}
+  #menu .dealer-buy-btn{width:100%;min-width:0}
+  #menu .dealer-checkout-copy strong{font-size:24px}
+}
