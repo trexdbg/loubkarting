@@ -808,6 +808,28 @@ function advanceJump(car,dt){
     if(car.isPlayer)spawnFX(car.x,car.y,"#f8d99b",5);
   }
 }
+// A destroyed vehicle may always rejoin the race, with a fixed 3-second penalty.
+function respawnDestroyedVehicle(){
+  if(state!=="race"||player.hp>0)return false;
+  const nearest=closestTrack(player.x,player.y);
+  const checkpoint=trackAt(nearest.s-130);
+  const before=player.lastRaw;
+  let back=checkpoint.s-before;
+  if(back>TRACK_LENGTH*.5)back-=TRACK_LENGTH;
+  if(back< -TRACK_LENGTH*.5)back+=TRACK_LENGTH;
+  player.progress=Math.max(0,player.progress+Math.min(0,back));
+  player.lastRaw=checkpoint.s;
+  player.x=checkpoint.x;player.y=checkpoint.y;
+  player.angle=Math.atan2(checkpoint.dy,checkpoint.dx);
+  player.speed=0;player.hp=100;player.airZ=0;player.airV=0;
+  player.steerMomentum=0;player.roadGrip=1;player.boosting=false;
+  player.invulnerable=2.5;
+  shockCooldown=1;
+  elapsed+=3;
+  spawnFX(player.x,player.y,"#ffce78",24);
+  setToast("VOITURE RÉPARÉE · +3 S");
+  return true;
+}
 function fallFromCourse(nearest,reason){
   if(player.invulnerable>0)return false;
   const checkpoint=trackAt(nearest.s-170);
@@ -822,7 +844,7 @@ function fallFromCourse(nearest,reason){
   shockCooldown=.8;
   spawnFX(checkpoint.x,checkpoint.y,"#f39964",18);
   setToast(reason+" · +2 S");
-  if(player.hp<=0)endRace(true);
+  if(player.hp<=0)respawnDestroyedVehicle();
   return true;
 }
 function updateCourseHazardForPlayer(nearest){
@@ -907,7 +929,7 @@ function updatePlayer(dt){
     }
   }
   if(pressed("fire"))shoot(player);
-  if(player.hp<=0){player.hp=0;endRace(true);}
+  if(player.hp<=0)respawnDestroyedVehicle();
 }
 function updateAI(dt){
   for(const a of ais){
@@ -1018,7 +1040,7 @@ function updateRockets(dt){
     r.x+=mx*670*dt;r.y+=my*670*dt;
     let hit=null;
     for(const c of r.isPlayer?ais:[player]){
-      if(c===r.owner||c.finished||c.destroyed)continue;
+      if(c===r.owner||c.finished||c.destroyed||(c.isPlayer&&c.invulnerable>0))continue;
       if(hypot(r.x-c.x,r.y-c.y)<40){hit=c;break;}
     }
     if(hit){
@@ -1073,7 +1095,7 @@ function update(dt){
   }else if(state==="race"){
     elapsed+=dt;shockCooldown=Math.max(0,shockCooldown-dt);
     updatePlayer(dt);
-    if(state==="race"){updateAI(dt);updateRockets(dt);updateMines(dt);updatePickups(dt);}
+    if(state==="race"){updateAI(dt);updateRockets(dt);respawnDestroyedVehicle();updateMines(dt);updatePickups(dt);}
     if(toastTimeout>0){toastTimeout-=dt;if(toastTimeout<=0)$("eventToast").classList.remove("visible");}
     hudTicker-=dt;if(hudTicker<=0){hudTicker=.09;setHud();drawMinimap();}
   }
