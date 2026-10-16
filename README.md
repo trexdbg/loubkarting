@@ -35,6 +35,10 @@ Les dangers sont dessinés dans la scène et repérés sur la mini-carte. La pr�
 
 Lorsque le joueur ou un rival passe à côté d'un pont, rate un saut ou atterrit hors de la route : **la voiture tourne sur elle-même, plonge sous le circuit, devient plus petite et disparaît**, puis revient quelques instants après sur une portion sûre, avec un cercle lumineux et une protection temporaire. L'IA ne continue plus fictivement à progresser pendant sa chute : elle suspend sa course, perd de l'avance et reprend ensuite. Les destructions par armes font également revenir les rivaux (boss compris), sans donner plusieurs fois la prime de 240 CR pour le même adversaire.
 
+### Carte du circuit avant le départ
+
+Sur l'écran **Course**, le briefing affiche une carte du véritable tracé sélectionné, mise à jour automatiquement lors du choix d'une autre épreuve. Elle comprend la ligne de départ, le sens de circulation et les passages dangereux (ponts, rampes, trous, huile, glace, rochers, wagonnets). Le Littoral affiche aussi le tracé réel de ses quatre courses, sans signaler d'obstacles qui n'ont pas encore été conçus. La carte est responsive et ne nécessite aucune image ou dépendance supplémentaire.
+
 ## Jouable dès maintenant
 
 - **Montagne · Alpes (Europe) : quatre courses à obstacles réels** : Les Gorges Rouges, Le Pont du Chaos, La Mine Noire et **Le Sommet des Titans (boss : Le Bouquetin)**.
