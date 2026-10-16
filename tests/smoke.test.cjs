@@ -9,7 +9,7 @@ const challenges=fs.readFileSync(path.join(__dirname,"..","course-challenges.js"
 const html=fs.readFileSync(path.join(__dirname,"..","index.html"),"utf8");
 const noop=()=>{};
 const debugSource=source.replace("resetRace();setMenu();requestAnimationFrame(frame);",
-"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,screen:()=>currentScreen,mines:()=>mines,pickups:()=>pickups,goldEarned:()=>raceGold,knockouts:()=>raceKOs,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace,course:()=>courseChallenge,updatePlayer,updateAI,courseHazardAt,elapsed:()=>elapsed,updateRockets,rockets:()=>rockets};\nresetRace();setMenu();requestAnimationFrame(frame);");
+"window.__test={player:()=>player,at:trackAt,length:()=>TRACK_LENGTH,state:()=>state,progress:()=>progress,track:()=>trackId,race:()=>raceIndex,selected:()=>selected,weapon:()=>selectedWeapon,ais:()=>ais,screen:()=>currentScreen,mines:()=>mines,pickups:()=>pickups,goldEarned:()=>raceGold,knockouts:()=>raceKOs,shoot,damageOpponent,updatePickups,raceUnlocked,raceAccessible,finish:endRace,position,course:()=>courseChallenge,updatePlayer,updateAI,courseHazardAt,elapsed:()=>elapsed,updateRockets,rockets:()=>rockets};\nresetRace();setMenu();requestAnimationFrame(frame);");
 assert.notEqual(debugSource,source,"Debug instrumentation anchor should exist.");
 
 function harness(initial={}){
@@ -527,4 +527,54 @@ test("destroyed enemies return and can only give one destruction bonus each",()=
   h.win.__test.damageOpponent(ai,500,1);
   assert.ok(ai.fall);
   assert.equal(h.win.__test.knockouts(),1,"Respawned AI must not grant unlimited credits");
+});
+
+test("a rival who crossed first cannot be overtaken in the result by distance overshoot",()=>{
+  const h=harness();h.start();
+  const a=h.win.__test.ais()[2],p=h.win.__test.player();
+  const finish=160+3*h.win.__test.length();
+  // Let the boss cross normally, recording the fact that its race is finished.
+  a.progress=finish-2;a.lane=0;a.stun=0;
+  h.advance(1);
+  assert.equal(a.finished,true,"Boss must actually finish before the player");
+  p.progress=finish+120;
+  for(const other of h.win.__test.ais().slice(0,2))other.progress=0;
+  assert.ok(p.progress>a.progress,"Old bug: player's distance overtakes parked finisher");
+  assert.equal(h.win.__test.position(),2,"First finisher must remain ahead");
+  h.win.__test.finish();
+  assert.match(h.el("resultStats").innerHTML,/2 \/ 4/);
+  assert.equal(h.el("dialogTitle").textContent,"2E PLACE !");
+  assert.match(h.el("resultStats").innerHTML,/360 CR/);
+  assert.equal(h.win.__test.progress().credits,640,"Second-place prize plus first podium bonus");
+});
+
+test("the podium counts every AI that already finished even if it stopped moving",()=>{
+  const h=harness();h.start();
+  const p=h.win.__test.player(),finish=160+3*h.win.__test.length();
+  p.progress=finish+90;
+  h.win.__test.ais().forEach(a=>{a.finished=true;a.progress=finish+5;});
+  assert.equal(h.win.__test.position(),4);
+  h.win.__test.finish();
+  assert.equal(h.el("dialogTitle").textContent,"4E PLACE !");
+  assert.match(h.el("resultStats").innerHTML,/4 \/ 4/);
+  assert.equal(h.win.__test.progress().credits,230,"Fourth place gets no first qualification");
+  assert.equal(h.win.__test.progress().cleared.includes("0:0"),false);
+});
+
+test("second in a regional boss final is not incorrectly counted as boss victory",()=>{
+  const h=harness({loubkarting_progress_v2:JSON.stringify({
+    credits:5000,transports:["trailer"],paidEntries:["0:1","0:2","0:3"],
+    cleared:["0:0","0:1","0:2"],zone:0,race:3
+  })});
+  h.start();
+  const finish=160+3*h.win.__test.length(),p=h.win.__test.player();
+  const boss=h.win.__test.ais()[2];
+  boss.finished=true;boss.progress=finish+1;
+  h.win.__test.ais().slice(0,2).forEach(a=>a.progress=0);
+  p.progress=finish+200;
+  h.win.__test.finish();
+  assert.equal(h.el("dialogTitle").textContent,"2E PLACE !");
+  assert.match(h.el("dialogDetail").textContent,/Termine premier/);
+  assert.equal(h.win.__test.progress().cleared.includes("0:3"),false);
+  assert.equal(h.win.__test.progress().credits,5360);
 });
