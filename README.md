@@ -1,4 +1,4 @@
-# 🏁 LOUBKARTING — Earth Tour (v0.4)
+# 🏁 LOUBKARTING — Earth Tour (v0.5)
 
 Un jeu **solo de course-combat isométrique sur Terre**, avec garage, armes et carrière. Jeu indépendant en HTML/CSS/Canvas JavaScript, hébergeable sur **GitHub Pages**.
 
@@ -38,6 +38,23 @@ La première course de chaque région est gratuite une fois le voyage payé. Les
 **Récompenses d'une course :** 450 / 360 / 290 / 230 CR (de la première à la quatrième place), ou 75 CR en cas d'élimination du joueur ; puis **+40 ou +65 CR par lingot collecté**, **+240 CR par rival détruit**, et +280 CR lors du premier podium sur une épreuve ordinaire / +850 CR lors de la première victoire en finale de région.
 
 Les véhicules détruits quittent la piste pour cette course. Le boss possède davantage de blindage et tire plus souvent, mais peut aussi être éliminé.
+
+## Interface immersive : six écrans indépendants (v0.5)
+
+La carrière n'est **plus un menu géant**. On navigue désormais dans six espaces distincts, avec une barre de navigation permanente et un retour au QG :
+
+| Écran | Usage |
+|---|---|
+| **01 · Quartier général** | Accueil, résumé de la carrière, du bolide actif et du voyage à financer |
+| **02 · Carte du monde** | Atlas terrestre original, continents, régions et choix des quatre courses |
+| **03 · Concessionnaire** | Présentation grand format des cinq modèles, caractéristiques de performance et **bouton explicite d'achat ou d'équipement** |
+| **04 · Atelier mécanique** | Moteur, blindage, nitro et choix des trois modules offensifs |
+| **05 · Transports** | Remorque, bateau, avion prévu plus tard, ainsi que les frais de voyage et d'inscription |
+| **06 · Paddock de course** | Parcours et boss, voiture/arme équipées, droit d'accès, difficulté, chrono et lancement de l'épreuve |
+
+Chaque espace a son propre environnement visuel (showroom, atelier, atlas géographique, transport routier, paddock) et des raccourcis cohérents. La navigation est adaptée au mobile : onglets horizontaux sur petit écran, écran vertical indépendant et actions tactiles. Le retour d'une course ouvre désormais l'atelier ; « épreuve suivante » mène à la préparation ou au transport si un paiement reste nécessaire.
+
+Le concessionnaire ne débite pas automatiquement les crédits lorsqu'on examine un bolide. **Choisir une vignette montre la voiture ; un bouton séparé confirme l'achat.** Les transactions, le choix de voiture, l'armement et les progrès restent sauvegardés.
 
 ## Prévu, mais pas encore jouable
 
